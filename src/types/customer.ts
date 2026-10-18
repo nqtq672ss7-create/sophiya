@@ -1,4 +1,4 @@
-export type LoyaltyTierName = 'Знакомство' | 'Серебряный' | 'Золотой' | 'Платиновый';
+export type LoyaltyTierName = 'Клиент' | 'Знакомство' | 'Серебряный' | 'Золотой' | 'Платиновый';
 
 export interface LoyaltyTier {
   name: LoyaltyTierName;
@@ -10,11 +10,11 @@ export interface LoyaltyTier {
 
 export const LOYALTY_TIERS: LoyaltyTier[] = [
   {
-    name: 'Знакомство',
+    name: 'Клиент',
     minSpend: 0,
-    discountPercent: 3,
-    badgeColor: 'text-sofiya-viola',
-    description: 'Приветственная скидка 3% на все букеты',
+    discountPercent: 0,
+    badgeColor: 'text-zinc-400',
+    description: 'Постоянный клиент салона',
   },
   {
     name: 'Серебряный',

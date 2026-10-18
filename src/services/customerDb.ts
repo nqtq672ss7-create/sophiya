@@ -192,7 +192,6 @@ export class CustomerDatabaseService {
       };
     }
 
-    const { tier } = calculateLoyaltyTier(0);
     const newCustomer: Customer = {
       id: `cust_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       phone: formatRussianPhone(params.phone),
@@ -201,8 +200,8 @@ export class CustomerDatabaseService {
       birthDate: params.birthDate || undefined,
       totalSpent: 0,
       ordersCount: 0,
-      discountPercent: tier.discountPercent, // 3% welcome discount
-      tier: tier.name, // "Знакомство"
+      discountPercent: 0,
+      tier: 'Клиент',
       orders: [],
       registeredAt: new Date().toISOString().split('T')[0],
     };
