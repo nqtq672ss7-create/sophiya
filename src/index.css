@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+/* Luxury Slender Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #140506;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(193, 143, 150, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(193, 143, 150, 0.6);
+}
+
+@layer utilities {
+  .glass-card {
+    background: linear-gradient(135deg, rgba(30, 7, 8, 0.75) 0%, rgba(20, 5, 6, 0.9) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(193, 143, 150, 0.16);
+  }
+
+  .glass-card-hover {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card-hover:hover {
+    transform: translateY(-3px);
+    border-color: rgba(193, 143, 150, 0.45);
+    box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.8), 0 0 24px -6px rgba(108, 30, 38, 0.3);
+  }
+
+  .glass-panel {
+    background: rgba(30, 7, 8, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(193, 143, 150, 0.18);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 24px rgba(193, 143, 150, 0.35);
+  }
+
+  .berry-glow {
+    box-shadow: 0 0 28px rgba(108, 30, 38, 0.45);
+  }
+
+  .berry-glow-lg {
+    box-shadow: 0 0 45px rgba(108, 30, 38, 0.6);
+  }
+}
+
+.webgl-canvas {
+  touch-action: none;
+  outline: none;
+}
