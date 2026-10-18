@@ -1,10 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const KVDB_BUCKET_ID = 'sophiya_salon_customers_v1';
-const REVIEWS_ENDPOINT = `https://kvdb.io/${KVDB_BUCKET_ID}/reviews_list_v1`;
+import { kv } from '@vercel/kv';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -17,24 +14,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {
     try {
       if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        const resp = await fetch(`${process.env.KV_REST_API_URL}/get/reviews`, {
-          headers: { Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}` },
-        });
-        if (resp.ok) {
-          const json = await resp.json();
-          if (json.result) return res.status(200).json(JSON.parse(json.result));
+        const data = await kv.get('salon_reviews');
+        if (data) {
+          return res.status(200).json(data);
         }
       }
-
-      const cloudResp = await fetch(REVIEWS_ENDPOINT);
-      if (cloudResp.ok) {
-        const data = await cloudResp.json();
-        if (Array.isArray(data)) return res.status(200).json(data);
-      }
-
       return res.status(200).json(null);
     } catch (e) {
-      console.error('Error fetching reviews in API:', e);
+      console.error('Error fetching reviews from Vercel KV:', e);
       return res.status(200).json(null);
     }
   }
@@ -48,25 +35,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        await fetch(`${process.env.KV_REST_API_URL}/set/reviews`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${process.env.KV_REST_API_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(JSON.stringify(items)),
-        });
+        await kv.set('salon_reviews', items);
       }
-
-      await fetch(REVIEWS_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(items),
-      });
 
       return res.status(200).json({ success: true, count: items.length });
     } catch (e) {
-      console.error('Error saving reviews in API:', e);
+      console.error('Error saving reviews to Vercel KV:', e);
       return res.status(500).json({ error: 'Failed to persist reviews' });
     }
   }
