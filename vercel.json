@@ -5,7 +5,19 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/yandex_2ec8258b4efd6543.html",
+      "destination": "/yandex_2ec8258b4efd6543.html"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/((?!.*\\.).*)",
       "destination": "/"
     }
   ]
