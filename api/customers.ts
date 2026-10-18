@@ -1,5 +1,21 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
+import { createClient, kv } from '@vercel/kv';
+
+function getKVClient() {
+  const url =
+    process.env.KV_REST_API_URL ||
+    process.env.STORAGE_REST_API_URL ||
+    process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ||
+    process.env.STORAGE_REST_API_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (url && token) {
+    return createClient({ url, token });
+  }
+  return kv;
+}
 
 // Telegram backup notification
 async function notifyTelegram(customer: any) {
@@ -44,18 +60,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
+  const client = getKVClient();
+
   // 1. GET: Fetch all customers
   if (req.method === 'GET') {
     try {
-      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        const list = await kv.get<any[]>('salon_customers');
-        if (Array.isArray(list)) {
-          return res.status(200).json(list);
-        }
+      const list = await client.get<any[]>('salon_customers');
+      if (Array.isArray(list)) {
+        return res.status(200).json(list);
       }
       return res.status(200).json([]);
     } catch (e) {
-      console.error('Error fetching customers from Vercel KV:', e);
+      console.error('Error fetching customers from KV:', e);
       return res.status(200).json([]);
     }
   }
@@ -68,18 +84,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Invalid customer data' });
       }
 
-      // Notify Telegram
+      // Notify Telegram in background
       notifyTelegram(customer).catch(() => {});
 
-      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        const existing = (await kv.get<any[]>('salon_customers')) || [];
+      try {
+        const existing = (await client.get<any[]>('salon_customers')) || [];
         const updated = [customer, ...existing.filter((c) => c.id !== customer.id)];
-        await kv.set('salon_customers', updated);
+        await client.set('salon_customers', updated);
+      } catch (err) {
+        console.error('Error saving to KV:', err);
       }
 
       return res.status(200).json({ success: true, customer });
     } catch (e) {
-      console.error('Error saving customer to Vercel KV:', e);
+      console.error('Error saving customer in API:', e);
       return res.status(500).json({ error: 'Failed to persist customer' });
     }
   }

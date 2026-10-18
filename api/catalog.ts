@@ -1,5 +1,21 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { kv } from '@vercel/kv';
+import { createClient, kv } from '@vercel/kv';
+
+function getKVClient() {
+  const url =
+    process.env.KV_REST_API_URL ||
+    process.env.STORAGE_REST_API_URL ||
+    process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ||
+    process.env.STORAGE_REST_API_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (url && token) {
+    return createClient({ url, token });
+  }
+  return kv;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,18 +26,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
+  const client = getKVClient();
+
   // 1. GET: Fetch global catalog
   if (req.method === 'GET') {
     try {
-      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        const data = await kv.get('catalog_bouquets');
-        if (data) {
-          return res.status(200).json(data);
-        }
+      const data = await client.get('catalog_bouquets');
+      if (data) {
+        return res.status(200).json(data);
       }
       return res.status(200).json(null);
     } catch (e) {
-      console.error('Error fetching catalog from Vercel KV:', e);
+      console.error('Error fetching catalog from KV:', e);
       return res.status(200).json(null);
     }
   }
@@ -34,13 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Expected array of bouquets' });
       }
 
-      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        await kv.set('catalog_bouquets', items);
-      }
-
+      await client.set('catalog_bouquets', items);
       return res.status(200).json({ success: true, count: items.length });
     } catch (e) {
-      console.error('Error saving catalog to Vercel KV:', e);
+      console.error('Error saving catalog to KV:', e);
       return res.status(500).json({ error: 'Failed to persist catalog' });
     }
   }
