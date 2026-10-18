@@ -60,7 +60,7 @@ export class CustomerDatabaseService {
     }
   }
 
-  // Save customers to local storage
+  // Save customers to local storage with redundant safety snapshots
   static saveLocalCustomers(customers: Customer[]): void {
     try {
       // Exclude legacy mock accounts
@@ -68,9 +68,56 @@ export class CustomerDatabaseService {
         (c) => c.id !== 'cust_01' && c.id !== 'cust_02' && !c.id.startsWith('seed_')
       );
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+
+      // Redundant Snapshot Backup: Daily & Latest
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem(`sofiya_customers_backup_${today}`, JSON.stringify(cleaned));
+      localStorage.setItem('sofiya_customers_backup_latest', JSON.stringify(cleaned));
     } catch (e) {
       console.error('Failed to save customers to localStorage:', e);
     }
+  }
+
+  // Export customer database to Excel-compatible CSV with UTF-8 BOM
+  static exportToCSV(customers: Customer[]): void {
+    const BOM = '\uFEFF';
+    const headers = [
+      'ID',
+      'Имя',
+      'Фамилия',
+      'Телефон',
+      'Дата рождения',
+      'Статус клуба',
+      'Скидка (%)',
+      'Заказов (шт)',
+      'Сумма покупок (руб)',
+      'Дата регистрации',
+    ];
+
+    const rows = customers.map((c) => [
+      c.id,
+      `"${c.firstName.replace(/"/g, '""')}"`,
+      `"${c.lastName.replace(/"/g, '""')}"`,
+      `"${c.phone}"`,
+      c.birthDate ? `"${c.birthDate}"` : '""',
+      `"${c.tier}"`,
+      c.discountPercent,
+      c.ordersCount,
+      c.totalSpent,
+      `"${c.registeredAt}"`,
+    ]);
+
+    const csvContent = BOM + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.href = url;
+    link.setAttribute('download', `sofiya_baza_klientov_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   // Fetch all customers from server API with local fallback

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
 import { calculateLoyaltyTier } from '../../types/customer';
 import { Bouquet } from '../../types/figma-app';
+import { CustomerDatabaseService } from '../../services/customerDb';
 
 interface SalonAdminClientsModalProps {
   isOpen: boolean;
@@ -967,6 +968,25 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               >
                 <RotateCcw className="w-3.5 h-3.5 text-[#C5A880]" />
                 <span className="hidden sm:inline">Синхронизировать</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (allCustomers.length === 0) {
+                    alert('В базе пока нет клиентов для выгрузки.');
+                    return;
+                  }
+                  CustomerDatabaseService.exportToCSV(allCustomers);
+                  setSuccessNotice(`Файл базы (${allCustomers.length} клиентов) скачан на ваш компьютер!`);
+                  setIsSuccessMessage(true);
+                  setTimeout(() => setIsSuccessMessage(false), 3000);
+                }}
+                className="px-3 py-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 hover:text-white flex items-center gap-1.5 transition-colors shrink-0 shadow"
+                title="Скачать резервную копию всей базы клиентов в файл Excel / CSV"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline">Экспорт в Excel (CSV)</span>
               </button>
             </div>
 
