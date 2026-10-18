@@ -180,6 +180,10 @@ export const FigmaAppShell: React.FC = () => {
             <FigmaProfileScreen
               onOpenAuth={openAuthModal}
               onOpenCrm={() => setIsAdminCrmOpen(true)}
+              onGoToCatalog={() => {
+                setActiveTab('catalog');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           )}
         </div>
