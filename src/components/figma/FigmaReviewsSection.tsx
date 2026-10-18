@@ -86,23 +86,13 @@ export const FigmaReviewsSection: React.FC = () => {
           </h2>
         </div>
 
-        {/* Rating summary & WhatsApp review CTA */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="bg-white px-4 py-2 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-2">
-            <div className="flex text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-              ))}
-            </div>
-            <span className="font-serif text-base font-bold text-zinc-900">4.9</span>
-            <span className="text-xs text-zinc-400 font-light">/ 5.0</span>
-          </div>
-
+        {/* WhatsApp review CTA */}
+        <div>
           <a
             href="https://wa.me/79172563235?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BE%D1%81%D1%82%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%20%D0%BE%D1%82%D0%B7%D1%8B%D0%B2%20%D0%BE%20%D0%B1%D1%83%D0%BA%D0%B5%D1%82%D0%B5"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs font-medium transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs font-medium transition-colors shadow-sm shrink-0"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Оставить отзыв</span>
