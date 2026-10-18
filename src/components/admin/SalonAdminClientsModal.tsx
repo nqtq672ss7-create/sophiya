@@ -15,7 +15,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { allCustomers } = useAuth();
+  const { allCustomers, refreshCustomers } = useAuth();
   const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault } = useCatalog();
   const { reviews, publishedReviews, addReview, deleteReview, togglePublished, resetToDefault: resetReviewsToDefault } = useReviews();
 
@@ -942,23 +942,44 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative mb-4">
-              <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск по имени, фамилии или номеру телефона..."
-                className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
-              />
+            {/* Search Bar & Cloud Sync Button */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск по имени, фамилии или номеру телефона..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  await refreshCustomers();
+                  setSuccessNotice('База клиентов синхронизирована с облаком');
+                  setIsSuccessMessage(true);
+                  setTimeout(() => setIsSuccessMessage(false), 2500);
+                }}
+                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs text-white/80 hover:text-white flex items-center gap-1.5 transition-colors shrink-0"
+                title="Синхронизировать базу клиентов с сервером"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span className="hidden sm:inline">Синхронизировать</span>
+              </button>
             </div>
 
             {/* Clients List */}
             <div className="space-y-2.5 flex-1 overflow-y-auto">
               {filteredCustomers.length === 0 ? (
-                <div className="py-12 text-center text-xs text-white/50">
-                  По вашему запросу клиенты не найдены
+                <div className="py-16 text-center text-xs text-white/50 flex flex-col items-center gap-2">
+                  <Users className="w-8 h-8 text-white/20" />
+                  <span className="max-w-md">
+                    {searchQuery
+                      ? 'По вашему запросу клиенты не найдены'
+                      : 'В базе пока нет зарегистрированных клиентов. Новые гости появятся здесь автоматически после оформления клубной карты на сайте.'}
+                  </span>
                 </div>
               ) : (
                 filteredCustomers.map((c) => (

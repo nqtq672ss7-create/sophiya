@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Customer, CustomerOrder, calculateLoyaltyTier } from '../types/customer';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Customer } from '../types/customer';
+import { CustomerDatabaseService, normalizePhone, formatRussianPhone } from '../services/customerDb';
 
 interface AuthContextType {
   customer: Customer | null;
@@ -11,132 +12,115 @@ interface AuthContextType {
   closeProfileModal: () => void;
   requestOtp: (phone: string) => Promise<boolean>;
   verifyOtp: (code: string) => Promise<{ success: boolean; isNewUser: boolean }>;
+  registerCustomer: (data: {
+    phone: string;
+    firstName: string;
+    lastName: string;
+    birthDate?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
+  loginWithPhone: (phone: string) => Promise<{ success: boolean; error?: string }>;
   completeRegistration: (firstName: string, lastName: string, birthDate?: string) => void;
   logout: () => void;
   addOrderToCustomer: (orderSummary: { items: string[]; totalAmount: number }) => void;
   allCustomers: Customer[];
+  refreshCustomers: () => Promise<void>;
+  pendingPhone: string;
+  setPendingPhone: (phone: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const SEED_CUSTOMERS: Customer[] = [
-  {
-    id: 'cust_01',
-    phone: '+7 (917) 256-32-35',
-    firstName: 'Айгуль',
-    lastName: 'Сафина',
-    birthDate: '1992-05-18',
-    totalSpent: 34200,
-    ordersCount: 6,
-    discountPercent: 7,
-    tier: 'Золотой',
-    registeredAt: '2024-03-12',
-    orders: [
-      {
-        id: 'ord_101',
-        date: '14.10.2024',
-        items: ['Бархатный Марсала (25 роз)'],
-        totalAmount: 4800,
-        discountApplied: 336,
-        finalAmount: 4464,
-        status: 'Доставлен',
-      },
-      {
-        id: 'ord_102',
-        date: '01.09.2024',
-        items: ['Французский Сад', 'Открытка ручной работы'],
-        totalAmount: 6600,
-        discountApplied: 462,
-        finalAmount: 6138,
-        status: 'Доставлен',
-      },
-      {
-        id: 'ord_103',
-        date: '22.07.2024',
-        items: ['Пудровая Мелодия'],
-        totalAmount: 5600,
-        discountApplied: 392,
-        finalAmount: 5208,
-        status: 'Доставлен',
-      },
-    ],
-  },
-  {
-    id: 'cust_02',
-    phone: '+7 (917) 123-45-67',
-    firstName: 'Руслан',
-    lastName: 'Гарипов',
-    birthDate: '1988-11-04',
-    totalSpent: 12400,
-    ordersCount: 2,
-    discountPercent: 5,
-    tier: 'Серебряный',
-    registeredAt: '2024-06-15',
-    orders: [
-      {
-        id: 'ord_201',
-        date: '08.03.2024',
-        items: ['Букет из 51 пиона'],
-        totalAmount: 12400,
-        discountApplied: 372,
-        finalAmount: 12028,
-        status: 'Доставлен',
-      },
-    ],
-  },
-];
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize clean database without fake seed accounts
   const [customersDb, setCustomersDb] = useState<Customer[]>(() => {
-    try {
-      const saved = localStorage.getItem('sofiya_customers_db');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return SEED_CUSTOMERS;
+    return CustomerDatabaseService.getLocalCustomers();
   });
 
   const [customer, setCustomer] = useState<Customer | null>(() => {
-    try {
-      const saved = localStorage.getItem('sofiya_current_customer');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return null;
+    return CustomerDatabaseService.getCurrentCustomer();
   });
 
   const [pendingPhone, setPendingPhone] = useState<string>('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('sofiya_customers_db', JSON.stringify(customersDb));
-  }, [customersDb]);
-
-  useEffect(() => {
-    if (customer) {
-      localStorage.setItem('sofiya_current_customer', JSON.stringify(customer));
-    } else {
-      localStorage.removeItem('sofiya_current_customer');
+  // Sync with cloud on initial load
+  const refreshCustomers = useCallback(async () => {
+    try {
+      const all = await CustomerDatabaseService.fetchAllCustomers();
+      setCustomersDb(all);
+      // If current customer is logged in, refresh their data as well
+      if (customer) {
+        const updatedSelf = all.find((c) => c.id === customer.id);
+        if (updatedSelf) {
+          setCustomer(updatedSelf);
+          CustomerDatabaseService.setCurrentCustomer(updatedSelf);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to refresh customers from cloud:', e);
     }
   }, [customer]);
+
+  useEffect(() => {
+    refreshCustomers();
+  }, []);
 
   const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
   const openProfileModal = () => setIsProfileModalOpen(true);
   const closeProfileModal = () => setIsProfileModalOpen(false);
 
+  // Direct login by phone
+  const loginWithPhone = async (phone: string): Promise<{ success: boolean; error?: string }> => {
+    const found = await CustomerDatabaseService.findByPhone(phone);
+    if (!found) {
+      return {
+        success: false,
+        error: `Номер ${formatRussianPhone(phone)} ещё не зарегистрирован в клубе привилегий.`,
+      };
+    }
+    setCustomer(found);
+    CustomerDatabaseService.setCurrentCustomer(found);
+    setIsAuthModalOpen(false);
+    setIsProfileModalOpen(true);
+    return { success: true };
+  };
+
+  // Direct real registration
+  const registerCustomer = async (data: {
+    phone: string;
+    firstName: string;
+    lastName: string;
+    birthDate?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    const result = await CustomerDatabaseService.registerCustomer(data);
+    if (!result.success || !result.customer) {
+      return { success: false, error: result.error || 'Ошибка при сохранении клиента' };
+    }
+
+    setCustomer(result.customer);
+    setCustomersDb(CustomerDatabaseService.getLocalCustomers());
+    setIsAuthModalOpen(false);
+    setIsProfileModalOpen(true);
+    return { success: true };
+  };
+
+  // Request OTP for verification
   const requestOtp = async (phone: string): Promise<boolean> => {
     setPendingPhone(phone);
-    // In production, trigger SMS gateway / WhatsApp OTP.
+    // In production, triggers SMS gateway provider
     return true;
   };
 
+  // Verify OTP
   const verifyOtp = async (_code: string): Promise<{ success: boolean; isNewUser: boolean }> => {
-    // In demo/test environment, any 4-digit code works (e.g. 1111 or 0000)
-    const normalizedPhone = pendingPhone.trim();
-    const existing = customersDb.find((c) => c.phone.replace(/\D/g, '') === normalizedPhone.replace(/\D/g, ''));
+    const normalized = normalizePhone(pendingPhone);
+    const existing = await CustomerDatabaseService.findByPhone(normalized);
 
     if (existing) {
       setCustomer(existing);
+      CustomerDatabaseService.setCurrentCustomer(existing);
       setIsAuthModalOpen(false);
       return { success: true, isNewUser: false };
     }
@@ -144,63 +128,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true, isNewUser: true };
   };
 
-  const completeRegistration = (firstName: string, lastName: string, birthDate?: string) => {
-    const { tier } = calculateLoyaltyTier(0);
-    const newCustomer: Customer = {
-      id: `cust_${Date.now()}`,
+  // Complete registration for multi-step flows
+  const completeRegistration = async (firstName: string, lastName: string, birthDate?: string) => {
+    await registerCustomer({
       phone: pendingPhone,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      firstName,
+      lastName,
       birthDate,
-      totalSpent: 0,
-      ordersCount: 0,
-      discountPercent: tier.discountPercent,
-      tier: tier.name,
-      orders: [],
-      registeredAt: new Date().toISOString().split('T')[0],
-    };
-
-    setCustomersDb((prev) => [newCustomer, ...prev]);
-    setCustomer(newCustomer);
-    setIsAuthModalOpen(false);
-    setIsProfileModalOpen(true);
+    });
   };
 
   const logout = () => {
     setCustomer(null);
+    CustomerDatabaseService.setCurrentCustomer(null);
     setIsProfileModalOpen(false);
   };
 
-  const addOrderToCustomer = ({ items, totalAmount }: { items: string[]; totalAmount: number }) => {
+  const addOrderToCustomer = async ({ items, totalAmount }: { items: string[]; totalAmount: number }) => {
     if (!customer) return;
-
-    const discountAmount = Math.round((totalAmount * customer.discountPercent) / 100);
-    const finalAmount = totalAmount - discountAmount;
-
-    const newOrder: CustomerOrder = {
-      id: `ord_${Date.now()}`,
-      date: new Date().toLocaleDateString('ru-RU'),
-      items,
-      totalAmount,
-      discountApplied: discountAmount,
-      finalAmount,
-      status: 'Собирается',
-    };
-
-    const newTotalSpent = customer.totalSpent + finalAmount;
-    const { tier } = calculateLoyaltyTier(newTotalSpent);
-
-    const updatedCustomer: Customer = {
-      ...customer,
-      totalSpent: newTotalSpent,
-      ordersCount: customer.ordersCount + 1,
-      discountPercent: tier.discountPercent,
-      tier: tier.name,
-      orders: [newOrder, ...customer.orders],
-    };
-
-    setCustomer(updatedCustomer);
-    setCustomersDb((prev) => prev.map((c) => (c.id === updatedCustomer.id ? updatedCustomer : c)));
+    const updated = await CustomerDatabaseService.recordOrder(customer.id, { items, totalAmount });
+    if (updated) {
+      setCustomer(updated);
+      setCustomersDb(CustomerDatabaseService.getLocalCustomers());
+    }
   };
 
   return (
@@ -215,10 +165,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         closeProfileModal,
         requestOtp,
         verifyOtp,
+        registerCustomer,
+        loginWithPhone,
         completeRegistration,
         logout,
         addOrderToCustomer,
         allCustomers: customersDb,
+        refreshCustomers,
+        pendingPhone,
+        setPendingPhone,
       }}
     >
       {children}
