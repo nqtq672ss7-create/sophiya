@@ -6,6 +6,8 @@ import { FigmaProductDetailModal } from './FigmaProductDetailModal';
 import { FigmaFilterModal } from './FigmaFilterModal';
 import { FigmaCartScreen } from './FigmaCartScreen';
 import { FigmaProfileScreen } from './FigmaProfileScreen';
+import { FigmaDesktopHeader } from './FigmaDesktopHeader';
+import { FigmaFooter } from './FigmaFooter';
 import { AuthModal } from '../auth/AuthModal';
 import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
 import { BOUQUETS_CATALOG } from '../../data/bouquets';
@@ -24,7 +26,9 @@ export const FigmaAppShell: React.FC = () => {
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdminCrmOpen, setIsAdminCrmOpen] = useState(false);
-  const [isMobileFrameView, setIsMobileFrameView] = useState(true);
+  
+  // Default is FALSE so desktop users see the full-width luxury responsive adaptation!
+  const [isMobileFrameView, setIsMobileFrameView] = useState(false);
 
   const [filters, setFilters] = useState<FilterOptions>({
     minPrice: 0,
@@ -36,6 +40,12 @@ export const FigmaAppShell: React.FC = () => {
   const cartCount = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   }, [cartItems]);
+
+  const cartTotal = useMemo(() => {
+    const raw = cartItems.reduce((sum, item) => sum + item.bouquet.price * item.quantity, 0);
+    const discount = customer?.discountPercent || 0;
+    return raw - Math.round((raw * discount) / 100);
+  }, [cartItems, customer]);
 
   const filteredBouquets = useMemo(() => {
     return BOUQUETS_CATALOG.filter((b) => {
@@ -79,118 +89,142 @@ export const FigmaAppShell: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#1C1315] flex flex-col items-center justify-start text-zinc-900 selection:bg-[#6C1E26] selection:text-white">
-      {/* Top Desktop Helper Bar */}
-      <div className="w-full bg-[#140D0F] border-b border-white/10 px-6 py-2.5 flex items-center justify-between text-xs text-white/70 select-none">
-        <div className="flex items-center gap-3">
-          <span className="font-serif text-sm text-[#C5A880]">SweetSofi</span>
-          <span className="text-white/30 hidden sm:inline">•</span>
-          <span className="text-[11px] text-white/60 hidden sm:inline">
-            Figma-макет: салон цветов на Шинников, 13В
-          </span>
+    <div className={`min-h-screen ${isMobileFrameView ? 'bg-[#1C1315]' : 'bg-[#FAF7F5]'} flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white transition-colors duration-300`}>
+      {/* 1. Header: Universal Desktop & Tablet Luxury Header */}
+      <FigmaDesktopHeader
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        cartCount={cartCount}
+        cartTotal={cartTotal}
+        onOpenCrm={() => setIsAdminCrmOpen(true)}
+        onOpenSplash={() => setShowSplash(true)}
+        isMobileFrameView={isMobileFrameView}
+        onToggleFrameView={() => setIsMobileFrameView(!isMobileFrameView)}
+      />
+
+      {/* 2. Main Content Area */}
+      {isMobileFrameView ? (
+        /* Mobile iPhone Frame Preview Mode */
+        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
+          <div className="w-full max-w-[430px] rounded-[44px] overflow-hidden border-[8px] border-[#2C2123] shadow-2xl bg-[#FAF7F5] relative min-h-[844px] flex flex-col justify-between">
+            {/* Screen Content */}
+            <div className="flex-1">
+              {activeTab === 'catalog' && (
+                <FigmaCatalogScreen
+                  bouquets={filteredBouquets}
+                  onSelectBouquet={(b) => setSelectedBouquet(b)}
+                  onAddToCart={handleAddToCart}
+                  onOpenFilter={() => setIsFilterOpen(true)}
+                  activeCategory={filters.category}
+                  onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
+                  userDiscount={customer?.discountPercent || 0}
+                />
+              )}
+
+              {activeTab === 'cart' && (
+                <FigmaCartScreen
+                  items={cartItems}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  onRemoveItem={handleRemoveItem}
+                  onExploreCatalog={() => setActiveTab('catalog')}
+                  onClearCart={() => setCartItems([])}
+                />
+              )}
+
+              {activeTab === 'profile' && (
+                <FigmaProfileScreen
+                  onOpenAuth={openAuthModal}
+                  onOpenCrm={() => setIsAdminCrmOpen(true)}
+                />
+              )}
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <FigmaBottomNav
+              activeTab={activeTab}
+              onTabChange={(tab) => setActiveTab(tab)}
+              cartCount={cartCount}
+            />
+          </div>
         </div>
-
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowSplash(true)}
-            className="text-[11px] text-[#C5A880] hover:text-white transition-colors"
-          >
-            Показать Splash Screen
-          </button>
-
-          <button
-            onClick={() => setIsAdminCrmOpen(true)}
-            className="text-[11px] px-2.5 py-1 bg-[#6C1E26] text-white rounded font-medium hover:bg-[#8A202D] transition-colors"
-          >
-            CRM Владелицы
-          </button>
-
-          <button
-            onClick={() => setIsMobileFrameView(!isMobileFrameView)}
-            className="hidden md:flex items-center gap-1.5 text-[11px] text-white/60 hover:text-white p-1"
-            title="Переключить ширину экрана"
-          >
-            {isMobileFrameView ? (
-              <>
-                <Smartphone className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span>Режим iPhone</span>
-              </>
-            ) : (
-              <>
-                <Monitor className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span>Широкий экран</span>
-              </>
+      ) : (
+        /* Full-Width Responsive Desktop & Tablet Mode */
+        <main className="flex-1 w-full flex flex-col justify-between">
+          <div>
+            {activeTab === 'catalog' && (
+              <FigmaCatalogScreen
+                bouquets={filteredBouquets}
+                onSelectBouquet={(b) => setSelectedBouquet(b)}
+                onAddToCart={handleAddToCart}
+                onOpenFilter={() => setIsFilterOpen(true)}
+                activeCategory={filters.category}
+                onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
+                userDiscount={customer?.discountPercent || 0}
+              />
             )}
-          </button>
-        </div>
-      </div>
 
-      {/* Main App Container */}
-      <div
-        className={`w-full relative shadow-2xl transition-all duration-300 ${
-          isMobileFrameView
-            ? 'max-w-[430px] my-0 sm:my-6 rounded-none sm:rounded-[44px] overflow-hidden border-0 sm:border-[8px] sm:border-[#2C2123]'
-            : 'max-w-2xl my-0 sm:my-6'
-        }`}
-      >
-        {/* Screen 1: Splash Screen */}
-        {showSplash && <FigmaSplashScreen onEnter={() => setShowSplash(false)} />}
+            {activeTab === 'cart' && (
+              <FigmaCartScreen
+                items={cartItems}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemoveItem={handleRemoveItem}
+                onExploreCatalog={() => setActiveTab('catalog')}
+                onClearCart={() => setCartItems([])}
+              />
+            )}
 
-        {/* Screen 2: Catalog Screen */}
-        {activeTab === 'catalog' && (
-          <FigmaCatalogScreen
-            bouquets={filteredBouquets}
-            onSelectBouquet={(b) => setSelectedBouquet(b)}
-            onAddToCart={handleAddToCart}
-            onOpenFilter={() => setIsFilterOpen(true)}
-            activeCategory={filters.category}
-            onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
-            userDiscount={customer?.discountPercent || 0}
+            {activeTab === 'profile' && (
+              <FigmaProfileScreen
+                onOpenAuth={openAuthModal}
+                onOpenCrm={() => setIsAdminCrmOpen(true)}
+              />
+            )}
+          </div>
+
+          {/* Floating Bottom Nav ONLY on small mobile screens (< 768px) */}
+          <FigmaBottomNav
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            cartCount={cartCount}
+            className="md:hidden"
           />
-        )}
 
-        {/* Screen 3: Cart & Checkout Screen */}
-        {activeTab === 'cart' && (
-          <FigmaCartScreen
-            items={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemoveItem={handleRemoveItem}
-            onExploreCatalog={() => setActiveTab('catalog')}
-            onClearCart={() => setCartItems([])}
-          />
-        )}
-
-        {/* Screen 4: Profile Screen */}
-        {activeTab === 'profile' && (
-          <FigmaProfileScreen
-            onOpenAuth={openAuthModal}
+          {/* Luxury Desktop Footer */}
+          <FigmaFooter
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onOpenCrm={() => setIsAdminCrmOpen(true)}
           />
-        )}
+        </main>
+      )}
 
-        {/* Floating Bottom Nav (Exact Figma) */}
-        <FigmaBottomNav
-          activeTab={activeTab}
-          onTabChange={(tab) => setActiveTab(tab)}
-          cartCount={cartCount}
-        />
+      {/* 3. Modals & Overlays */}
+      {/* Product Detail Modal */}
+      <FigmaProductDetailModal
+        bouquet={selectedBouquet}
+        onClose={() => setSelectedBouquet(null)}
+        onAddToCart={(b) => handleAddToCart(b)}
+        userDiscount={customer?.discountPercent || 0}
+      />
 
-        {/* Product Detail Modal (Exact Figma frame 7) */}
-        <FigmaProductDetailModal
-          bouquet={selectedBouquet}
-          onClose={() => setSelectedBouquet(null)}
-          onAddToCart={(b) => handleAddToCart(b)}
-          userDiscount={customer?.discountPercent || 0}
-        />
+      {/* Filter Modal */}
+      <FigmaFilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        options={filters}
+        onApply={(newOpts) => setFilters(newOpts)}
+      />
 
-        {/* Filter Modal (Exact Figma frame 6) */}
-        <FigmaFilterModal
-          isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
-          options={filters}
-          onApply={(newOpts) => setFilters(newOpts)}
-        />
-      </div>
+      {/* Splash Screen */}
+      {showSplash && <FigmaSplashScreen onEnter={() => setShowSplash(false)} />}
 
       {/* Global Modals: Auth & CRM */}
       <AuthModal />

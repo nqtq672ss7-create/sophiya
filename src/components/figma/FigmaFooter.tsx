@@ -1,0 +1,133 @@
+import React from 'react';
+import { Phone, MapPin, Clock, MessageSquare, ShieldCheck } from 'lucide-react';
+import { FigmaTab } from './FigmaBottomNav';
+
+interface FigmaFooterProps {
+  onTabChange: (tab: FigmaTab) => void;
+  onOpenCrm: () => void;
+}
+
+export const FigmaFooter: React.FC<FigmaFooterProps> = ({
+  onTabChange,
+  onOpenCrm,
+}) => {
+  return (
+    <footer className="w-full bg-[#180B0D] text-white/80 font-sans border-t border-white/10 mt-16 pb-24 md:pb-12 pt-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-white/10">
+          {/* Brand Info */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#6C1E26] border border-[#C5A880]/30 flex items-center justify-center text-[#C5A880] font-serif text-xl">
+                S
+              </div>
+              <div>
+                <span className="font-serif text-2xl text-white block leading-none">
+                  SweetSofi
+                </span>
+                <span className="text-[10px] tracking-[0.25em] uppercase text-white/50 block mt-1">
+                  студия цветов
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-white/60 leading-relaxed font-light">
+              Авторская флористика и премиальные композиции в Нижнекамске. Свежие поставки редких сортов роз, пионов и гортензий.
+            </p>
+          </div>
+
+          {/* Location & Schedule */}
+          <div className="space-y-3">
+            <h4 className="font-serif text-lg text-white font-normal">Салон</h4>
+            <ul className="space-y-2 text-xs font-light text-white/70">
+              <li className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5" />
+                <span>г. Нижнекамск, пр. Шинников, 13В</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Clock className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5" />
+                <span>Ежедневно: 08:00 – 21:00</span>
+              </li>
+              <li className="text-[11px] text-white/50 pt-1">
+                Бережная доставка по городу от 30 минут
+              </li>
+            </ul>
+          </div>
+
+          {/* Contacts */}
+          <div className="space-y-3">
+            <h4 className="font-serif text-lg text-white font-normal">Связь & Заказы</h4>
+            <div className="space-y-2 text-xs font-light">
+              <a
+                href="tel:+79172563235"
+                className="flex items-center gap-2 text-white hover:text-[#C5A880] transition-colors"
+              >
+                <Phone className="w-4 h-4 text-[#C5A880]" />
+                <span className="font-medium">+7 (917) 256-32-35</span>
+              </a>
+
+              <a
+                href="https://wa.me/79172563235"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>WhatsApp: +7 (917) 256-32-35</span>
+              </a>
+
+              <p className="text-[11px] text-white/50 pt-1">
+                Флорист на связи в рабочие часы салона.
+              </p>
+            </div>
+          </div>
+
+          {/* Navigation & CRM */}
+          <div className="space-y-3">
+            <h4 className="font-serif text-lg text-white font-normal">Клиентам</h4>
+            <ul className="space-y-2 text-xs font-light text-white/70">
+              <li>
+                <button
+                  onClick={() => onTabChange('catalog')}
+                  className="hover:text-white transition-colors"
+                >
+                  Каталог букетов
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onTabChange('cart')}
+                  className="hover:text-white transition-colors"
+                >
+                  Оформление заказа
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onTabChange('profile')}
+                  className="hover:text-white transition-colors"
+                >
+                  Программа лояльности (до 10%)
+                </button>
+              </li>
+              <li className="pt-2">
+                <button
+                  onClick={onOpenCrm}
+                  className="flex items-center gap-1.5 text-xs text-[#C5A880] hover:text-white transition-colors"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Панель управления CRM</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
+          <span>© 2026 Салон цветов «София» / SweetSofi. Все права защищены.</span>
+          <span>Разработано на основе утвержденного дизайн-макета Figma</span>
+        </div>
+      </div>
+    </footer>
+  );
+};

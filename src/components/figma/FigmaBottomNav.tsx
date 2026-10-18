@@ -7,15 +7,17 @@ interface FigmaBottomNavProps {
   activeTab: FigmaTab;
   onTabChange: (tab: FigmaTab) => void;
   cartCount: number;
+  className?: string;
 }
 
 export const FigmaBottomNav: React.FC<FigmaBottomNavProps> = ({
   activeTab,
   onTabChange,
   cartCount,
+  className = '',
 }) => {
   return (
-    <div className="sticky bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none px-4 -mt-16">
+    <div className={`sticky bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none px-4 -mt-16 ${className}`}>
       <nav className="pointer-events-auto bg-[#1C1C1E] rounded-3xl p-1.5 shadow-2xl border border-white/10 flex items-center gap-2">
         {/* Catalog Tab */}
         <button
@@ -42,7 +44,7 @@ export const FigmaBottomNav: React.FC<FigmaBottomNavProps> = ({
         >
           <ShoppingCart className="w-5 h-5" />
           {cartCount > 0 && (
-            <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500" />
+            <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           )}
         </button>
 
