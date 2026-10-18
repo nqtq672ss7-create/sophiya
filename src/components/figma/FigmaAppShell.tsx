@@ -84,16 +84,39 @@ export const FigmaAppShell: React.FC = () => {
     setCartItems((prev) => prev.filter((item) => item.bouquet.id !== bouquetId));
   };
 
-  // Secret access to CRM for owner: #admin or #crm in URL
+  // Secret access to CRM for owner: /admin, /crm, #admin, or #crm in URL
+  const handleCloseAdminCrm = () => {
+    setIsAdminCrmOpen(false);
+    const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+    const hash = window.location.hash.toLowerCase();
+    if (path === '/admin' || path === '/crm') {
+      window.history.replaceState({}, '', '/' + window.location.search);
+    } else if (hash === '#admin' || hash === '#crm') {
+      window.history.replaceState({}, '', window.location.pathname + window.location.search);
+    }
+  };
+
   useEffect(() => {
-    const handleHash = () => {
-      if (window.location.hash === '#admin' || window.location.hash === '#crm') {
+    const checkAdminRoute = () => {
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+      const hash = window.location.hash.toLowerCase();
+      if (
+        path === '/admin' ||
+        path === '/crm' ||
+        hash === '#admin' ||
+        hash === '#crm'
+      ) {
         setIsAdminCrmOpen(true);
       }
     };
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    checkAdminRoute();
+    window.addEventListener('hashchange', checkAdminRoute);
+    window.addEventListener('popstate', checkAdminRoute);
+    return () => {
+      window.removeEventListener('hashchange', checkAdminRoute);
+      window.removeEventListener('popstate', checkAdminRoute);
+    };
   }, []);
 
   // Secret keyboard shortcut: Ctrl+Shift+A or Cmd+Shift+A
@@ -206,7 +229,7 @@ export const FigmaAppShell: React.FC = () => {
       <AuthModal />
       <SalonAdminClientsModal
         isOpen={isAdminCrmOpen}
-        onClose={() => setIsAdminCrmOpen(false)}
+        onClose={handleCloseAdminCrm}
       />
     </div>
   );
