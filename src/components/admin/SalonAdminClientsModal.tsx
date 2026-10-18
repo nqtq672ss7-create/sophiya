@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
+import { useReviews } from '../../context/ReviewsContext';
 import { calculateLoyaltyTier } from '../../types/customer';
 import { Bouquet } from '../../types/figma-app';
 
@@ -16,10 +17,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 }) => {
   const { allCustomers } = useAuth();
   const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault } = useCatalog();
+  const { reviews, publishedReviews, addReview, deleteReview, togglePublished, resetToDefault: resetReviewsToDefault } = useReviews();
 
-  const [activeTab, setActiveTab] = useState<'clients' | 'catalog'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'reviews' | 'clients'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddBouquetOpen, setIsAddBouquetOpen] = useState(false);
+  const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
 
   // New Bouquet Form State
   const [newTitle, setNewTitle] = useState('');
@@ -32,7 +35,18 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [newPackaging, setNewPackaging] = useState('Фирменная дизайнерская упаковка «София»');
   const [newDescription, setNewDescription] = useState('');
   const [newImage, setNewImage] = useState('/bouquet-1.jpg');
+
+  // New Review Form State
+  const [reviewAuthor, setReviewAuthor] = useState('');
+  const [reviewRating, setReviewRating] = useState<number>(5);
+  const [reviewDate, setReviewDate] = useState('Сегодня');
+  const [reviewBouquet, setReviewBouquet] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewIsVerified, setReviewIsVerified] = useState(true);
+  const [reviewIsPublished, setReviewIsPublished] = useState(true);
+
   const [isSuccessMessage, setIsSuccessMessage] = useState(false);
+  const [successNotice, setSuccessNotice] = useState('');
 
   if (!isOpen) return null;
 
@@ -50,6 +64,14 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.characteristics.flowersCount.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Filter reviews
+  const filteredReviews = reviews.filter(
+    (r) =>
+      r.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (r.bouquetTitle && r.bouquetTitle.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const totalRevenue = allCustomers.reduce((acc, c) => acc + c.totalSpent, 0);
@@ -94,6 +116,30 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setNewComposition('');
     setNewDescription('');
     setIsAddBouquetOpen(false);
+    setSuccessNotice('Новый букет успешно добавлен в витрину и доступен для заказа!');
+    setIsSuccessMessage(true);
+    setTimeout(() => setIsSuccessMessage(false), 3000);
+  };
+
+  const handleCreateReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewAuthor.trim() || !reviewComment.trim()) return;
+
+    addReview({
+      author: reviewAuthor.trim(),
+      rating: reviewRating,
+      date: reviewDate.trim() || 'Сегодня',
+      bouquetTitle: reviewBouquet.trim() || undefined,
+      comment: reviewComment.trim(),
+      isVerified: reviewIsVerified,
+      isPublished: reviewIsPublished,
+    });
+
+    setReviewAuthor('');
+    setReviewComment('');
+    setReviewBouquet('');
+    setIsAddReviewOpen(false);
+    setSuccessNotice('Отзыв успешно добавлен и сохранен в системе!');
     setIsSuccessMessage(true);
     setTimeout(() => setIsSuccessMessage(false), 3000);
   };
@@ -126,43 +172,61 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           </button>
         </div>
 
-        {/* Tab Switcher: Каталог букетов vs База клиентов */}
-        <div className="flex items-center gap-2 pt-4 pb-2 border-b border-white/10">
+        {/* Tab Switcher: Каталог букетов vs Отзывы клиентов vs База клиентов */}
+        <div className="flex items-center gap-2 pt-4 pb-2 border-b border-white/10 overflow-x-auto scrollbar-none">
           <button
             onClick={() => {
               setActiveTab('catalog');
               setIsAddBouquetOpen(false);
+              setIsAddReviewOpen(false);
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 shrink-0 ${
               activeTab === 'catalog'
                 ? 'bg-[#6C1E26] text-white shadow'
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>Каталог букетов & Склад ({bouquets.length})</span>
+            <span>Каталог букетов ({bouquets.length})</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('reviews');
+              setIsAddBouquetOpen(false);
+              setIsAddReviewOpen(false);
+            }}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 shrink-0 ${
+              activeTab === 'reviews'
+                ? 'bg-[#6C1E26] text-white shadow'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Star className="w-4 h-4" />
+            <span>Отзывы клиентов ({reviews.length})</span>
           </button>
 
           <button
             onClick={() => {
               setActiveTab('clients');
               setIsAddBouquetOpen(false);
+              setIsAddReviewOpen(false);
             }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 shrink-0 ${
               activeTab === 'clients'
                 ? 'bg-[#6C1E26] text-white shadow'
                 : 'text-white/60 hover:text-white hover:bg-white/5'
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>База клиентов & Скидки ({allCustomers.length})</span>
+            <span>База клиентов ({allCustomers.length})</span>
           </button>
         </div>
 
         {isSuccessMessage && (
           <div className="mt-3 p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Новый букет успешно добавлен в витрину и доступен для заказа!</span>
+            <span>{successNotice || 'Действие успешно выполнено!'}</span>
           </div>
         )}
 
@@ -445,7 +509,277 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           </div>
         )}
 
-        {/* 2. CLIENTS TAB */}
+        {/* 2. REVIEWS MANAGEMENT TAB */}
+        {activeTab === 'reviews' && (
+          <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
+            {/* Top Metrics & Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-white/50 block">Всего отзывов</span>
+                <span className="font-serif text-2xl text-white font-normal">{reviews.length} отзывов</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-400 block">Опубликовано на сайте</span>
+                <span className="font-serif text-2xl text-emerald-300 font-normal">{publishedReviews.length} отзывов</span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-amber-300 block">Средний рейтинг</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  <span className="font-serif text-2xl text-amber-200 font-normal">
+                    {reviews.length > 0
+                      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+                      : '5.0'}
+                  </span>
+                  <span className="text-xs text-white/40">/ 5.0</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsAddReviewOpen(!isAddReviewOpen)}
+                className="p-3.5 rounded-2xl bg-[#6C1E26] hover:bg-[#851D28] text-white font-medium text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Добавить отзыв</span>
+              </button>
+            </div>
+
+            {/* Creation Form for Reviews */}
+            {isAddReviewOpen && (
+              <form onSubmit={handleCreateReview} className="mb-6 p-5 rounded-2xl bg-black/40 border border-[#6C1E26]/50 shadow-xl space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <h4 className="font-serif text-lg text-[#C5A880]">Добавление отзыва клиента</h4>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddReviewOpen(false)}
+                    className="text-xs text-white/50 hover:text-white"
+                  >
+                    Отмена
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1">Имя клиента *</label>
+                    <input
+                      type="text"
+                      required
+                      value={reviewAuthor}
+                      onChange={(e) => setReviewAuthor(e.target.value)}
+                      placeholder="Например: Алина Сафина"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1">Оценка (звёзды) *</label>
+                    <div className="flex items-center gap-2 py-1.5">
+                      {[1, 2, 3, 4, 5].map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setReviewRating(val)}
+                          className="p-1 transition-transform hover:scale-110"
+                        >
+                          <Star
+                            className={`w-5 h-5 ${
+                              val <= reviewRating
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-white/20'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="text-xs text-[#C5A880] ml-2 font-medium">{reviewRating} из 5</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1">Букет из заказа</label>
+                    <input
+                      type="text"
+                      value={reviewBouquet}
+                      onChange={(e) => setReviewBouquet(e.target.value)}
+                      placeholder="Например: Букет «Аделин»"
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-white/70 mb-1">Текст отзыва *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="Напишите впечатление клиента о цветах, доставке и свежести букета..."
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                  <div className="flex items-center gap-5">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
+                      <input
+                        type="checkbox"
+                        checked={reviewIsVerified}
+                        onChange={(e) => setReviewIsVerified(e.target.checked)}
+                        className="rounded border-white/20 bg-white/5 text-[#6C1E26] focus:ring-0"
+                      />
+                      <span>Отметка «Проверенный заказ»</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
+                      <input
+                        type="checkbox"
+                        checked={reviewIsPublished}
+                        onChange={(e) => setReviewIsPublished(e.target.checked)}
+                        className="rounded border-white/20 bg-white/5 text-[#6C1E26] focus:ring-0"
+                      />
+                      <span>Опубликовать на витрине сайта</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddReviewOpen(false)}
+                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-medium transition-colors"
+                    >
+                      Отмена
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-xs text-white font-medium transition-colors shadow-lg"
+                    >
+                      Сохранить отзыв
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {/* Search and Quick Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4 items-center justify-between">
+              <div className="relative flex-1 w-full">
+                <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск по автору, букету или тексту отзыва..."
+                  className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  if (confirm('Восстановить исходные отзывы салона?')) {
+                    resetReviewsToDefault();
+                  }
+                }}
+                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-light transition-colors flex items-center gap-1.5 shrink-0"
+                title="Восстановить демо-отзывы"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Восстановить демо</span>
+              </button>
+            </div>
+
+            {/* Reviews List */}
+            <div className="space-y-3 pb-6">
+              {filteredReviews.length === 0 ? (
+                <div className="p-8 text-center text-white/40 border border-white/10 rounded-2xl">
+                  По вашему запросу отзывы не найдены
+                </div>
+              ) : (
+                filteredReviews.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs transition-colors"
+                  >
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex text-amber-400">
+                          {[...Array(rev.rating)].map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                          ))}
+                        </div>
+
+                        <span className="font-serif text-lg text-white font-normal ml-1">
+                          {rev.author}
+                        </span>
+
+                        {rev.bouquetTitle && (
+                          <span className="px-2 py-0.5 bg-[#6C1E26]/40 border border-[#6C1E26] text-[#C5A880] text-[10px] rounded-full">
+                            {rev.bouquetTitle}
+                          </span>
+                        )}
+
+                        {rev.isVerified && (
+                          <span className="px-2 py-0.5 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[10px] rounded-full flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span>Проверен</span>
+                          </span>
+                        )}
+
+                        <span className="text-[11px] text-white/40 font-light ml-auto md:ml-2">
+                          {rev.date}
+                        </span>
+                      </div>
+
+                      <p className="text-white/80 font-light text-xs leading-relaxed">
+                        «{rev.comment}»
+                      </p>
+                    </div>
+
+                    {/* Actions: Toggle Publish + Delete */}
+                    <div className="flex items-center gap-3 border-t md:border-t-0 border-white/10 pt-3 md:pt-0 shrink-0">
+                      <button
+                        onClick={() => togglePublished(rev.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                          rev.isPublished
+                            ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/50'
+                            : 'bg-white/10 text-white/50 border border-white/10 hover:bg-white/20 hover:text-white'
+                        }`}
+                        title={rev.isPublished ? 'Нажмите, чтобы скрыть с сайта' : 'Нажмите, чтобы опубликовать на сайте'}
+                      >
+                        {rev.isPublished ? (
+                          <>
+                            <Eye className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>На сайте</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5" />
+                            <span>Скрыт</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (confirm(`Удалить отзыв от «${rev.author}»?`)) {
+                            deleteReview(rev.id);
+                          }
+                        }}
+                        className="p-2 text-white/40 hover:text-red-400 transition-colors"
+                        title="Удалить отзыв"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 3. CLIENTS TAB */}
         {activeTab === 'clients' && (
           <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
             {/* Top Summary Metrics */}

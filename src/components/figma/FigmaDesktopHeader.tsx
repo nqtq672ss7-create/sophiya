@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, User, Phone } from 'lucide-react';
+import { ShoppingBag, User, Phone, ShieldCheck } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,6 +8,7 @@ interface FigmaDesktopHeaderProps {
   onTabChange: (tab: FigmaTab) => void;
   cartCount: number;
   cartTotal?: number;
+  onOpenCrm?: () => void;
 }
 
 export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
@@ -15,6 +16,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
   onTabChange,
   cartCount,
   cartTotal = 0,
+  onOpenCrm,
 }) => {
   const { customer, openAuthModal } = useAuth();
 
@@ -101,6 +103,18 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-medium">+7 (917) 256-32-35</span>
           </a>
+
+          {/* Salon CRM Trigger */}
+          {onOpenCrm && (
+            <button
+              onClick={onOpenCrm}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-zinc-200 text-xs text-zinc-600 hover:text-[#6C1E26] hover:border-[#6C1E26]/40 transition-colors"
+              title="Панель управления CRM"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#6C1E26]" />
+              <span>Панель салона</span>
+            </button>
+          )}
 
           {/* User Auth / Profile */}
           {customer ? (

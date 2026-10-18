@@ -96,6 +96,7 @@ export const FigmaAppShell: React.FC = () => {
           }}
           cartCount={cartCount}
           cartTotal={cartTotal}
+          onOpenCrm={() => setIsAdminCrmOpen(true)}
         />
       </div>
 

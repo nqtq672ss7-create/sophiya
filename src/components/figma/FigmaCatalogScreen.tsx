@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
+import { FigmaReviewsSection } from './FigmaReviewsSection';
 
 interface FigmaCatalogScreenProps {
   bouquets: Bouquet[];
@@ -320,6 +321,9 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
           </div>
         )}
       </div>
+
+      {/* 5. Customer Reviews Section */}
+      <FigmaReviewsSection />
     </div>
   );
 };
