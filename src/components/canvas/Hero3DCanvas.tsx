@@ -52,23 +52,28 @@ export const Hero3DCanvas: React.FC<Hero3DCanvasProps> = ({
 
     // 4. Lighting Setup (tuned for #1E0708 background and #6C1E26 velvet petals)
     // Key directional light (warm soft cream)
-    const keyLight = new THREE.DirectionalLight(0xfff0ea, 2.2);
-    keyLight.position.set(4, 5, 4.5);
+    const keyLight = new THREE.DirectionalLight(0xfff5ee, 2.8);
+    keyLight.position.set(3, 5, 4.5);
     keyLight.castShadow = true;
     scene.add(keyLight);
 
+    // Front fill light for petal texture
+    const frontLight = new THREE.DirectionalLight(0xffd5dc, 1.6);
+    frontLight.position.set(-2, 1, 3);
+    scene.add(frontLight);
+
     // Fill Light (soft viola tone)
-    const fillLight = new THREE.PointLight(0xc18f96, 1.4, 10);
+    const fillLight = new THREE.PointLight(0xc18f96, 2.0, 10);
     fillLight.position.set(-4, -1, -2);
     scene.add(fillLight);
 
     // Rim Light (rose gold metallic accent)
-    const rimLight = new THREE.PointLight(0xe5a3aa, 1.8, 8);
+    const rimLight = new THREE.PointLight(0xf4b5bd, 2.4, 8);
     rimLight.position.set(0, 4, -3);
     scene.add(rimLight);
 
     // Ambient light
-    const ambientLight = new THREE.AmbientLight(0x280d12, 0.6);
+    const ambientLight = new THREE.AmbientLight(0x45161d, 0.9);
     scene.add(ambientLight);
 
     // 5. Build Flower Geometry & Materials
