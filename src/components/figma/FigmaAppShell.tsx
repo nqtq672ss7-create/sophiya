@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FigmaSplashScreen } from './FigmaSplashScreen';
 import { FigmaCatalogScreen } from './FigmaCatalogScreen';
 import { FigmaBottomNav, FigmaTab } from './FigmaBottomNav';
@@ -84,6 +84,34 @@ export const FigmaAppShell: React.FC = () => {
     setCartItems((prev) => prev.filter((item) => item.bouquet.id !== bouquetId));
   };
 
+  // Secret access to CRM for owner: #admin or #crm in URL
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === '#admin' || window.location.hash === '#crm') {
+        setIsAdminCrmOpen(true);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  // Secret keyboard shortcut: Ctrl+Shift+A or Cmd+Shift+A
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        (e.key === 'A' || e.key === 'a' || e.key === 'Ф' || e.key === 'ф')
+      ) {
+        e.preventDefault();
+        setIsAdminCrmOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#FAF7F5] flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white">
       {/* 1. Header: Minimalist Luxury Navigation with Official Logo (Desktop only) */}
@@ -96,7 +124,7 @@ export const FigmaAppShell: React.FC = () => {
           }}
           cartCount={cartCount}
           cartTotal={cartTotal}
-          onOpenCrm={() => setIsAdminCrmOpen(true)}
+          onSecretCrmTrigger={() => setIsAdminCrmOpen(true)}
         />
       </div>
 

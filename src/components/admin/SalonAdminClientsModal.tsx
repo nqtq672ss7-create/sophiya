@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
@@ -18,6 +18,18 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const { allCustomers } = useAuth();
   const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault } = useCatalog();
   const { reviews, publishedReviews, addReview, deleteReview, togglePublished, resetToDefault: resetReviewsToDefault } = useReviews();
+
+  // Security Gate PIN State (Default PIN: 3235 — last 4 digits of salon phone)
+  const MASTER_PIN = '3235';
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('sophiya_crm_unlocked') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const [activeTab, setActiveTab] = useState<'catalog' | 'reviews' | 'clients'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +59,33 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
   const [isSuccessMessage, setIsSuccessMessage] = useState(false);
   const [successNotice, setSuccessNotice] = useState('');
+
+  const handleUnlock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput.trim() === MASTER_PIN) {
+      setIsUnlocked(true);
+      setPinError(false);
+      try {
+        sessionStorage.setItem('sophiya_crm_unlocked', 'true');
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      setPinError(true);
+      setPinInput('');
+    }
+  };
+
+  const handleLock = () => {
+    setIsUnlocked(false);
+    setPinInput('');
+    try {
+      sessionStorage.removeItem('sophiya_crm_unlocked');
+    } catch (err) {
+      console.error(err);
+    }
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -144,6 +183,83 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setTimeout(() => setIsSuccessMessage(false), 3000);
   };
 
+  if (!isUnlocked) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none font-sans">
+        <div className="relative w-full max-w-md bg-[#1C1215] border border-white/15 p-6 sm:p-8 shadow-2xl text-white rounded-3xl overflow-hidden text-center">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+            aria-label="Закрыть"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="w-14 h-14 rounded-2xl bg-[#6C1E26] border border-[#C5A880]/30 flex items-center justify-center mx-auto mb-4 shadow-lg text-[#C5A880]">
+            <Lock className="w-7 h-7" />
+          </div>
+
+          <span className="px-2.5 py-0.5 bg-[#6C1E26] text-[10px] uppercase tracking-widest text-white font-medium rounded inline-block mb-2">
+            Закрытая зона управления
+          </span>
+
+          <h3 className="font-serif text-2xl text-white font-normal mb-1">
+            Вход для владелицы салона
+          </h3>
+          <p className="text-xs text-white/60 font-light mb-6">
+            Введите персональный PIN-код доступа для входа в панель управления
+          </p>
+
+          <form onSubmit={handleUnlock} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                maxLength={8}
+                autoFocus
+                value={pinInput}
+                onChange={(e) => {
+                  setPinInput(e.target.value);
+                  setPinError(false);
+                }}
+                placeholder="PIN-код"
+                className={`w-full text-center tracking-[0.4em] font-mono text-xl py-3 px-4 bg-white/5 border rounded-2xl text-white placeholder-white/30 focus:outline-none transition-colors ${
+                  pinError
+                    ? 'border-red-500 focus:border-red-500 bg-red-950/20'
+                    : 'border-white/15 focus:border-[#C5A880]'
+                }`}
+              />
+              {pinError && (
+                <p className="text-red-400 text-xs mt-2 animate-fadeIn">
+                  Неверный PIN-код доступа. Попробуйте снова.
+                </p>
+              )}
+            </div>
+
+            <p className="text-[11px] text-white/40 font-light">
+              Подсказка: последние 4 цифры официального телефона (3235)
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white font-medium transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-xs text-white font-medium transition-colors shadow-lg"
+              >
+                Войти в CRM
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fadeIn select-none font-sans">
       <div className="relative w-full max-w-5xl bg-[#1C1215] border border-white/15 p-6 sm:p-8 shadow-2xl text-white max-h-[92vh] flex flex-col rounded-3xl overflow-hidden">
@@ -163,13 +279,24 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             </h3>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-colors"
-            aria-label="Закрыть"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLock}
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-light transition-colors flex items-center gap-1.5"
+              title="Заблокировать CRM и выйти"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span className="hidden sm:inline">Выйти из CRM</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+              aria-label="Закрыть"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Switcher: Каталог букетов vs Отзывы клиентов vs База клиентов */}

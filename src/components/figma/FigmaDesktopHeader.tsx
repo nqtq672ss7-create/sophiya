@@ -1,5 +1,5 @@
-import React from 'react';
-import { ShoppingBag, User, Phone, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShoppingBag, User, Phone } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,7 +8,7 @@ interface FigmaDesktopHeaderProps {
   onTabChange: (tab: FigmaTab) => void;
   cartCount: number;
   cartTotal?: number;
-  onOpenCrm?: () => void;
+  onSecretCrmTrigger?: () => void;
 }
 
 export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
@@ -16,17 +16,31 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
   onTabChange,
   cartCount,
   cartTotal = 0,
-  onOpenCrm,
+  onSecretCrmTrigger,
 }) => {
   const { customer, openAuthModal } = useAuth();
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = () => {
+    onTabChange('catalog');
+    const next = logoClicks + 1;
+    if (next >= 3) {
+      setLogoClicks(0);
+      onSecretCrmTrigger?.();
+    } else {
+      setLogoClicks(next);
+      setTimeout(() => setLogoClicks(0), 1200);
+    }
+  };
 
   return (
     <header className="w-full bg-[#FAF7F5]/95 backdrop-blur-md border-b border-zinc-200/60 sticky top-0 z-40 select-none font-sans transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
-        {/* 1. Left: Official Brand Logo «София» */}
+        {/* 1. Left: Official Brand Logo «София» (Triple-click secret trigger for owner CRM) */}
         <div
-          onClick={() => onTabChange('catalog')}
+          onClick={handleLogoClick}
           className="cursor-pointer flex items-center gap-3 group py-2"
+          title="Салон цветов «София»"
         >
           <img
             src="/logo.png"
@@ -103,18 +117,6 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-medium">+7 (917) 256-32-35</span>
           </a>
-
-          {/* Salon CRM Trigger */}
-          {onOpenCrm && (
-            <button
-              onClick={onOpenCrm}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-zinc-200 text-xs text-zinc-600 hover:text-[#6C1E26] hover:border-[#6C1E26]/40 transition-colors"
-              title="Панель управления CRM"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#6C1E26]" />
-              <span>Панель салона</span>
-            </button>
-          )}
 
           {/* User Auth / Profile */}
           {customer ? (

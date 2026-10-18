@@ -217,16 +217,18 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
               </div>
             </div>
 
-            {/* Salon CRM Link */}
-            <div className="bg-white rounded-3xl p-5 border border-zinc-200 shadow-sm text-center">
-              <button
-                onClick={onOpenCrm}
-                className="w-full py-3 px-4 rounded-2xl bg-zinc-100 hover:bg-[#6C1E26] hover:text-white text-zinc-700 text-xs font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Открыть панель CRM владелицы</span>
-              </button>
-            </div>
+            {/* Salon CRM Link (Only visible if logged in with salon owner's phone) */}
+            {customer && customer.phone.replace(/\D/g, '') === '79172563235' && (
+              <div className="bg-white rounded-3xl p-5 border border-zinc-200 shadow-sm text-center">
+                <button
+                  onClick={onOpenCrm}
+                  className="w-full py-3 px-4 rounded-2xl bg-zinc-100 hover:bg-[#6C1E26] hover:text-white text-zinc-700 text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Панель управления салоном</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right Column: Active Orders & History (8 cols on Desktop) */}

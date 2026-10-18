@@ -100,21 +100,18 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   Личный кабинет & Скидки
                 </button>
               </li>
-              <li className="pt-2">
-                <button
-                  onClick={onOpenCrm}
-                  className="flex items-center gap-1.5 text-xs text-[#C5A880] hover:text-white transition-colors"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Панель управления CRM</span>
-                </button>
-              </li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
-          <span>© 2026 Салон цветов «София». Все права защищены.</span>
+          <button
+            onClick={onOpenCrm}
+            className="hover:text-white/60 transition-colors text-left"
+            title="Салон цветов «София»"
+          >
+            © 2026 Салон цветов «София». Все права защищены.
+          </button>
           <span>г. Нижнекамск, пр. Шинников, 13В</span>
         </div>
       </div>
