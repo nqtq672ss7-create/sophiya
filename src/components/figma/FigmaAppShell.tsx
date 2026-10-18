@@ -13,7 +13,6 @@ import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
 import { BOUQUETS_CATALOG } from '../../data/bouquets';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
-import { Smartphone, Monitor } from 'lucide-react';
 
 export const FigmaAppShell: React.FC = () => {
   const { customer, openAuthModal } = useAuth();
@@ -26,9 +25,6 @@ export const FigmaAppShell: React.FC = () => {
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdminCrmOpen, setIsAdminCrmOpen] = useState(false);
-  
-  // Default is FALSE so desktop users see the full-width luxury responsive adaptation!
-  const [isMobileFrameView, setIsMobileFrameView] = useState(false);
 
   const [filters, setFilters] = useState<FilterOptions>({
     minPrice: 0,
@@ -89,122 +85,73 @@ export const FigmaAppShell: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen ${isMobileFrameView ? 'bg-[#1C1315]' : 'bg-[#FAF7F5]'} flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white transition-colors duration-300`}>
-      {/* 1. Header: Universal Desktop & Tablet Luxury Header */}
-      <FigmaDesktopHeader
-        activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        cartCount={cartCount}
-        cartTotal={cartTotal}
-        onOpenCrm={() => setIsAdminCrmOpen(true)}
-        onOpenSplash={() => setShowSplash(true)}
-        isMobileFrameView={isMobileFrameView}
-        onToggleFrameView={() => setIsMobileFrameView(!isMobileFrameView)}
-      />
+    <div className="min-h-screen bg-[#FAF7F5] flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white">
+      {/* 1. Header: Minimalist Luxury Navigation with Official Logo (Desktop only) */}
+      <div className="hidden md:block">
+        <FigmaDesktopHeader
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          cartCount={cartCount}
+          cartTotal={cartTotal}
+        />
+      </div>
 
       {/* 2. Main Content Area */}
-      {isMobileFrameView ? (
-        /* Mobile iPhone Frame Preview Mode */
-        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
-          <div className="w-full max-w-[430px] rounded-[44px] overflow-hidden border-[8px] border-[#2C2123] shadow-2xl bg-[#FAF7F5] relative min-h-[844px] flex flex-col justify-between">
-            {/* Screen Content */}
-            <div className="flex-1">
-              {activeTab === 'catalog' && (
-                <FigmaCatalogScreen
-                  bouquets={filteredBouquets}
-                  onSelectBouquet={(b) => setSelectedBouquet(b)}
-                  onAddToCart={handleAddToCart}
-                  onOpenFilter={() => setIsFilterOpen(true)}
-                  activeCategory={filters.category}
-                  onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
-                  userDiscount={customer?.discountPercent || 0}
-                />
-              )}
-
-              {activeTab === 'cart' && (
-                <FigmaCartScreen
-                  items={cartItems}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onRemoveItem={handleRemoveItem}
-                  onExploreCatalog={() => setActiveTab('catalog')}
-                  onClearCart={() => setCartItems([])}
-                />
-              )}
-
-              {activeTab === 'profile' && (
-                <FigmaProfileScreen
-                  onOpenAuth={openAuthModal}
-                  onOpenCrm={() => setIsAdminCrmOpen(true)}
-                />
-              )}
-            </div>
-
-            {/* Mobile Bottom Navigation */}
-            <FigmaBottomNav
-              activeTab={activeTab}
-              onTabChange={(tab) => setActiveTab(tab)}
-              cartCount={cartCount}
+      <main className="flex-1 w-full flex flex-col justify-between">
+        <div>
+          {activeTab === 'catalog' && (
+            <FigmaCatalogScreen
+              bouquets={filteredBouquets}
+              onSelectBouquet={(b) => setSelectedBouquet(b)}
+              onAddToCart={handleAddToCart}
+              onOpenFilter={() => setIsFilterOpen(true)}
+              activeCategory={filters.category}
+              onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
+              userDiscount={customer?.discountPercent || 0}
             />
-          </div>
+          )}
+
+          {activeTab === 'cart' && (
+            <FigmaCartScreen
+              items={cartItems}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveItem={handleRemoveItem}
+              onExploreCatalog={() => setActiveTab('catalog')}
+              onClearCart={() => setCartItems([])}
+            />
+          )}
+
+          {activeTab === 'profile' && (
+            <FigmaProfileScreen
+              onOpenAuth={openAuthModal}
+              onOpenCrm={() => setIsAdminCrmOpen(true)}
+            />
+          )}
         </div>
-      ) : (
-        /* Full-Width Responsive Desktop & Tablet Mode */
-        <main className="flex-1 w-full flex flex-col justify-between">
-          <div>
-            {activeTab === 'catalog' && (
-              <FigmaCatalogScreen
-                bouquets={filteredBouquets}
-                onSelectBouquet={(b) => setSelectedBouquet(b)}
-                onAddToCart={handleAddToCart}
-                onOpenFilter={() => setIsFilterOpen(true)}
-                activeCategory={filters.category}
-                onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
-                userDiscount={customer?.discountPercent || 0}
-              />
-            )}
 
-            {activeTab === 'cart' && (
-              <FigmaCartScreen
-                items={cartItems}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={handleRemoveItem}
-                onExploreCatalog={() => setActiveTab('catalog')}
-                onClearCart={() => setCartItems([])}
-              />
-            )}
+        {/* Floating Bottom Nav ONLY on small mobile screens (< 768px) */}
+        <FigmaBottomNav
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          cartCount={cartCount}
+          className="md:hidden"
+        />
 
-            {activeTab === 'profile' && (
-              <FigmaProfileScreen
-                onOpenAuth={openAuthModal}
-                onOpenCrm={() => setIsAdminCrmOpen(true)}
-              />
-            )}
-          </div>
-
-          {/* Floating Bottom Nav ONLY on small mobile screens (< 768px) */}
-          <FigmaBottomNav
-            activeTab={activeTab}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            cartCount={cartCount}
-            className="md:hidden"
-          />
-
-          {/* Luxury Desktop Footer */}
-          <FigmaFooter
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenCrm={() => setIsAdminCrmOpen(true)}
-          />
-        </main>
-      )}
+        {/* Luxury Desktop Footer */}
+        <FigmaFooter
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onOpenCrm={() => setIsAdminCrmOpen(true)}
+        />
+      </main>
 
       {/* 3. Modals & Overlays */}
       {/* Product Detail Modal */}

@@ -12,27 +12,21 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
   onOpenCrm,
 }) => {
   return (
-    <footer className="w-full bg-[#180B0D] text-white/80 font-sans border-t border-white/10 mt-16 pb-24 md:pb-12 pt-12">
+    <footer className="w-full bg-[#180B0D] text-white/80 font-sans border-t border-white/10 mt-20 pb-24 md:pb-12 pt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-white/10">
-          {/* Brand Info */}
+          {/* Brand Info with Official Logo */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#6C1E26] border border-[#C5A880]/30 flex items-center justify-center text-[#C5A880] font-serif text-xl">
-                S
-              </div>
-              <div>
-                <span className="font-serif text-2xl text-white block leading-none">
-                  SweetSofi
-                </span>
-                <span className="text-[10px] tracking-[0.25em] uppercase text-white/50 block mt-1">
-                  студия цветов
-                </span>
-              </div>
+              <img
+                src="/logo-light.png"
+                alt="Салон цветов София"
+                className="h-10 w-auto object-contain"
+              />
             </div>
 
             <p className="text-xs text-white/60 leading-relaxed font-light">
-              Авторская флористика и премиальные композиции в Нижнекамске. Свежие поставки редких сортов роз, пионов и гортензий.
+              Авторская флористика и свежие букеты в Нижнекамске. Сборка композиций с вниманием к деталям.
             </p>
           </div>
 
@@ -75,10 +69,6 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                 <MessageSquare className="w-4 h-4" />
                 <span>WhatsApp: +7 (917) 256-32-35</span>
               </a>
-
-              <p className="text-[11px] text-white/50 pt-1">
-                Флорист на связи в рабочие часы салона.
-              </p>
             </div>
           </div>
 
@@ -99,7 +89,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   onClick={() => onTabChange('cart')}
                   className="hover:text-white transition-colors"
                 >
-                  Оформление заказа
+                  Корзина
                 </button>
               </li>
               <li>
@@ -107,7 +97,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   onClick={() => onTabChange('profile')}
                   className="hover:text-white transition-colors"
                 >
-                  Программа лояльности (до 10%)
+                  Личный кабинет & Скидки
                 </button>
               </li>
               <li className="pt-2">
@@ -124,8 +114,8 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
         </div>
 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
-          <span>© 2026 Салон цветов «София» / SweetSofi. Все права защищены.</span>
-          <span>Разработано на основе утвержденного дизайн-макета Figma</span>
+          <span>© 2026 Салон цветов «София». Все права защищены.</span>
+          <span>г. Нижнекамск, пр. Шинников, 13В</span>
         </div>
       </div>
     </footer>
