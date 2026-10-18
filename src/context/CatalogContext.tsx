@@ -9,19 +9,21 @@ interface CatalogContextType {
   deleteBouquet: (id: string) => void;
   toggleStock: (id: string) => void;
   resetToDefault: () => void;
+  clearAllBouquets: () => void;
 }
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'sophiya_catalog_bouquets_v1';
+const STORAGE_KEY = 'sophiya_catalog_bouquets_v2';
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
+          // If the user deleted bouquets (even if 0 remain), honor their choice!
           return parsed;
         }
       }
@@ -31,42 +33,60 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return BOUQUETS_CATALOG;
   });
 
-  useEffect(() => {
+  // Save changes to localStorage
+  const saveToStorage = (items: Bouquet[]) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bouquets));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch (e) {
-      console.error('Failed to persist bouquets to storage:', e);
+      console.error('Failed to save bouquets:', e);
     }
-  }, [bouquets]);
+  };
 
   const addBouquet = (newBouquetData: Omit<Bouquet, 'id'>): Bouquet => {
     const newBouquet: Bouquet = {
       ...newBouquetData,
       id: `custom_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     };
-    setBouquets((prev) => [newBouquet, ...prev]);
+    setBouquets((prev) => {
+      const updated = [newBouquet, ...prev];
+      saveToStorage(updated);
+      return updated;
+    });
     return newBouquet;
   };
 
   const updateBouquet = (id: string, updates: Partial<Bouquet>) => {
-    setBouquets((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
-    );
+    setBouquets((prev) => {
+      const updated = prev.map((b) => (b.id === id ? { ...b, ...updates } : b));
+      saveToStorage(updated);
+      return updated;
+    });
   };
 
   const deleteBouquet = (id: string) => {
-    setBouquets((prev) => prev.filter((b) => b.id !== id));
+    setBouquets((prev) => {
+      const updated = prev.filter((b) => b.id !== id);
+      saveToStorage(updated);
+      return updated;
+    });
   };
 
   const toggleStock = (id: string) => {
-    setBouquets((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, inStock: !b.inStock } : b))
-    );
+    setBouquets((prev) => {
+      const updated = prev.map((b) => (b.id === id ? { ...b, inStock: !b.inStock } : b));
+      saveToStorage(updated);
+      return updated;
+    });
+  };
+
+  const clearAllBouquets = () => {
+    setBouquets([]);
+    saveToStorage([]);
   };
 
   const resetToDefault = () => {
     setBouquets(BOUQUETS_CATALOG);
-    localStorage.removeItem(STORAGE_KEY);
+    saveToStorage(BOUQUETS_CATALOG);
   };
 
   return (
@@ -78,6 +98,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         deleteBouquet,
         toggleStock,
         resetToDefault,
+        clearAllBouquets,
       }}
     >
       {children}

@@ -21,9 +21,7 @@ export const FigmaAppShell: React.FC = () => {
 
   const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState<FigmaTab>('catalog');
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { bouquet: bouquets[0] || BOUQUETS_CATALOG[0], quantity: 1 },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdminCrmOpen, setIsAdminCrmOpen] = useState(false);

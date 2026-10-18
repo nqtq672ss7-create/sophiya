@@ -15,7 +15,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   onClose,
 }) => {
   const { allCustomers } = useAuth();
-  const { bouquets, addBouquet, deleteBouquet, toggleStock } = useCatalog();
+  const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault } = useCatalog();
 
   const [activeTab, setActiveTab] = useState<'clients' | 'catalog'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
@@ -341,16 +341,44 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               </form>
             )}
 
-            {/* Search Input */}
-            <div className="relative mb-4">
-              <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск по названию или цветам в букете..."
-                className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
-              />
+            {/* Search Input & Bulk Actions */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск по названию или цветам в букете..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
+                />
+              </div>
+
+              {bouquets.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Удалить все демо-букеты из каталога, чтобы добавить свои с нуля?')) {
+                      clearAllBouquets();
+                    }
+                  }}
+                  className="px-3.5 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 text-red-200 text-xs transition-colors shrink-0 flex items-center gap-1.5"
+                  title="Очистить все демо-букеты"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Очистить демо</span>
+                </button>
+              )}
+
+              {bouquets.length === 0 && (
+                <button
+                  type="button"
+                  onClick={resetToDefault}
+                  className="px-3.5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-300 text-xs transition-colors shrink-0"
+                >
+                  Восстановить демо
+                </button>
+              )}
             </div>
 
             {/* Bouquets Table / Cards */}
