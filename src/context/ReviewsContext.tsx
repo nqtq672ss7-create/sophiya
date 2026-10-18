@@ -14,16 +14,20 @@ interface ReviewsContextType {
 
 const ReviewsContext = createContext<ReviewsContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'sophiya_salon_reviews_v1';
+const STORAGE_KEY = 'sophiya_salon_reviews_v2';
+const LEGACY_STORAGE_KEY = 'sophiya_salon_reviews_v1';
 
 export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [reviews, setReviews] = useState<Review[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((r: Review) => r.id));
+          const missingDefaults = INITIAL_REVIEWS.filter((init) => !existingIds.has(init.id));
+          const combined = [...parsed, ...missingDefaults];
+          return combined;
         }
       }
     } catch (e) {
