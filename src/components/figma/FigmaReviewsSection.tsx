@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, CheckCircle, MessageSquare } from 'lucide-react';
 import { useReviews } from '../../context/ReviewsContext';
+import { LeaveReviewModal } from '../reviews/LeaveReviewModal';
 
 export const FigmaReviewsSection: React.FC = () => {
   const { publishedReviews } = useReviews();
@@ -9,6 +10,7 @@ export const FigmaReviewsSection: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   // Responsive cardsPerView detection
   useEffect(() => {
@@ -86,17 +88,16 @@ export const FigmaReviewsSection: React.FC = () => {
           </h2>
         </div>
 
-        {/* WhatsApp review CTA */}
+        {/* Direct on-site review CTA */}
         <div>
-          <a
-            href="https://wa.me/79172563235?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BE%D1%81%D1%82%D0%B0%D0%B2%D0%B8%D1%82%D1%8C%20%D0%BE%D1%82%D0%B7%D1%8B%D0%B2%20%D0%BE%20%D0%B1%D1%83%D0%BA%D0%B5%D1%82%D0%B5"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs font-medium transition-colors shadow-sm shrink-0"
+          <button
+            type="button"
+            onClick={() => setIsReviewModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs font-medium transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer hover:shadow-md"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Оставить отзыв</span>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -181,6 +182,12 @@ export const FigmaReviewsSection: React.FC = () => {
           />
         ))}
       </div>
+
+      {/* Direct Review Modal */}
+      <LeaveReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+      />
     </section>
   );
 };
