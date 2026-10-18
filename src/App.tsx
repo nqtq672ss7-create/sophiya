@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/layout/Header';
 import { HeroSection } from './components/hero/HeroSection';
-import { MapPin, Phone, MessageCircle, Clock, Heart, ShoppingBag, Sparkles } from 'lucide-react';
+import { MessageCircle, Phone, MapPin, ArrowRight } from 'lucide-react';
 
 export function App() {
   const [cartCount, setCartCount] = useState(0);
@@ -17,7 +17,7 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-sofiya-black-purple text-sofiya-petal font-sans antialiased selection:bg-sofiya-red-berry/40 selection:text-white">
-      {/* Luxury Fixed Navigation Header */}
+      {/* Editorial Luxury Header */}
       <Header
         onOpenStudio={handleOpenStudio}
         onOpenCart={() => alert('Корзина заказа')}
@@ -30,119 +30,149 @@ export function App() {
         onOpenStudio={handleOpenStudio}
       />
 
-      {/* Immediate Catalog Teaser (Demonstrating Palette & Card Minimalism) */}
-      <section id="catalog-preview" className="py-24 max-w-7xl mx-auto px-6 border-t border-sofiya-viola/15">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+      {/* Catalog Preview: Editorial Lookbook (Clean, Airy, Zero AI Slop) */}
+      <section id="catalog-preview" className="py-28 max-w-7xl mx-auto px-6 border-t border-sofiya-viola/15">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>
-            <span className="text-[10px] tracking-[0.25em] uppercase text-sofiya-viola font-sans block mb-2 font-medium">
-              В наличии прямо сейчас • пр. Шинников, 13В
+            <span className="text-[11px] uppercase tracking-[0.3em] text-sofiya-viola font-sans block mb-3 font-light">
+              Эксклюзивная коллекция • пр. Шинников, 13В
             </span>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-white font-normal">
-              Авторские композиции <span className="font-serif italic text-sofiya-viola">сезона</span>
+            <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-white font-light tracking-tight">
+              Избранные композиции <span className="font-serif italic text-sofiya-viola">сезона</span>
             </h2>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400">Каталог: 3 000+ букетов</span>
+          <div className="text-right">
+            <span className="text-xs uppercase tracking-[0.2em] text-sofiya-petal/60 block">
+              Единственный салон в Нижнекамске
+            </span>
+            <span className="text-sm font-serif italic text-sofiya-viola">
+              Сборка букета от 15 минут
+            </span>
           </div>
         </div>
 
-        {/* 3 Editorial Sample Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* 3 Editorial Portrait Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {[
             {
               id: '1',
               title: 'Бархатный Марсала',
-              variety: '25 эквадорских роз Red Berry в матовом шелке',
+              variety: '25 премиальных роз сорта Red Naomi в матовом фирменном оформлении',
               price: '4 800 ₽',
-              time: 'Доставка 30 мин',
-              badge: 'Бестселлер',
+              status: 'В наличии в салоне',
             },
             {
               id: '2',
               title: 'Пудровая Мелодия',
-              variety: 'Пионы Blanche и эустома в оттенке Viola',
+              variety: 'Французские розы, пудровые пионы и эустома в палитре Viola',
               price: '5 600 ₽',
-              time: 'В наличии в салоне',
-              badge: 'Новинка',
+              status: 'Доставка за 30 мин',
             },
             {
               id: '3',
-              title: 'Французский Поцелуй',
-              variety: 'Пионовидные розы Red Piano с эвкалиптом',
+              title: 'Французский Сад',
+              variety: 'Пионовидные розы Red Piano, свежий эвкалипт и диантусы',
               price: '6 200 ₽',
-              time: 'Доставка 40 мин',
-              badge: 'Хит сезона',
+              status: 'В наличии в салоне',
             },
           ].map((item) => (
-            <div
+            <article
               key={item.id}
-              className="group rounded-3xl glass-card overflow-hidden border border-sofiya-viola/20 glass-card-hover flex flex-col p-6"
+              className="group flex flex-col border border-sofiya-viola/15 bg-sofiya-black-purple/50 hover:border-sofiya-viola/40 transition-colors duration-500 p-6"
             >
-              <div className="flex items-center justify-between mb-4">
-                <span className="px-3 py-1 rounded-full bg-sofiya-red-berry/25 border border-sofiya-red-berry/40 text-sofiya-petal text-[10px] tracking-wider uppercase font-medium">
-                  {item.badge}
-                </span>
-                <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  {item.time}
-                </span>
+              {/* Product Visual Presentation */}
+              <div className="w-full aspect-[4/5] bg-gradient-to-b from-sofiya-red-berry/20 via-sofiya-matrix/10 to-sofiya-black-purple border border-sofiya-viola/10 flex flex-col items-center justify-center p-8 relative overflow-hidden group-hover:border-sofiya-viola/30 transition-all duration-700">
+                <div className="text-center">
+                  <span className="font-serif italic text-3xl sm:text-4xl text-sofiya-petal/90 block mb-2 transition-transform duration-700 group-hover:scale-105">
+                    {item.title}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-sofiya-viola font-light block">
+                    Салон «София»
+                  </span>
+                </div>
               </div>
 
-              <div className="w-full h-56 rounded-2xl bg-gradient-to-br from-sofiya-red-berry/20 via-sofiya-matrix/20 to-sofiya-black-purple border border-sofiya-viola/15 flex items-center justify-center p-6 mb-5 relative overflow-hidden group-hover:border-sofiya-viola/40 transition-colors">
-                <div className="absolute inset-0 bg-radial from-sofiya-red-berry/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <span className="font-display text-2xl text-sofiya-petal/80 font-normal group-hover:scale-105 transition-transform duration-500">
-                  {item.title}
-                </span>
-              </div>
-
-              <h3 className="font-display text-2xl text-white font-normal group-hover:text-sofiya-viola transition-colors">
-                {item.title}
-              </h3>
-              <p className="text-xs text-zinc-400 mt-1 font-light leading-relaxed">
-                {item.variety}
-              </p>
-
-              <div className="pt-6 mt-auto flex items-center justify-between border-t border-sofiya-viola/15">
-                <div>
-                  <span className="text-[10px] text-zinc-500 block uppercase">Стоимость</span>
-                  <span className="font-serif text-2xl text-white font-semibold">
+              {/* Title & Info */}
+              <div className="pt-6 flex flex-col flex-grow">
+                <div className="flex items-baseline justify-between mb-2">
+                  <h3 className="font-serif text-2xl text-white font-normal group-hover:text-sofiya-viola transition-colors">
+                    {item.title}
+                  </h3>
+                  <span className="font-serif text-2xl text-white font-light tracking-wide">
                     {item.price}
                   </span>
                 </div>
 
-                <button
-                  onClick={() => setCartCount((prev) => prev + 1)}
-                  className="px-5 py-2.5 rounded-full bg-sofiya-red-berry hover:bg-sofiya-red-berry/90 text-white font-medium text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(108,30,38,0.4)]"
-                >
-                  Заказать
-                </button>
+                <p className="text-xs text-sofiya-petal/70 font-light leading-relaxed mb-6">
+                  {item.variety}
+                </p>
+
+                {/* Card Action */}
+                <div className="pt-4 mt-auto border-t border-sofiya-viola/15 flex items-center justify-between">
+                  <span className="text-[11px] text-sofiya-viola font-sans uppercase tracking-[0.15em] font-light">
+                    {item.status}
+                  </span>
+
+                  <button
+                    onClick={() => setCartCount((prev) => prev + 1)}
+                    className="text-xs uppercase tracking-[0.2em] text-white hover:text-sofiya-viola transition-colors flex items-center gap-1.5 font-medium py-1"
+                  >
+                    <span>Заказать</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* Minimalist Footer */}
-      <footer className="border-t border-sofiya-viola/20 py-12 bg-sofiya-black-purple/80">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-zinc-400">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="София" className="h-8 w-auto opacity-80" />
-            <span>Салон цветов «София» • г. Нижнекамск, пр. Шинников, 13В</span>
+      {/* Haute Couture Architectural Footer */}
+      <footer className="border-t border-sofiya-viola/20 py-16 bg-sofiya-black-purple">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-10 pb-12 border-b border-sofiya-viola/15">
+            {/* Salon Info */}
+            <div className="text-center md:text-left">
+              <img
+                src="/logo-light.png"
+                alt="Салон цветов София"
+                className="h-12 w-auto mx-auto md:mx-0 mb-4"
+              />
+              <p className="text-xs text-sofiya-petal/70 font-light max-w-sm leading-relaxed">
+                Единственный салон авторской флористики в Нижнекамске. Свежие поставки редких сортов и бережная доставка цветов.
+              </p>
+            </div>
+
+            {/* Contacts Column */}
+            <div className="flex flex-col items-center md:items-end gap-3 font-sans text-xs">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-sofiya-viola">
+                Контакты и заказ
+              </span>
+              <a
+                href="tel:+79172563235"
+                className="text-white hover:text-sofiya-viola text-lg font-serif transition-colors"
+              >
+                +7 (917) 256-32-35
+              </a>
+              <a
+                href="https://wa.me/79172563235?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%20%D1%86%D0%B2%D0%B5%D1%82%D1%8B"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sofiya-viola hover:text-white flex items-center gap-2 transition-colors uppercase tracking-[0.15em] text-[11px]"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Чат в WhatsApp</span>
+              </a>
+              <span className="text-sofiya-petal/60 text-[11px] tracking-wider">
+                г. Нижнекамск, пр-кт Шинников, 13В • 10:00 — 21:00
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <a
-              href="https://wa.me/79870000000"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>WhatsApp салона</span>
-            </a>
-            <span className="text-zinc-600">|</span>
-            <span>Ежедневно 10:00 — 21:00</span>
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-sofiya-petal/50 font-light gap-4">
+            <span>© {new Date().getFullYear()} Салон цветов «София». Все права защищены.</span>
+            <span>г. Нижнекамск, пр. Шинников, 13В</span>
           </div>
         </div>
       </footer>

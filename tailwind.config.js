@@ -28,9 +28,9 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['Cormorant Garamond', 'Playfair Display', 'serif'],
-        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        display: ['Cormorant Garamond', 'serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        display: ['"Cormorant Garamond"', 'serif'],
       },
       animation: {
         'spin-slow': 'spin 30s linear infinite',
