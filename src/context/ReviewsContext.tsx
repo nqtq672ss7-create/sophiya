@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Review } from '../types/review';
 import { INITIAL_REVIEWS } from '../data/reviews';
 
@@ -10,24 +10,22 @@ interface ReviewsContextType {
   deleteReview: (id: string) => void;
   togglePublished: (id: string) => void;
   resetToDefault: () => void;
+  refreshReviews: () => Promise<void>;
 }
 
 const ReviewsContext = createContext<ReviewsContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'sophiya_salon_reviews_v2';
-const LEGACY_STORAGE_KEY = 'sophiya_salon_reviews_v1';
+const STORAGE_KEY = 'sophiya_salon_reviews_v3';
+const BACKUP_STORAGE_KEY = 'sophiya_salon_reviews_v2';
 
 export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [reviews, setReviews] = useState<Review[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_STORAGE_KEY);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map((r: Review) => r.id));
-          const missingDefaults = INITIAL_REVIEWS.filter((init) => !existingIds.has(init.id));
-          const combined = [...parsed, ...missingDefaults];
-          return combined;
+          return parsed;
         }
       }
     } catch (e) {
@@ -44,6 +42,37 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const syncToCloud = async (items: Review[]) => {
+    try {
+      await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(items),
+      });
+    } catch (e) {
+      console.warn('Failed to sync reviews to cloud:', e);
+    }
+  };
+
+  const refreshReviews = useCallback(async () => {
+    try {
+      const res = await fetch('/api/reviews', { headers: { 'Cache-Control': 'no-cache' } });
+      if (res.ok) {
+        const remote = await res.json();
+        if (Array.isArray(remote)) {
+          setReviews(remote);
+          saveToStorage(remote);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch remote reviews:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshReviews();
+  }, [refreshReviews]);
+
   const addReview = (newReviewData: Omit<Review, 'id'>): Review => {
     const newReview: Review = {
       ...newReviewData,
@@ -52,6 +81,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setReviews((prev) => {
       const updated = [newReview, ...prev];
       saveToStorage(updated);
+      syncToCloud(updated);
       return updated;
     });
     return newReview;
@@ -61,6 +91,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setReviews((prev) => {
       const updated = prev.map((r) => (r.id === id ? { ...r, ...updates } : r));
       saveToStorage(updated);
+      syncToCloud(updated);
       return updated;
     });
   };
@@ -69,6 +100,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setReviews((prev) => {
       const updated = prev.filter((r) => r.id !== id);
       saveToStorage(updated);
+      syncToCloud(updated);
       return updated;
     });
   };
@@ -79,6 +111,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         r.id === id ? { ...r, isPublished: !r.isPublished } : r
       );
       saveToStorage(updated);
+      syncToCloud(updated);
       return updated;
     });
   };
@@ -86,6 +119,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const resetToDefault = () => {
     setReviews(INITIAL_REVIEWS);
     saveToStorage(INITIAL_REVIEWS);
+    syncToCloud(INITIAL_REVIEWS);
   };
 
   const publishedReviews = reviews.filter((r) => r.isPublished);
@@ -100,6 +134,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         deleteReview,
         togglePublished,
         resetToDefault,
+        refreshReviews,
       }}
     >
       {children}

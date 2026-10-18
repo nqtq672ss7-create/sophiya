@@ -623,6 +623,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       onClick={() => {
                         if (confirm(`Удалить букет «${b.title}» из каталога?`)) {
                           deleteBouquet(b.id);
+                          setSuccessNotice(`Букет «${b.title}» удален со всех устройств`);
+                          setIsSuccessMessage(true);
+                          setTimeout(() => setIsSuccessMessage(false), 2500);
                         }
                       }}
                       className="p-2 text-white/40 hover:text-red-400 transition-colors"
