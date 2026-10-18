@@ -56,7 +56,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const refreshReviews = useCallback(async () => {
     try {
-      const res = await fetch('/api/reviews', { headers: { 'Cache-Control': 'no-cache' } });
+      const res = await fetch(`/api/reviews?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const remote = await res.json();
         if (Array.isArray(remote)) {

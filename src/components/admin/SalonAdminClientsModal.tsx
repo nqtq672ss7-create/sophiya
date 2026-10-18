@@ -123,7 +123,43 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
-          setNewImage(reader.result);
+          const rawResult = reader.result;
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              const maxDim = 1200;
+              let width = img.width;
+              let height = img.height;
+              if (width > height) {
+                if (width > maxDim) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                }
+              } else {
+                if (height > maxDim) {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, width, height);
+                const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                setNewImage(compressed);
+              } else {
+                setNewImage(rawResult);
+              }
+            } catch {
+              setNewImage(rawResult);
+            }
+          };
+          img.onerror = () => {
+            setNewImage(rawResult);
+          };
+          img.src = rawResult;
         }
       };
       reader.readAsDataURL(file);

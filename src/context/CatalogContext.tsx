@@ -59,7 +59,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Fetch catalog from cloud on mount
   const refreshCatalog = useCallback(async () => {
     try {
-      const res = await fetch('/api/catalog', {
+      const res = await fetch(`/api/catalog?t=${Date.now()}`, {
         headers: { 'Cache-Control': 'no-cache' },
       });
       if (res.ok) {

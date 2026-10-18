@@ -124,7 +124,7 @@ export class CustomerDatabaseService {
   static async fetchAllCustomers(): Promise<Customer[]> {
     const local = this.getLocalCustomers();
     try {
-      const res = await fetch('/api/customers', {
+      const res = await fetch(`/api/customers?t=${Date.now()}`, {
         headers: { 'Cache-Control': 'no-cache' },
       });
       if (res.ok) {
