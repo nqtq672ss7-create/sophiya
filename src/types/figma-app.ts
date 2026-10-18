@@ -1,9 +1,12 @@
+export type BouquetCategory = 'Монобукеты' | 'Авторские' | 'Коробки' | 'Корзины' | (string & {});
+export type BouquetColor = 'Розовый' | 'Красный' | 'Белый' | 'Бордовый' | 'Персиковый' | (string & {});
+
 export interface Bouquet {
   id: string;
   title: string;
   price: number;
-  category: 'Монобукеты' | 'Авторские' | 'Коробки' | 'Корзины';
-  color: 'Розовый' | 'Красный' | 'Белый' | 'Бордовый';
+  category: BouquetCategory;
+  color: BouquetColor;
   inStock: boolean;
   image: string;
   description: string;

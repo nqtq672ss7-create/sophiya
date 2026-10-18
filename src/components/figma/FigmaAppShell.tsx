@@ -13,14 +13,16 @@ import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
 import { BOUQUETS_CATALOG } from '../../data/bouquets';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
+import { useCatalog } from '../../context/CatalogContext';
 
 export const FigmaAppShell: React.FC = () => {
   const { customer, openAuthModal } = useAuth();
+  const { bouquets } = useCatalog();
 
   const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState<FigmaTab>('catalog');
   const [cartItems, setCartItems] = useState<CartItem[]>([
-    { bouquet: BOUQUETS_CATALOG[0], quantity: 1 },
+    { bouquet: bouquets[0] || BOUQUETS_CATALOG[0], quantity: 1 },
   ]);
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -44,14 +46,14 @@ export const FigmaAppShell: React.FC = () => {
   }, [cartItems, customer]);
 
   const filteredBouquets = useMemo(() => {
-    return BOUQUETS_CATALOG.filter((b) => {
+    return bouquets.filter((b) => {
       if (filters.category !== 'Все' && b.category !== filters.category) return false;
       if (filters.color !== 'Все' && b.color !== filters.color) return false;
       if (b.price < filters.minPrice) return false;
       if (filters.maxPrice > 0 && b.price > filters.maxPrice) return false;
       return true;
     });
-  }, [filters]);
+  }, [filters, bouquets]);
 
   const handleAddToCart = (bouquet: Bouquet, e?: React.MouseEvent) => {
     e?.stopPropagation();
