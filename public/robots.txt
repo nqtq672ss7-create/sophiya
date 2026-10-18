@@ -1,0 +1,22 @@
+# robots.txt for https://цветы-софия.рф (https://xn----ctbjn3arftl7c8b.xn--p1ai)
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /crm
+Disallow: /api/
+
+User-agent: Yandex
+Allow: /
+Disallow: /admin
+Disallow: /crm
+Disallow: /api/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /crm
+Disallow: /api/
+
+Host: https://xn----ctbjn3arftl7c8b.xn--p1ai
+Sitemap: https://xn----ctbjn3arftl7c8b.xn--p1ai/sitemap.xml
