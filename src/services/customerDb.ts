@@ -1,4 +1,5 @@
 import { Customer, CustomerOrder, calculateLoyaltyTier } from '../types/customer';
+import { getApiUrl } from '../config/api';
 
 const STORAGE_KEY = 'sofiya_customers_db';
 const CURRENT_CUSTOMER_KEY = 'sofiya_current_customer';
@@ -124,7 +125,7 @@ export class CustomerDatabaseService {
   static async fetchAllCustomers(): Promise<Customer[]> {
     const local = this.getLocalCustomers();
     try {
-      const res = await fetch(`/api/customers?t=${Date.now()}`, {
+      const res = await fetch(getApiUrl(`/api/customers?t=${Date.now()}`), {
         headers: { 'Cache-Control': 'no-cache' },
       });
       if (res.ok) {
@@ -214,7 +215,7 @@ export class CustomerDatabaseService {
 
     // Sync to cloud API asynchronously
     try {
-      await fetch('/api/customers', {
+      await fetch(getApiUrl('/api/customers'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCustomer),
@@ -266,7 +267,7 @@ export class CustomerDatabaseService {
 
     // Sync to cloud API
     try {
-      await fetch('/api/customers', {
+      await fetch(getApiUrl('/api/customers'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated),

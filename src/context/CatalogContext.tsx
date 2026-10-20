@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Bouquet } from '../types/figma-app';
 import { BOUQUETS_CATALOG } from '../data/bouquets';
+import { getApiUrl } from '../config/api';
 
 interface CatalogContextType {
   bouquets: Bouquet[];
@@ -46,7 +47,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Sync catalog to cloud server
   const syncToCloud = async (items: Bouquet[]) => {
     try {
-      await fetch('/api/catalog', {
+      await fetch(getApiUrl('/api/catalog'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
@@ -59,7 +60,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Fetch catalog from cloud on mount
   const refreshCatalog = useCallback(async () => {
     try {
-      const res = await fetch(`/api/catalog?t=${Date.now()}`, {
+      const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`), {
         headers: { 'Cache-Control': 'no-cache' },
       });
       if (res.ok) {

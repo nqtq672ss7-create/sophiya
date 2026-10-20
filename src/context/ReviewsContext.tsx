@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Review } from '../types/review';
 import { INITIAL_REVIEWS } from '../data/reviews';
+import { getApiUrl } from '../config/api';
 
 interface ReviewsContextType {
   reviews: Review[];
@@ -44,7 +45,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const syncToCloud = async (items: Review[]) => {
     try {
-      await fetch('/api/reviews', {
+      await fetch(getApiUrl('/api/reviews'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
@@ -56,7 +57,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const refreshReviews = useCallback(async () => {
     try {
-      const res = await fetch(`/api/reviews?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } });
+      const res = await fetch(getApiUrl(`/api/reviews?t=${Date.now()}`), { headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) {
         const remote = await res.json();
         if (Array.isArray(remote)) {
