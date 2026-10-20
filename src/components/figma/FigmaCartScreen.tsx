@@ -1,7 +1,26 @@
 import React, { useState } from 'react';
-import { Minus, Plus, X, Smile, Phone, MapPin, CheckCircle, ArrowRight, ShoppingBag, Truck, Store, AlertCircle } from 'lucide-react';
+import {
+  Minus,
+  Plus,
+  X,
+  Smile,
+  Phone,
+  MapPin,
+  CheckCircle,
+  ArrowRight,
+  ShoppingBag,
+  Truck,
+  Store,
+  CreditCard,
+  MessageSquare,
+  Building2,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
 import { CartItem } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
+import { SberPaymentModal } from '../payment/SberPaymentModal';
+import { B2BInvoiceModal } from '../payment/B2BInvoiceModal';
 
 interface FigmaCartScreenProps {
   items: CartItem[];
@@ -21,14 +40,20 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const { customer, addOrderToCustomer } = useAuth();
 
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
+  const [paymentMethod, setPaymentMethod] = useState<'sberbank' | 'whatsapp' | 'invoice'>('sberbank');
   const [recipientName, setRecipientName] = useState(
-    customer ? `${customer.firstName} ${customer.lastName}` : ''
+    customer ? `${customer.firstName} ${customer.lastName}`.trim() : ''
   );
   const [recipientPhone, setRecipientPhone] = useState(
     customer ? customer.phone : '+7 (917) '
   );
   const [deliveryAddress, setDeliveryAddress] = useState('г. Нижнекамск, ');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
+
+  // Modals state
+  const [isSberModalOpen, setIsSberModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   const deliveryCost = deliveryType === 'delivery' ? 700 : 0;
   const userDiscount = customer?.discountPercent || 0;
@@ -45,18 +70,66 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
     e.preventDefault();
     if (items.length === 0) return;
 
+    const generatedNum = 'SF-' + Math.floor(100000 + Math.random() * 900000);
+    setOrderNumber(generatedNum);
+
+    // 1. Sberbank / SBP acquiring mode
+    if (paymentMethod === 'sberbank') {
+      setIsSberModalOpen(true);
+      return;
+    }
+
+    // 2. B2B Invoice mode
+    if (paymentMethod === 'invoice') {
+      setIsInvoiceModalOpen(true);
+      return;
+    }
+
+    // 3. WhatsApp checkout mode
+    if (paymentMethod === 'whatsapp') {
+      const itemsList = items
+        .map((i) => `• ${i.bouquet.title} (${i.quantity} шт) — ${(i.bouquet.price * i.quantity).toLocaleString('ru-RU')} ₽`)
+        .join('\n');
+
+      const waText =
+        `🌸 *ЗАКАЗ ЦВЕТОВ В САЛОНЕ «СОФИЯ» (Шинников, 13В)*\n` +
+        `№ заказа: *${generatedNum}*\n\n` +
+        `💐 *Букеты:*\n${itemsList}\n\n` +
+        `📍 *Способ получения:* ${deliveryType === 'delivery' ? `Доставка курьером: ${deliveryAddress}` : 'Самовывоз из салона (Шинников, 13В)'}\n` +
+        `👤 *Получатель:* ${recipientName} (${recipientPhone})\n` +
+        `💰 *Итого к оплате:* ${totalToPay.toLocaleString('ru-RU')} ₽\n\n` +
+        `💳 *Оплата на расчётный счёт в ПАО Сбербанк:*\nИП Обручников Дмитрий Владимирович\nр/с 40802810762000090051\n\n` +
+        `Пожалуйста, пришлите фото готового букета перед отправкой!`;
+
+      window.open(
+        `https://wa.me/79172563235?text=${encodeURIComponent(waText)}`,
+        '_blank'
+      );
+
+      if (customer) {
+        addOrderToCustomer({
+          items: items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
+          totalAmount: totalToPay,
+        });
+      }
+
+      setIsSuccess(true);
+      onClearCart();
+    }
+  };
+
+  const handlePaymentSuccess = () => {
     if (customer) {
       addOrderToCustomer({
         items: items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
-        totalAmount: rawSubtotal,
+        totalAmount: totalToPay,
       });
     }
-
     setIsSuccess(true);
     onClearCart();
   };
 
-  // 1. Success Screen (Exact Figma frame 11 adapted for desktop & mobile)
+  // 1. Success Screen
   if (isSuccess) {
     return (
       <div className="min-h-[70vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center select-none animate-fadeIn max-w-2xl mx-auto my-8">
@@ -65,12 +138,16 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
           <CheckCircle className="w-12 h-12 text-[#6C1E26]" />
         </div>
 
-        <h2 className="font-serif text-3xl sm:text-4xl text-[#6C1E26] font-normal tracking-wide mb-3">
+        <span className="text-[11px] uppercase tracking-[0.25em] text-[#6C1E26] font-semibold block mb-2">
+          Заказ {orderNumber || 'принят'}
+        </span>
+
+        <h2 className="font-serif text-3xl sm:text-4xl text-zinc-900 font-normal tracking-wide mb-3">
           Заказ успешно оформлен!
         </h2>
 
         <p className="text-xs sm:text-sm text-zinc-600 font-light max-w-md mb-8 leading-relaxed">
-          Заказ передан шеф-флористу в салон на <strong>пр. Шинников, 13В</strong>. Мы свяжемся с вами по указанному номеру и пришлем фото готовой композиции в WhatsApp перед передачей курьеру.
+          Оплата поступает на расчётный счёт салона <strong>ИП Обручников Д. В. в ПАО Сбербанк</strong>. Заказ передан шеф-флористу на <strong>пр. Шинников, 13В</strong>. Мы свяжемся с вами и пришлем фото готовой композиции в WhatsApp перед передачей курьеру.
         </p>
 
         <button
@@ -78,7 +155,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
             setIsSuccess(false);
             onExploreCatalog();
           }}
-          className="px-8 py-3.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium uppercase tracking-[0.2em] transition-all shadow-md active:scale-95"
+          className="px-8 py-3.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium uppercase tracking-[0.2em] transition-all shadow-md active:scale-95 cursor-pointer"
         >
           Вернуться в каталог
         </button>
@@ -86,7 +163,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
     );
   }
 
-  // 2. Empty Cart Screen (Exact Figma frame 12 adapted for desktop & mobile)
+  // 2. Empty Cart Screen
   if (items.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center select-none max-w-lg mx-auto my-8">
@@ -103,7 +180,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
         <button
           onClick={onExploreCatalog}
-          className="px-8 py-3.5 rounded-2xl bg-[#6C1E26] text-white text-xs sm:text-sm font-medium uppercase tracking-wider transition-all shadow-lg hover:scale-105 active:scale-95"
+          className="px-8 py-3.5 rounded-2xl bg-[#6C1E26] text-white text-xs sm:text-sm font-medium uppercase tracking-wider transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
         >
           Перейти к букетам
         </button>
@@ -111,7 +188,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
     );
   }
 
-  // 3. Cart with items (Responsive 2-column layout on Desktop, single-column on Mobile)
+  // 3. Cart with items
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-32 text-zinc-900 font-sans">
       {/* Header */}
@@ -128,7 +205,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
           <button
             onClick={onClearCart}
-            className="text-xs text-zinc-400 hover:text-[#6C1E26] transition-colors"
+            className="text-xs text-zinc-400 hover:text-[#6C1E26] transition-colors cursor-pointer"
           >
             Очистить корзину
           </button>
@@ -137,7 +214,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Cart Items List (7 cols on Desktop) */}
+          {/* Left Column: Cart Items List */}
           <div className="lg:col-span-7 space-y-4">
             {items.map(({ bouquet, quantity }) => (
               <div
@@ -187,7 +264,6 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Remove */}
                 <button
                   onClick={() => onRemoveItem(bouquet.id)}
                   className="p-2 text-zinc-400 hover:text-red-600 transition-colors"
@@ -206,19 +282,19 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                 <span>Бесплатный самовывоз из салона: пр. Шинников, 13В</span>
               </div>
               <p className="text-zinc-500 font-light pl-6">
-                Соберем букет к назначенному времени. Флорист согласует фото в WhatsApp перед упаковкой.
+                Соберем букет к назначенному времени. Флорист пришлет фото в WhatsApp перед выездом курьера.
               </p>
             </div>
           </div>
 
-          {/* Right Column: Checkout & Summary Form (5 cols on Desktop, sticky) */}
+          {/* Right Column: Checkout & Summary Form */}
           <div className="lg:col-span-5">
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-md space-y-6 sticky top-28">
               <h2 className="font-serif text-xl sm:text-2xl text-zinc-900 font-normal">
                 Оформление заказа
               </h2>
 
-              {/* Delivery Type Selector (Exact Figma frame 8 tabs) */}
+              {/* Delivery Type Selector */}
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -230,7 +306,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   }`}
                 >
                   <Truck className="w-4 h-4" />
-                  <span>Доставка</span>
+                  <span>Доставка (700 ₽)</span>
                 </button>
 
                 <button
@@ -290,6 +366,98 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   </div>
                 )}
 
+                {/* Payment Method Selector */}
+                <div className="pt-2 space-y-2">
+                  <label className="block text-xs font-medium text-zinc-700">
+                    Способ оплаты:
+                  </label>
+
+                  <div className="space-y-2">
+                    {/* Option 1: Sberbank / SBP to Account */}
+                    <label
+                      onClick={() => setPaymentMethod('sberbank')}
+                      className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 cursor-pointer ${
+                        paymentMethod === 'sberbank'
+                          ? 'border-emerald-600 bg-emerald-50/40 shadow-xs'
+                          : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100/70'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === 'sberbank'}
+                        onChange={() => setPaymentMethod('sberbank')}
+                        className="mt-1 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs sm:text-sm font-medium text-zinc-900">
+                            ПАО Сбербанк / СБП (на расчётный счёт)
+                          </span>
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">
+                            Рекомендуем
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-relaxed">
+                          Оплата через <strong>СберБанк Онлайн</strong>, СБП или банковскую карту на р/с ИП Обручников Д. В.
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Option 2: WhatsApp Concierge */}
+                    <label
+                      onClick={() => setPaymentMethod('whatsapp')}
+                      className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 cursor-pointer ${
+                        paymentMethod === 'whatsapp'
+                          ? 'border-[#6C1E26] bg-[#6C1E26]/5 shadow-xs'
+                          : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100/70'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === 'whatsapp'}
+                        onChange={() => setPaymentMethod('whatsapp')}
+                        className="mt-1 text-[#6C1E26] focus:ring-[#6C1E26]"
+                      />
+                      <div className="flex-1">
+                        <span className="text-xs sm:text-sm font-medium text-zinc-900 block">
+                          Согласовать фото и оплатить в WhatsApp
+                        </span>
+                        <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-relaxed">
+                          Флорист пришлёт фото готового букета в WhatsApp перед оплатой.
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Option 3: B2B Invoice for Companies */}
+                    <label
+                      onClick={() => setPaymentMethod('invoice')}
+                      className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 cursor-pointer ${
+                        paymentMethod === 'invoice'
+                          ? 'border-zinc-800 bg-zinc-100 shadow-xs'
+                          : 'border-zinc-200 bg-zinc-50 hover:bg-zinc-100/70'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === 'invoice'}
+                        onChange={() => setPaymentMethod('invoice')}
+                        className="mt-1 text-zinc-900 focus:ring-zinc-900"
+                      />
+                      <div className="flex-1">
+                        <span className="text-xs sm:text-sm font-medium text-zinc-900 block">
+                          Счёт для юрлиц (по ИНН)
+                        </span>
+                        <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-relaxed">
+                          Автоматическое формирование счёта на оплату с закрывающими документами.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
                 {/* Price Breakdown */}
                 <div className="pt-4 border-t border-zinc-200 space-y-2.5 text-xs sm:text-sm">
                   <div className="flex justify-between text-zinc-600">
@@ -322,15 +490,53 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full py-4 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-sm sm:text-base transition-all shadow-lg active:scale-[0.99] mt-4"
+                  className="w-full py-4 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-sm sm:text-base transition-all shadow-lg active:scale-[0.99] mt-4 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  Оформить заказ ({totalToPay.toLocaleString('ru-RU')} ₽)
+                  <CreditCard className="w-4 h-4" />
+                  <span>
+                    {paymentMethod === 'sberbank'
+                      ? `Оплатить через СберБанк (${totalToPay.toLocaleString('ru-RU')} ₽)`
+                      : paymentMethod === 'invoice'
+                      ? 'Выставить счёт на оплату'
+                      : `Оформить заказ в WhatsApp (${totalToPay.toLocaleString('ru-RU')} ₽)`}
+                  </span>
                 </button>
+
+                {/* Legal compliance notice */}
+                <p className="text-[10px] text-center text-zinc-400 font-light leading-relaxed">
+                  Получатель платежа: ИП Обручников Д. В. (ИНН 165115143005). Расчётный счёт: 40802810762000090051 в ПАО Сбербанк. Безопасность гарантирована.
+                </p>
               </form>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Sberbank Payment Modal */}
+      <SberPaymentModal
+        isOpen={isSberModalOpen}
+        onClose={() => setIsSberModalOpen(false)}
+        orderNumber={orderNumber}
+        totalAmount={totalToPay}
+        itemsSummary={items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`).join(', ')}
+        recipientName={recipientName}
+        recipientPhone={recipientPhone}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* B2B Invoice Modal */}
+      <B2BInvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        orderNumber={orderNumber}
+        totalAmount={totalToPay}
+        items={items.map((i) => ({
+          title: i.bouquet.title,
+          price: i.bouquet.price,
+          quantity: i.quantity,
+        }))}
+        onInvoiceCreated={handlePaymentSuccess}
+      />
     </div>
   );
 };

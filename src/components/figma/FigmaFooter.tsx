@@ -1,6 +1,7 @@
-import React from 'react';
-import { Phone, MapPin, Clock, MessageSquare, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Phone, MapPin, Clock, MessageSquare, ShieldCheck, FileText } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
+import { RequisitesModal } from '../payment/RequisitesModal';
 
 interface FigmaFooterProps {
   onTabChange: (tab: FigmaTab) => void;
@@ -11,6 +12,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
   onTabChange,
   onOpenCrm,
 }) => {
+  const [isRequisitesOpen, setIsRequisitesOpen] = useState(false);
   return (
     <footer className="w-full bg-[#180B0D] text-white/80 font-sans border-t border-white/10 mt-20 pb-24 md:pb-12 pt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,11 +102,37 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   Личный кабинет & Скидки
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={() => setIsRequisitesOpen(true)}
+                  className="hover:text-[#C5A880] text-white/90 transition-colors flex items-center gap-1.5"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#C5A880]" />
+                  <span>Реквизиты и оплата</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
+        {/* Legal & Compliance Banner for Sberbank Acquiring */}
+        <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-white/50 font-light text-center md:text-left">
+          <div>
+            <span>ИП Обручников Дмитрий Владимирович • ИНН 165115143005 • ОГРНИП 324169000033624</span>
+            <span className="block text-white/40 mt-0.5">
+              Расчётный счёт в ПАО Сбербанк • Оплата онлайн картами МИР, Visa, Mastercard и через СБП
+            </span>
+          </div>
+
+          <button
+            onClick={() => setIsRequisitesOpen(true)}
+            className="text-[#C5A880] hover:underline cursor-pointer shrink-0"
+          >
+            Все реквизиты салона →
+          </button>
+        </div>
+
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
           <button
             onClick={onOpenCrm}
             className="hover:text-white/60 transition-colors text-left"
@@ -115,6 +143,11 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           <span>г. Нижнекамск, пр. Шинников, 13В</span>
         </div>
       </div>
+
+      <RequisitesModal
+        isOpen={isRequisitesOpen}
+        onClose={() => setIsRequisitesOpen(false)}
+      />
     </footer>
   );
 };
