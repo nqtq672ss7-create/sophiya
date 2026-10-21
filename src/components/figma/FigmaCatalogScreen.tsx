@@ -40,27 +40,83 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-zinc-900 font-sans">
       {/* 1. Mobile Header (Only on screens < md: Exact Figma frame 5 with official logo) */}
-      <div className="md:hidden relative bg-gradient-to-b from-[#8C1B2F] via-[#731525] to-[#5A121A] text-white pt-8 pb-10 px-6 shadow-md">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+      <div className="md:hidden relative bg-gradient-to-b from-[#8C1B2F] via-[#731525] to-[#5A121A] text-white pt-7 pb-9 px-5 sm:px-6 shadow-md">
+        <div className="flex items-center justify-between mb-5 gap-3">
+          <div className="flex items-center">
             <img
               src="/logo-light.png"
               alt="Салон цветов София"
-              className="h-10 w-auto object-contain"
+              className="h-16 sm:h-20 w-auto object-contain"
             />
           </div>
 
           <a
             href="tel:+79172563235"
-            className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#6C1E26] shadow-md hover:scale-105 transition-transform"
+            className="flex items-center gap-2 pl-3 pr-4 py-2 rounded-full bg-white text-[#6C1E26] shadow-md hover:bg-white/95 active:scale-95 transition-all shrink-0"
             aria-label="Позвонить в салон"
           >
-            <Phone className="w-4 h-4 fill-[#6C1E26]" />
+            <span className="w-7 h-7 rounded-full bg-[#6C1E26]/10 flex items-center justify-center text-[#6C1E26]">
+              <Phone className="w-3.5 h-3.5 fill-[#6C1E26]" />
+            </span>
+            <div className="flex flex-col text-left leading-tight">
+              <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Связь</span>
+              <span className="text-xs font-bold text-[#6C1E26] whitespace-nowrap">Позвоните нам</span>
+            </div>
           </a>
         </div>
 
-        <h2 className="font-serif text-3xl font-normal tracking-wider uppercase mb-4">
-          КАТАЛОГ
+        {/* Refined Delivery & City Hero Card */}
+        <div className="mt-2 mb-4 p-4 rounded-2xl bg-black/35 backdrop-blur-md border border-white/15 shadow-xl space-y-3">
+          <div className="flex items-center justify-between text-xs text-white/90">
+            <div className="flex items-center gap-1.5 font-semibold text-amber-200">
+              <MapPin className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
+              <span>г. Нижнекамск, пр. Шинников, 13В</span>
+            </div>
+            <span className="text-white/60 text-[11px] font-medium">08:00 – 21:00</span>
+          </div>
+
+          <div>
+            <div className="text-base sm:text-lg font-bold text-white leading-snug">
+              Быстрая доставка цветов от 30 минут
+            </div>
+            <p className="text-xs text-white/80 font-normal mt-0.5">
+              Бережно привезём букет в аквабоксе или подготовим самовывоз
+            </p>
+          </div>
+
+          {/* 3 Spacious, Balanced Benefit Cards */}
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-2 px-1.5 flex flex-col justify-center items-center text-center border border-white/10">
+              <span className="text-[10px] uppercase tracking-wider text-amber-200/90 font-medium mb-0.5">
+                Скорость
+              </span>
+              <span className="text-xs font-bold text-white leading-tight">
+                от 30 мин
+              </span>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-2 px-1.5 flex flex-col justify-center items-center text-center border border-white/10">
+              <span className="text-[10px] uppercase tracking-wider text-amber-200/90 font-medium mb-0.5">
+                Контроль
+              </span>
+              <span className="text-xs font-bold text-white leading-tight">
+                Фото в WhatsApp
+              </span>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-2 px-1.5 flex flex-col justify-center items-center text-center border border-white/10">
+              <span className="text-[10px] uppercase tracking-wider text-amber-200/90 font-medium mb-0.5">
+                Свежесть
+              </span>
+              <span className="text-xs font-bold text-white leading-tight">
+                Каждый день
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <h2 className="font-sans text-2xl font-bold tracking-wider uppercase mb-3">
+          КАТАЛОГ БУКЕТОВ
         </h2>
 
         {/* Filter Chips Bar (Exact Figma frame 5) */}
@@ -99,14 +155,11 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
         </div>
       </div>
 
-      {/* Mobile Active Category Subtitle (Exact Figma frame 5) */}
-      <div className="md:hidden px-6 pt-5 pb-2 flex items-baseline justify-between">
-        <h3 className="font-serif text-2xl text-[#6C1E26] font-normal">
-          {activeCategory === 'Все' ? 'Монобукеты' : activeCategory}
+      {/* Mobile Active Category Subtitle */}
+      <div className="md:hidden px-5 sm:px-6 pt-5 pb-2">
+        <h3 className="font-sans text-xl sm:text-2xl text-[#6C1E26] font-bold tracking-tight">
+          {activeCategory === 'Все' ? 'Поставка свежих цветов каждый день' : activeCategory}
         </h3>
-        <span className="text-[11px] text-zinc-400 font-light">
-          Нижнекамск, Шинников 13В
-        </span>
       </div>
 
       {/* 2. Desktop Hero Banner (Returned with chic Quiet Luxury & Official Sofia Branding) */}
@@ -118,17 +171,17 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div className="max-w-2xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-light tracking-wider text-amber-200">
-                <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span>Салон цветов «София» • Нижнекамск</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold tracking-wider text-amber-200 border border-white/15">
+                <span className="text-[#C5A880]">✦</span>
+                <span>Быстрая доставка от 30 мин • Поставка свежих цветов каждый день</span>
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-tight tracking-tight">
-                Авторские букеты и свежие поставки
+              <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
+                Салон цветов «София» в Нижнекамске
               </h1>
 
-              <p className="text-sm sm:text-base text-white/80 font-light leading-relaxed">
-                Свежие поставки эквадорских роз, пионов и гортензий. Собираем букеты по стандартам высокой флористики с обязательным фотоотчетом в WhatsApp перед выездом курьера.
+              <p className="text-base sm:text-lg text-white/90 font-medium leading-relaxed">
+                Свежие поставки каждый день: эквадорские розы, пионы, гортензии и авторские композиции. Доставка по Нижнекамску от 30 минут с обязательным фотоотчетом в WhatsApp перед выездом курьера.
               </p>
 
               {/* Minimalist guarantees */}
@@ -142,7 +195,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <span>пр. Шинников, 13В</span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/25 px-3 py-1.5 rounded-full border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-[#C5A880]">✦</span>
                   <span>Подкормка в подарок</span>
                 </span>
               </div>
@@ -266,10 +319,10 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 <div
                   key={b.id}
                   onClick={() => onSelectBouquet(b)}
-                  className="group flex flex-col bg-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border border-zinc-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer select-none"
+                  className="group flex flex-col bg-[#6C1E26] text-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border border-[#8C1B2F]/60 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer select-none"
                 >
                   {/* Bouquet Image Frame */}
-                  <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-100 shadow-sm">
+                  <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black/20 shadow-sm">
                     <img
                       src={b.image}
                       alt={b.title}
@@ -279,7 +332,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                     {/* Circular Cart Action Button */}
                     <button
                       onClick={(e) => onAddToCart(b, e)}
-                      className="absolute bottom-2.5 right-2.5 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 backdrop-blur-sm shadow-md flex items-center justify-center text-[#6C1E26] hover:scale-110 active:scale-95 transition-transform hover:bg-[#6C1E26] hover:text-white"
+                      className="absolute bottom-2.5 right-2.5 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#6C1E26] shadow-md flex items-center justify-center hover:scale-110 active:scale-95 transition-transform hover:bg-amber-300 hover:text-zinc-900"
                       aria-label={`Добавить ${b.title} в корзину`}
                       title="Добавить в корзину"
                     >
@@ -288,7 +341,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
                     {/* Loyalty Discount Badge */}
                     {userDiscount > 0 && (
-                      <div className="absolute top-2.5 left-2.5 bg-[#6C1E26] text-white text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full shadow">
+                      <div className="absolute top-2.5 left-2.5 bg-white text-[#6C1E26] text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow">
                         -{userDiscount}%
                       </div>
                     )}
@@ -297,21 +350,21 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   {/* Info */}
                   <div className="pt-3 px-1 flex-1 flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] tracking-wider uppercase text-zinc-400 font-light block">
+                      <span className="text-[11px] tracking-wider uppercase text-white/70 font-medium block">
                         {b.category} • {b.characteristics.height}
                       </span>
-                      <h4 className="text-xs sm:text-sm font-medium text-zinc-900 line-clamp-2 leading-snug group-hover:text-[#6C1E26] transition-colors mt-0.5">
+                      <h4 className="text-sm sm:text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-amber-200 transition-colors mt-1">
                         {b.title}
                       </h4>
                     </div>
 
-                    <div className="flex items-baseline gap-2 mt-2 pt-2 border-t border-zinc-100">
+                    <div className="flex items-baseline gap-2 mt-2 pt-2 border-t border-white/15">
                       {userDiscount > 0 && (
-                        <span className="text-[11px] sm:text-xs text-zinc-400 line-through">
+                        <span className="text-xs text-white/50 line-through">
                           {b.price.toLocaleString('ru-RU')} ₽
                         </span>
                       )}
-                      <span className="font-serif text-lg sm:text-xl text-[#6C1E26] font-semibold tracking-tight">
+                      <span className="font-serif text-xl sm:text-2xl text-amber-300 font-bold tracking-tight">
                         {finalPrice.toLocaleString('ru-RU')} ₽
                       </span>
                     </div>

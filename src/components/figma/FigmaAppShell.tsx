@@ -137,6 +137,32 @@ export const FigmaAppShell: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white">
+      {/* 0. Top Bar: Elegant Luxury Delivery & Salon Coordinates */}
+      <div className="bg-[#140506] text-white/90 py-2 px-4 border-b border-white/10 select-none text-xs tracking-wide">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 overflow-x-auto no-scrollbar font-normal">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="text-[#C5A880] text-xs">✦</span>
+            <span className="font-medium text-white tracking-wide">Доставка цветов по Нижнекамску от 30 минут</span>
+            <span className="text-white/30 hidden sm:inline">•</span>
+            <span className="text-white/70 hidden sm:inline">Поставка свежих цветов каждый день</span>
+          </div>
+
+          <div className="flex items-center gap-3.5 shrink-0 text-white/80 text-[11px] sm:text-xs">
+            <a
+              href="https://yandex.ru/maps/?text=Нижнекамск+Шинников+13В"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors"
+            >
+              <span className="text-[#C5A880]">📍</span>
+              <span className="font-medium">г. Нижнекамск, пр. Шинников, 13В</span>
+            </a>
+            <span className="text-white/20 hidden md:inline">|</span>
+            <span className="text-white/60 hidden md:inline">08:00 – 21:00</span>
+          </div>
+        </div>
+      </div>
+
       {/* 1. Header: Minimalist Luxury Navigation with Official Logo (Desktop only) */}
       <div className="hidden md:block">
         <FigmaDesktopHeader

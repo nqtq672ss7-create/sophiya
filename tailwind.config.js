@@ -28,9 +28,9 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        serif: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['"Cormorant Garamond"', 'serif'],
+        display: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 30s linear infinite',

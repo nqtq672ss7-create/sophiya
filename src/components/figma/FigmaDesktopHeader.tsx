@@ -35,17 +35,17 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
 
   return (
     <header className="w-full bg-[#FAF7F5]/95 backdrop-blur-md border-b border-zinc-200/60 sticky top-0 z-40 select-none font-sans transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-22 sm:h-26 flex items-center justify-between gap-4">
         {/* 1. Left: Official Brand Logo «София» (Triple-click secret trigger for owner CRM) */}
         <div
           onClick={handleLogoClick}
-          className="cursor-pointer flex items-center gap-3 group py-2"
+          className="cursor-pointer flex items-center group py-2"
           title="Салон цветов «София»"
         >
           <img
             src="/logo.png"
             alt="Салон цветов София"
-            className="h-11 sm:h-14 w-auto object-contain group-hover:opacity-90 transition-opacity"
+            className="h-16 sm:h-20 lg:h-24 w-auto object-contain group-hover:opacity-90 transition-opacity"
           />
         </div>
 
@@ -105,18 +105,28 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
         </nav>
 
         {/* 3. Right: Clean Contacts & Actions */}
-        <div className="flex items-center gap-4 sm:gap-6">
-          {/* Direct Phone / WhatsApp */}
-          <a
-            href="https://wa.me/79172563235"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-2 text-xs sm:text-sm text-zinc-700 hover:text-[#6C1E26] transition-colors"
-            title="Написать в WhatsApp"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-medium">+7 (917) 256-32-35</span>
-          </a>
+        <div className="flex items-center gap-3 sm:gap-5">
+          {/* Direct Phone / Call Us & WhatsApp */}
+          <div className="hidden sm:flex items-center gap-3">
+            <a
+              href="tel:+79172563235"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#6C1E26]/10 hover:bg-[#6C1E26]/15 text-[#6C1E26] transition-all text-xs sm:text-sm font-semibold active:scale-95 shadow-sm"
+              title="Позвонить в салон цветов"
+            >
+              <Phone className="w-3.5 h-3.5 fill-[#6C1E26]" />
+              <span>Позвоните нам</span>
+            </a>
+
+            <a
+              href="https://wa.me/79172563235"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1.5 text-xs sm:text-sm text-zinc-700 hover:text-[#6C1E26] transition-colors"
+              title="Написать в WhatsApp"
+            >
+              <span className="font-semibold">+7 (917) 256-32-35</span>
+            </a>
+          </div>
 
           {/* User Auth / Profile */}
           {customer ? (

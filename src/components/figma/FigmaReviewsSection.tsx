@@ -117,19 +117,19 @@ export const FigmaReviewsSection: React.FC = () => {
               style={{ width: `${100 / cardsPerView}%` }}
               className="shrink-0 p-2 sm:p-3"
             >
-              <div className="h-full p-5 sm:p-6 bg-white rounded-3xl border border-zinc-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div className="h-full p-5 sm:p-6 bg-[#6C1E26] text-white rounded-3xl border border-[#8C1B2F]/60 shadow-md hover:shadow-xl transition-all flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Rating Stars & Verified Badge */}
                   <div className="flex items-center justify-between">
-                    <div className="flex text-amber-400">
+                    <div className="flex text-amber-300">
                       {[...Array(rev.rating)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
                       ))}
                     </div>
 
                     {rev.isVerified && (
-                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium border border-emerald-100">
-                        <CheckCircle className="w-3 h-3 text-emerald-600" />
+                      <span className="text-[10px] text-white bg-white/15 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-medium border border-white/20">
+                        <CheckCircle className="w-3 h-3 text-emerald-300" />
                         <span>Проверен</span>
                       </span>
                     )}
@@ -137,23 +137,23 @@ export const FigmaReviewsSection: React.FC = () => {
 
                   {/* Bouquet Title Reference */}
                   {rev.bouquetTitle && (
-                    <span className="text-[11px] text-[#6C1E26] font-medium block truncate">
+                    <span className="text-xs text-amber-200 font-semibold block truncate">
                       {rev.bouquetTitle}
                     </span>
                   )}
 
                   {/* Comment */}
-                  <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed line-clamp-4">
+                  <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed line-clamp-4">
                     «{rev.comment}»
                   </p>
                 </div>
 
                 {/* Author & Date Footer */}
-                <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between text-xs">
-                  <span className="font-serif text-base text-zinc-900 font-medium">
+                <div className="pt-4 mt-4 border-t border-white/15 flex items-center justify-between text-xs">
+                  <span className="font-sans text-sm sm:text-base text-white font-bold">
                     {rev.author}
                   </span>
-                  <span className="text-zinc-400 text-[11px] font-light">
+                  <span className="text-white/60 text-[11px] font-medium">
                     {rev.date}
                   </span>
                 </div>

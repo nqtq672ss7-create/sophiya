@@ -23,8 +23,16 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
               <img
                 src="/logo-light.png"
                 alt="Салон цветов София"
-                className="h-10 w-auto object-contain"
+                className="h-14 w-auto object-contain"
               />
+              <div className="flex flex-col justify-center">
+                <span className="text-xs uppercase tracking-[0.2em] font-bold text-white/95 leading-tight">
+                  Салон цветов
+                </span>
+                <span className="text-[11px] text-white/60 font-medium">
+                  Нижнекамск
+                </span>
+              </div>
             </div>
 
             <p className="text-xs text-white/60 leading-relaxed font-light">

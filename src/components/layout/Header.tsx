@@ -37,12 +37,20 @@ export const Header: React.FC<HeaderProps> = ({
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Wordmark & Butterfly Symbol */}
-        <a href="#" className="flex items-center gap-3 group">
+        <a href="#" className="flex items-center gap-3.5 group">
           <img
             src="/logo-light.png"
             alt="Салон цветов София"
-            className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />
+          <div className="hidden sm:flex flex-col border-l border-white/20 pl-3">
+            <span className="text-xs uppercase tracking-[0.2em] font-bold text-white">
+              Салон цветов
+            </span>
+            <span className="text-[11px] text-sofiya-petal/80 font-medium">
+              Нижнекамск
+            </span>
+          </div>
         </a>
 
         {/* Center: Editorial Salon Coordinates */}

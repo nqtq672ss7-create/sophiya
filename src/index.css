@@ -6,6 +6,24 @@
   color-scheme: dark;
 }
 
+html {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px; /* Увеличение базового размера текста для максимальной читабельности */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 17.5px;
+  }
+}
+
+body {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.01em;
+}
+
 /* Luxury Slender Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

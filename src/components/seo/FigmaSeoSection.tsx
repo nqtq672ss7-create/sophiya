@@ -36,50 +36,50 @@ export const FigmaSeoSection: React.FC = () => {
 
         {/* Right Column: 4 SEO Feature Highlights */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-sm space-y-2">
-            <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
+          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <Truck className="w-4 h-4" />
             </div>
-            <h3 className="font-serif text-base text-zinc-900 font-medium">
+            <h3 className="font-sans text-base text-white font-bold">
               Доставка от 30 минут
             </h3>
-            <p className="text-xs text-zinc-500 font-light leading-relaxed">
+            <p className="text-xs text-white/85 font-normal leading-relaxed">
               Быстрая бережная доставка по всем районам Нижнекамска в аквабоксах с водой. Цветы приезжают свежими в любую погоду.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-sm space-y-2">
-            <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
+          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
             </div>
-            <h3 className="font-serif text-base text-zinc-900 font-medium">
+            <h3 className="font-sans text-base text-white font-bold">
               Фото в WhatsApp перед выездом
             </h3>
-            <p className="text-xs text-zinc-500 font-light leading-relaxed">
+            <p className="text-xs text-white/85 font-normal leading-relaxed">
               Вы всегда точно знаете, как выглядит букет. Флорист присылает детальные фотографии готовой композиции перед отправкой.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-sm space-y-2">
-            <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
+          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <Heart className="w-4 h-4" />
             </div>
-            <h3 className="font-serif text-base text-zinc-900 font-medium">
+            <h3 className="font-sans text-base text-white font-bold">
               Открытка и подкормка в подарок
             </h3>
-            <p className="text-xs text-zinc-500 font-light leading-relaxed">
+            <p className="text-xs text-white/85 font-normal leading-relaxed">
               К каждому букету бесплатно прилагается авторская карточка для ваших теплых слов и фирменное средство стойкости Chrysal.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white border border-zinc-200/90 shadow-sm space-y-2">
-            <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
+          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+            <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
-            <h3 className="font-serif text-base text-zinc-900 font-medium">
-              Стойкость от 10 до 14 дней
+            <h3 className="font-sans text-base text-white font-bold">
+              Стойкость от 10 до 14 дней при правильном уходе
             </h3>
-            <p className="text-xs text-zinc-500 font-light leading-relaxed">
+            <p className="text-xs text-white/85 font-normal leading-relaxed">
               Прямые поставки французских роз, пионов и гортензий. Только отборная срезка первой категории свежести.
             </p>
           </div>
