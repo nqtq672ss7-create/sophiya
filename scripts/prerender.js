@@ -761,7 +761,7 @@ function generatePreRenderedHtml(route) {
             <div class="space-y-3">
               <h4 class="font-serif text-lg text-white font-normal">Адрес и режим работы</h4>
               <ul class="space-y-2 text-xs font-light text-white/70 list-none p-0">
-                <li>📍 г. Нижнекамск, пр. Шинников, 13В</li>
+                <li>📍 <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="hover:text-white underline decoration-white/30">г. Нижнекамск, пр. Шинников, 13В на Яндекс Картах</a></li>
                 <li>⏰ Ежедневно: 08:00 – 21:00</li>
                 <li>🚚 Доставка от 30 минут</li>
               </ul>
@@ -858,7 +858,11 @@ function generateJsonLd(route) {
         "closes": "21:00"
       }
     ],
-    "sameAs": ["https://wa.me/79172563235"]
+    "hasMap": "https://yandex.ru/maps/org/sofiya/105599949171",
+    "sameAs": [
+      "https://yandex.ru/maps/org/sofiya/105599949171",
+      "https://wa.me/79172563235"
+    ]
   };
 
   let extraSchemas = '';

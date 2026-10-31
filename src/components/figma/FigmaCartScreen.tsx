@@ -279,7 +279,15 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
             <div className="p-4 sm:p-5 bg-white rounded-2xl sm:rounded-3xl border border-zinc-200 text-xs sm:text-sm text-zinc-600 space-y-2">
               <div className="flex items-center gap-2 text-[#6C1E26] font-medium">
                 <Store className="w-4 h-4 shrink-0" />
-                <span>Бесплатный самовывоз из салона: пр. Шинников, 13В</span>
+                <a
+                  href="https://yandex.ru/maps/org/sofiya/105599949171"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                  title="Открыть салон на Яндекс Картах"
+                >
+                  Бесплатный самовывоз из салона: пр. Шинников, 13В ↗
+                </a>
               </div>
               <p className="text-zinc-500 font-light pl-6">
                 Соберем букет к назначенному времени. Флорист пришлет фото в WhatsApp перед выездом курьера.

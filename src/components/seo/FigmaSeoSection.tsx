@@ -22,11 +22,17 @@ export const FigmaSeoSection: React.FC = () => {
             Салон цветов «София» на проспекте Шинников, 13В — это пространство эстетики, где каждый букет собирается вручную опытными флористами из свежих поставок сортовых роз и сезонных цветов.
           </p>
 
-          <div className="pt-2 flex items-center gap-4 text-xs text-zinc-500 font-light">
-            <div className="flex items-center gap-1.5">
+          <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-zinc-500 font-light">
+            <a
+              href="https://yandex.ru/maps/org/sofiya/105599949171"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-[#6C1E26] transition-colors"
+              title="Открыть салон «София» на Яндекс Картах"
+            >
               <MapPin className="w-4 h-4 text-[#6C1E26]" />
-              <span>Шинников, 13В</span>
-            </div>
+              <span className="underline decoration-zinc-300">пр. Шинников, 13В на Яндекс Картах</span>
+            </a>
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-[#6C1E26]" />
               <span>08:00 — 21:00 ежедневно</span>

@@ -58,14 +58,31 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
             <ul className="space-y-2 text-xs font-light text-white/70 list-none p-0">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5" />
-                <span>г. Нижнекамск, пр. Шинников, 13В</span>
+                <a
+                  href="https://yandex.ru/maps/org/sofiya/105599949171"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                  title="Салон «София» на Яндекс Картах"
+                >
+                  г. Нижнекамск, пр. Шинников, 13В
+                </a>
               </li>
               <li className="flex items-start gap-2">
                 <Clock className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5" />
                 <span>Ежедневно: 08:00 – 21:00</span>
               </li>
-              <li className="text-[11px] text-white/50 pt-1">
-                Бережная доставка по городу от 30 минут
+              <li className="pt-1.5">
+                <a
+                  href="https://yandex.ru/maps/org/sofiya/105599949171"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white/90 hover:text-white text-xs transition-colors border border-white/10"
+                  title="Открыть карточку салона на Яндекс Картах"
+                >
+                  <span className="w-4 h-4 rounded-full bg-[#FC3F1D] text-white text-[10px] font-bold flex items-center justify-center shrink-0">Я</span>
+                  <span>Мы на Яндекс Картах</span>
+                </a>
               </li>
             </ul>
           </div>
@@ -203,7 +220,15 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           >
             © 2026 Салон цветов «София». Все права защищены.
           </button>
-          <span>г. Нижнекамск, пр. Шинников, 13В</span>
+          <a
+            href="https://yandex.ru/maps/org/sofiya/105599949171"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white/70 transition-colors"
+            title="Салон на Яндекс Картах"
+          >
+            г. Нижнекамск, пр. Шинников, 13В
+          </a>
         </div>
       </div>
 

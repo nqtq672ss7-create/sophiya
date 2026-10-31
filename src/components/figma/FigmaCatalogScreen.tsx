@@ -135,10 +135,16 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>Доставка от 30 мин</span>
                 </span>
-                <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
+                <a
+                  href="https://yandex.ru/maps/org/sofiya/105599949171"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 bg-black/30 hover:bg-black/50 px-3 py-1.5 rounded-full border border-white/10 transition-colors cursor-pointer"
+                  title="Салон «София» на Яндекс Картах"
+                >
                   <MapPin className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>пр. Шинников, 13В</span>
-                </span>
+                </a>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>Фото букета в WhatsApp</span>
