@@ -20,7 +20,7 @@ function getKVClient() {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
 
   if (req.method === 'OPTIONS') {
@@ -32,8 +32,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 1. GET: Fetch global catalog
   if (req.method === 'GET') {
     try {
-      const data = await client.get('catalog_bouquets');
-      if (data) {
+      let data = await client.get('catalog_bouquets');
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {}
+      }
+      if (data !== undefined && data !== null) {
         return res.status(200).json(data);
       }
       return res.status(200).json(null);

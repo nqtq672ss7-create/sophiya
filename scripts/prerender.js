@@ -457,14 +457,16 @@ const ROUTES = [
   }
 ];
 
+let activeBouquets = BOUQUETS;
+
 function filterBouquetsForRoute(route) {
   if (route.path === '/') {
-    return BOUQUETS;
+    return activeBouquets;
   }
 
   if (route.targetTag) {
     const tag = route.targetTag.toLowerCase();
-    return BOUQUETS.filter(b => {
+    return activeBouquets.filter(b => {
       if (b.flowerTypes && b.flowerTypes.some(ft => ft.toLowerCase().includes(tag))) return true;
       if (b.tags && b.tags.some(t => t.toLowerCase().includes(tag))) return true;
       if (tag === 'розы' && /роз/i.test(b.title)) return true;
@@ -479,14 +481,14 @@ function filterBouquetsForRoute(route) {
 
   if (route.targetCategory) {
     const cat = route.targetCategory.toLowerCase();
-    return BOUQUETS.filter(b => {
-      if (b.category.toLowerCase() === cat) return true;
+    return activeBouquets.filter(b => {
+      if (b.category && b.category.toLowerCase() === cat) return true;
       if (b.tags && b.tags.some(t => t.toLowerCase() === cat)) return true;
       return false;
     });
   }
 
-  return BOUQUETS;
+  return activeBouquets;
 }
 
 function formatBouquetCount(count) {
@@ -534,11 +536,16 @@ function generatePreRenderedHtml(route) {
 
   let bouquetsCardsHtml = '';
   if (filteredBouquets.length > 0) {
-    bouquetsCardsHtml = filteredBouquets.map(b => `
+    bouquetsCardsHtml = filteredBouquets.map(b => {
+      const flowersCount = b.characteristics?.flowersCount || b.flowersCount || 'Свежие цветы';
+      const height = b.characteristics?.height || b.height || '45-55 см';
+      const imageSrc = b.image || '/bouquet-placeholder.svg';
+      const hasReal = b.hasRealPhoto ?? (imageSrc && !imageSrc.includes('placeholder'));
+      return `
       <article class="bg-white rounded-3xl border border-zinc-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between" itemscope itemtype="https://schema.org/Product" id="product-${b.id}">
         <div class="relative overflow-hidden aspect-[4/5] bg-zinc-100">
           <img
-            src="${b.image}"
+            src="${imageSrc}"
             alt="${b.title} в Нижнекамске — салон цветов София"
             width="400"
             height="500"
@@ -549,7 +556,7 @@ function generatePreRenderedHtml(route) {
           <div class="absolute top-3 left-3 bg-[#6C1E26]/90 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full">
             ${b.category}
           </div>
-          ${!b.hasRealPhoto ? `
+          ${!hasReal ? `
             <div class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-amber-200 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-200/30">
               Фото подготавливается
             </div>
@@ -558,14 +565,14 @@ function generatePreRenderedHtml(route) {
         <div class="p-5 sm:p-6 flex-1 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between text-xs text-zinc-400 font-light mb-1">
-              <span>${b.flowersCount}</span>
-              <span>${b.height}</span>
+              <span>${flowersCount}</span>
+              <span>${height}</span>
             </div>
             <h3 class="font-serif text-lg sm:text-xl text-zinc-900 font-medium leading-snug mb-2" itemprop="name">
               ${b.title}
             </h3>
             <p class="text-xs text-zinc-600 font-light line-clamp-2 mb-4" itemprop="description">
-              ${b.description}
+              ${b.description || 'Авторский букет из свежих цветов салона «София».'}
             </p>
           </div>
           <div>
@@ -574,7 +581,7 @@ function generatePreRenderedHtml(route) {
               <meta itemprop="priceCurrency" content="RUB" />
               <meta itemprop="price" content="${b.price}" />
               <span class="font-serif text-2xl font-bold text-[#6C1E26]">
-                ${b.price.toLocaleString('ru-RU')} ₽
+                ${Number(b.price).toLocaleString('ru-RU')} ₽
               </span>
               <span class="text-[11px] ${b.inStock ? 'text-emerald-700 bg-emerald-50' : 'text-zinc-600 bg-zinc-100'} px-2 py-0.5 rounded-full font-medium">
                 ${b.inStock ? 'В наличии' : 'Под заказ'}
@@ -591,7 +598,8 @@ function generatePreRenderedHtml(route) {
           </div>
         </div>
       </article>
-    `).join('\n');
+      `;
+    }).join('\n');
   } else {
     bouquetsCardsHtml = `
       <div class="col-span-full bg-white rounded-3xl p-8 sm:p-12 border border-zinc-200 text-center space-y-4 shadow-sm my-4">
@@ -991,6 +999,21 @@ function generateJsonLd(route) {
 
 async function runPrerender() {
   console.log('🚀 Starting SSG Pre-rendering for 23 landing pages...');
+
+  // Try to load live catalog from cloud backend
+  try {
+    const res = await fetch('https://sitesophiya.vercel.app/api/catalog?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        console.log(`📡 Fetched ${data.length} live bouquets from cloud for pre-rendering!`);
+        activeBouquets = data;
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ Cloud fetch skipped during build, using defaults:', err.message);
+  }
+
   const templatePath = path.resolve(DIST_DIR, 'index.html');
   if (!fs.existsSync(templatePath)) {
     console.error('❌ dist/index.html not found. Please run "vite build" first.');

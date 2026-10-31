@@ -21,7 +21,7 @@ interface CatalogContextType {
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
 
 // Bumped storage key so that old dirty browser caches in Vivaldi/Safari are instantly ignored
-const STORAGE_KEY = 'sophiya_catalog_bouquets_v4_clean';
+const STORAGE_KEY = 'sophiya_catalog_bouquets_v5_live';
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -32,6 +32,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
     try {
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('sophiya_catalog_bouquets_v4_clean');
         localStorage.removeItem('sophiya_catalog_bouquets_v3');
         localStorage.removeItem('sophiya_catalog_bouquets_v2');
         localStorage.removeItem('sophiya_catalog_bouquets');
@@ -40,7 +41,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -78,12 +79,10 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const refreshCatalog = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`), {
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
-      });
+      const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`));
       if (res.ok) {
         const remote = await res.json();
-        if (Array.isArray(remote) && remote.length > 0) {
+        if (Array.isArray(remote)) {
           // Cloud is the single absolute truth for all devices
           setBouquets(remote);
           saveToStorage(remote);
