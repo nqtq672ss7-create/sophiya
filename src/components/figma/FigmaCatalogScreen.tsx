@@ -123,26 +123,17 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 w-full">
         <div className="relative overflow-hidden rounded-3xl bg-rose-texture-hero text-white p-5 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
-            <div className="max-w-2xl space-y-3.5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold tracking-wider text-amber-200 border border-white/15">
-                <span className="text-[#C5A880]">✦</span>
-                <span>Поставка свежих цветов каждый день</span>
-              </div>
-
+            <div className="max-w-2xl space-y-4">
               {/* THE ONLY H1 ON THE ENTIRE PAGE - ALWAYS VISIBLE */}
               <h1 className="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
                 {currentRoute.h1}
               </h1>
 
-              <p className="text-xs sm:text-sm md:text-base lg:text-lg text-white/90 font-normal leading-relaxed">
-                {currentRoute.description}
-              </p>
-
               {/* Guarantees Pills */}
-              <div className="pt-1 flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-light text-white/90">
+              <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-light text-white/90">
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Доставка по Нижнекамску от 30 мин</span>
+                  <span>Доставка от 30 мин</span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <MapPin className="w-3.5 h-3.5 text-[#C5A880]" />
@@ -150,7 +141,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Открытка и подкормка в подарок</span>
+                  <span>Фото букета в WhatsApp</span>
                 </span>
               </div>
             </div>

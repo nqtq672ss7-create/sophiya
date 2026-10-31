@@ -671,19 +671,10 @@ function generatePreRenderedHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 w-full">
         <div class="relative overflow-hidden rounded-3xl bg-rose-texture-hero text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div class="max-w-3xl space-y-4">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold tracking-wider text-amber-200 border border-white/15">
-              <span class="text-[#C5A880]">✦</span>
-              <span>Поставка свежих цветов каждый день</span>
-            </div>
-
             <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
             <h1 class="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
               ${route.h1}
             </h1>
-
-            <p class="text-sm sm:text-base lg:text-lg text-white/90 font-medium leading-relaxed">
-              ${route.description}
-            </p>
 
             <div class="pt-2 flex flex-wrap items-center gap-2.5 text-xs font-light text-white/90">
               <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
@@ -693,7 +684,7 @@ function generatePreRenderedHtml(route) {
                 <span>📍 пр. Шинников, 13В</span>
               </span>
               <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                <span>🎁 Открытка и подкормка в подарок</span>
+                <span>📸 Фото букета в WhatsApp</span>
               </span>
             </div>
           </div>
@@ -741,10 +732,10 @@ function generatePreRenderedHtml(route) {
             </p>
           </div>
           <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg">🎁</div>
-            <h3 class="font-sans text-base font-bold text-white">Открытка и подкормка в подарок</h3>
+            <div class="text-amber-300 text-lg">🎀</div>
+            <h3 class="font-sans text-base font-bold text-white">Дизайнерская упаковка</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
-              К каждому заказу бесплатно прилагается авторская карточка для пожеланий и раствор Chrysal.
+              Каждый букет оформляется в стильную дизайнерскую упаковку с атласными лентами для бережной доставки.
             </p>
           </div>
           <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
@@ -938,7 +929,7 @@ function generateJsonLd(route) {
           "name": "Что входит в стоимость букета?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "В каждый заказ бесплатно входит защитная транспортировочная упаковка, дизайнерская открытка для ваших пожеланий и профессиональный раствор Chrysal для продления стойкости цветов."
+            "text": "В каждый заказ входит авторская флористическая сборка, защитная транспортировочная упаковка и предварительный фотоотчет в WhatsApp перед выездом курьера."
           }
         }
       ]

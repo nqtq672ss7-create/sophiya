@@ -65,10 +65,10 @@ export const FigmaSeoSection: React.FC = () => {
               <Heart className="w-4 h-4" />
             </div>
             <h3 className="font-sans text-base text-white font-bold">
-              Открытка и подкормка в подарок
+              Дизайнерская упаковка
             </h3>
             <p className="text-xs text-white/85 font-normal leading-relaxed">
-              К каждому букету бесплатно прилагается авторская карточка для ваших теплых слов и профессиональный раствор Chrysal.
+              Каждый букет оформляется в стильную дизайнерскую упаковку с атласными лентами для надежной транспортировки.
             </p>
           </div>
 

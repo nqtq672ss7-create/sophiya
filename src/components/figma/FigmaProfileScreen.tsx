@@ -260,7 +260,7 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
-                  <span>Фирменная подкормка для цветов в подарок</span>
+                  <span>Бережная сборка опытными флористами салона</span>
                 </div>
               </div>
             </div>
