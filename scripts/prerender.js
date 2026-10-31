@@ -634,7 +634,7 @@ function generatePreRenderedHtml(route) {
   const categoryChipsHtml = navCategories.map(c => `
     <a
       href="${c.href}"
-      class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#6C1E26] text-white shadow-md' : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200'}"
+      class="px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#6C1E26] text-white shadow-sm font-semibold' : 'bg-white/90 text-zinc-700 hover:bg-white border border-zinc-200/70 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
     >
       ${c.label}
     </a>
@@ -691,9 +691,9 @@ function generatePreRenderedHtml(route) {
         </div>
       </section>
 
-      <!-- 4. Category Navigation Chips -->
+      <!-- 4. Category Navigation Chips (PillNav Style) -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 border-b border-zinc-200">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-1 border-b border-zinc-200/60">
           ${categoryChipsHtml}
         </div>
       </section>

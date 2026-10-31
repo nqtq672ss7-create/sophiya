@@ -179,48 +179,53 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
       {/* 4. Filter & Category Bar with Real Canonical Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {CATEGORY_ITEMS.map((item) => (
-              <a
-                key={item.path}
-                href={item.path}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onNavigate(item.path);
-                  onSelectCategory(item.category);
-                }}
-                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 whitespace-nowrap ${
-                  (currentRoute.path === item.path || (currentRoute.path === '/' && item.category === activeCategory))
-                    ? 'bg-[#6C1E26] text-white shadow-md'
-                    : 'bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/80'
-                }`}
-              >
-                {item.label}
-              </a>
-            ))}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-4 border-b border-zinc-200/60">
+          {/* Category Tabs (PillNav Style) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 px-1 scroll-smooth">
+            {CATEGORY_ITEMS.map((item) => {
+              const isActive =
+                currentRoute.path === item.path ||
+                (currentRoute.path === '/' && item.category === activeCategory);
+              return (
+                <a
+                  key={item.path}
+                  href={item.path}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate(item.path);
+                    onSelectCategory(item.category);
+                  }}
+                  className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 whitespace-nowrap active:scale-95 ${
+                    isActive
+                      ? 'bg-[#6C1E26] text-white shadow-sm font-semibold'
+                      : 'bg-white/90 hover:bg-white text-zinc-600 hover:text-zinc-900 border border-zinc-200/70 hover:border-zinc-300 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
           </div>
 
           {/* Search Input & Filter Button */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="relative flex-1 sm:w-60">
+              <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
                 placeholder="Поиск букета..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-zinc-200 text-xs sm:text-sm focus:outline-none focus:border-[#6C1E26] transition-colors"
+                className="w-full pl-9 pr-4 py-2 rounded-full bg-white border border-zinc-200/80 text-xs sm:text-sm focus:outline-none focus:border-[#6C1E26] transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
               />
             </div>
 
             <button
               onClick={onOpenFilter}
-              className="px-3.5 py-2 rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:text-[#6C1E26] hover:border-[#6C1E26] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-sm"
+              className="px-4 py-2 rounded-full bg-white border border-zinc-200/80 text-zinc-700 hover:text-[#6C1E26] hover:border-[#6C1E26] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.03)] active:scale-95"
               title="Открыть фильтры"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Фильтры</span>
             </button>
           </div>
