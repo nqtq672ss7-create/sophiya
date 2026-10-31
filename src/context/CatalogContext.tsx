@@ -65,16 +65,25 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       if (res.ok) {
         const remote = await res.json();
-        if (Array.isArray(remote)) {
-          setBouquets(remote);
-          saveToStorage(remote);
+        if (Array.isArray(remote) && remote.length > 0) {
+          setBouquets((localPrev) => {
+            // Merge custom bouquets created locally so they are never lost
+            const customLocal = localPrev.filter((b) => b.id.startsWith('custom_'));
+            const remoteIds = new Set(remote.map((r: Bouquet) => r.id));
+            const merged = [
+              ...customLocal.filter((b) => !remoteIds.has(b.id)),
+              ...remote,
+            ];
+            saveToStorage(merged);
+            return merged;
+          });
         } else {
           // Cloud not yet initialized: seed it with current local bouquets
           const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_STORAGE_KEY);
           if (saved) {
             try {
               const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed)) {
+              if (Array.isArray(parsed) && parsed.length > 0) {
                 syncToCloud(parsed);
               }
             } catch {}

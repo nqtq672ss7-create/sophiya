@@ -189,6 +189,7 @@ export const FigmaAppShell: React.FC = () => {
               activeCategory={filters.category}
               onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
               userDiscount={customer?.discountPercent || 0}
+              onOpenCrm={() => setIsAdminCrmOpen(true)}
             />
           )}
 

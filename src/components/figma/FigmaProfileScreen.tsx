@@ -36,6 +36,31 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
         >
           Войти по номеру телефона
         </button>
+
+        {/* Salon Owner Admin Link */}
+        <div className="w-full mt-10 pt-6 border-t border-zinc-200">
+          <button
+            onClick={onOpenCrm}
+            className="w-full p-4 rounded-2xl bg-[#1C1215] text-white hover:bg-[#25151A] transition-all flex items-center justify-between shadow-md group cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#6C1E26] flex items-center justify-center text-[#C5A880] shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-amber-200 font-bold block">
+                  Для владельца салона
+                </span>
+                <span className="text-xs font-semibold text-white block">
+                  Панель управления (CRM и каталог)
+                </span>
+              </div>
+            </div>
+            <span className="text-xs text-[#C5A880] font-medium shrink-0 group-hover:translate-x-1 transition-transform">
+              Войти →
+            </span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -117,6 +142,18 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
             </span>
           </div>
         </div>
+
+        {/* Mobile Owner CRM Button */}
+        <button
+          onClick={onOpenCrm}
+          className="mt-3 w-full p-3 rounded-xl bg-black/40 border border-[#C5A880]/30 hover:bg-black/60 transition-all flex items-center justify-between text-xs text-white cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
+            <span className="font-medium text-amber-200">Панель управления салоном (CRM)</span>
+          </div>
+          <span className="text-[11px] text-[#C5A880] font-semibold">Войти →</span>
+        </button>
       </div>
 
       {/* Main Desktop Container */}
@@ -228,18 +265,19 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
               </div>
             </div>
 
-            {/* Salon CRM Link (Only visible if logged in with salon owner's phone) */}
-            {customer && customer.phone.replace(/\D/g, '') === '79172563235' && (
-              <div className="bg-white rounded-3xl p-5 border border-zinc-200 shadow-sm text-center">
-                <button
-                  onClick={onOpenCrm}
-                  className="w-full py-3 px-4 rounded-2xl bg-zinc-100 hover:bg-[#6C1E26] hover:text-white text-zinc-700 text-xs font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Панель управления салоном</span>
-                </button>
-              </div>
-            )}
+            {/* Salon CRM Link for Owner */}
+            <div className="bg-[#1C1215] rounded-3xl p-5 border border-[#C5A880]/30 shadow-md text-white">
+              <button
+                onClick={onOpenCrm}
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#6C1E26] hover:bg-[#851D28] text-white text-xs font-semibold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
+                <span>Панель управления салоном (CRM & Каталог)</span>
+              </button>
+              <p className="text-[11px] text-white/50 text-center mt-2 font-light">
+                Добавление и удаление букетов, управление ценами и заказами
+              </p>
+            </div>
           </div>
 
           {/* Right Column: Orders & History (8 cols on Desktop) */}

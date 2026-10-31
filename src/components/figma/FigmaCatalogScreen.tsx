@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles } from 'lucide-react';
+import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
 import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
@@ -12,6 +12,7 @@ interface FigmaCatalogScreenProps {
   activeCategory: string;
   onSelectCategory: (cat: string) => void;
   userDiscount?: number;
+  onOpenCrm?: () => void;
 }
 
 export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
@@ -22,6 +23,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   activeCategory,
   onSelectCategory,
   userDiscount = 0,
+  onOpenCrm,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -42,11 +44,15 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       {/* 1. Mobile Header (Only on screens < md: Exact Figma frame 5 with official logo) */}
       <div className="md:hidden relative bg-rose-texture-hero text-white pt-7 pb-9 px-5 sm:px-6 shadow-md border-b border-white/10">
         <div className="flex items-center justify-between mb-5 gap-3">
-          <div className="flex items-center">
+          <div
+            onClick={onOpenCrm}
+            className="flex items-center cursor-pointer group"
+            title="Салон цветов София (Панель управления)"
+          >
             <img
               src="/logo-light.png"
               alt="Салон цветов София"
-              className="h-16 sm:h-20 w-auto object-contain"
+              className="h-16 sm:h-20 w-auto object-contain group-active:scale-95 transition-transform"
             />
           </div>
 

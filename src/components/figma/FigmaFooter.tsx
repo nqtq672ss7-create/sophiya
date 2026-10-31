@@ -119,6 +119,15 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   <span>Реквизиты и оплата</span>
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={onOpenCrm}
+                  className="hover:text-[#C5A880] text-[#C5A880]/90 transition-colors flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#C5A880]" />
+                  <span>Панель управления (CRM)</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>

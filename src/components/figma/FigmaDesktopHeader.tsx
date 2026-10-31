@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingBag, User, Phone } from 'lucide-react';
+import { ShoppingBag, User, Phone, ShieldCheck } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { useAuth } from '../../context/AuthContext';
 
@@ -152,7 +152,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
           {/* Cart Icon Button */}
           <button
             onClick={() => onTabChange('cart')}
-            className="relative p-2.5 rounded-full bg-[#6C1E26] text-white hover:bg-[#5A121A] transition-all shadow-sm active:scale-95 flex items-center gap-2"
+            className="relative p-2.5 rounded-full bg-[#6C1E26] text-white hover:bg-[#5A121A] transition-all shadow-sm active:scale-95 flex items-center gap-2 cursor-pointer"
             aria-label="Открыть корзину"
           >
             <ShoppingBag className="w-4 h-4" />
@@ -161,6 +161,16 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
                 {cartCount}
               </span>
             )}
+          </button>
+
+          {/* Quick Admin CRM Trigger */}
+          <button
+            onClick={onSecretCrmTrigger}
+            className="p-2.5 rounded-full text-zinc-400 hover:text-[#6C1E26] hover:bg-[#6C1E26]/10 transition-colors cursor-pointer"
+            title="Панель управления салоном (CRM & Каталог)"
+            aria-label="Панель управления"
+          >
+            <ShieldCheck className="w-4 h-4" />
           </button>
         </div>
       </div>
