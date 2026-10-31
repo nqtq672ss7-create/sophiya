@@ -236,20 +236,6 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
         </div>
       </div>
 
-      {/* 5. Editorial Category Overview (Local SEO Content for Humans) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-3">
-          <h2 className="font-serif text-xl sm:text-2xl text-zinc-900 font-normal leading-snug">
-            {currentRoute.introHeading}
-          </h2>
-          <div className="space-y-2.5 text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
-            {currentRoute.introText.map((p, idx) => (
-              <p key={idx}>{p}</p>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* 6. Bouquets Catalog Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <div className="flex items-baseline justify-between mb-6 pb-2 border-b border-zinc-200">

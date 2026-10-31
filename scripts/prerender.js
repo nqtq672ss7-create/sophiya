@@ -644,24 +644,6 @@ function generatePreRenderedHtml(route) {
 
   return `
     <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white font-sans">
-      <!-- 1. Top Bar -->
-      <div class="bg-[#140506] text-white/90 py-2 px-4 border-b border-white/10 text-xs tracking-wide">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 font-normal">
-          <div class="flex items-center gap-2.5">
-            <span class="text-[#C5A880]">✦</span>
-            <span class="font-medium text-white">Доставка цветов по Нижнекамску от 30 минут</span>
-          </div>
-          <div class="flex items-center gap-3.5 text-white/80 text-[11px] sm:text-xs">
-            <a href="https://yandex.ru/maps/?text=Нижнекамск+Шинников+13В" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 hover:text-white">
-              <span class="text-[#C5A880]">📍</span>
-              <span class="font-medium">пр. Шинников, 13В</span>
-            </a>
-            <span class="text-white/20">|</span>
-            <span class="text-white/60">08:00 – 21:00</span>
-          </div>
-        </div>
-      </div>
-
       <!-- 2. Header -->
       <header class="w-full bg-[#FAF7F5]/95 backdrop-blur-md border-b border-zinc-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
@@ -722,18 +704,6 @@ function generatePreRenderedHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
         <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 border-b border-zinc-200">
           ${categoryChipsHtml}
-        </div>
-      </section>
-
-      <!-- 5. Editorial Category Overview & Intro Text -->
-      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 w-full">
-        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-4">
-          <h2 class="font-serif text-xl sm:text-2xl text-zinc-900 font-normal leading-snug">
-            ${route.introHeading}
-          </h2>
-          <div class="space-y-3 text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
-            ${route.introText.map(p => `<p>${p}</p>`).join('\n')}
-          </div>
         </div>
       </section>
 
