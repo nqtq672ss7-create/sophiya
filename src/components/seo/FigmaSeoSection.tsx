@@ -19,7 +19,7 @@ export const FigmaSeoSection: React.FC = () => {
           </h2>
 
           <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
-            Салон цветов «София» на проспекте Шинников, 13В — это пространство эстетики, где каждый букет собирается вручную опытными флористами из свежайших поставок голландских и эквадорских цветов.
+            Салон цветов «София» на проспекте Шинников, 13В — это пространство эстетики, где каждый букет собирается вручную опытными флористами из свежих поставок роз и сортовых цветов [ПРОВЕРИТЬ: прямые поставки с плантаций Голландии и Эквадора].
           </p>
 
           <div className="pt-2 flex items-center gap-4 text-xs text-zinc-500 font-light">
@@ -41,10 +41,10 @@ export const FigmaSeoSection: React.FC = () => {
               <Truck className="w-4 h-4" />
             </div>
             <h3 className="font-sans text-base text-white font-bold">
-              Доставка от 30 минут
+              Оперативная доставка [ПРОВЕРИТЬ: от 30 минут]
             </h3>
             <p className="text-xs text-white/85 font-normal leading-relaxed">
-              Быстрая бережная доставка по всем районам Нижнекамска в аквабоксах с водой. Цветы приезжают свежими в любую погоду.
+              Бережная доставка по районам Нижнекамска в защитных боксах с водой. Цветы приезжают свежими в любую погоду.
             </p>
           </div>
 
@@ -65,10 +65,10 @@ export const FigmaSeoSection: React.FC = () => {
               <Heart className="w-4 h-4" />
             </div>
             <h3 className="font-sans text-base text-white font-bold">
-              Открытка и подкормка в подарок
+              Открытка в подарок [ПРОВЕРИТЬ: подкормка Chrysal]
             </h3>
             <p className="text-xs text-white/85 font-normal leading-relaxed">
-              К каждому букету бесплатно прилагается авторская карточка для ваших теплых слов и фирменное средство стойкости Chrysal.
+              К каждому букету бесплатно прилагается авторская карточка для ваших теплых слов [ПРОВЕРИТЬ: средство Chrysal].
             </p>
           </div>
 
@@ -77,10 +77,10 @@ export const FigmaSeoSection: React.FC = () => {
               <Sparkles className="w-4 h-4" />
             </div>
             <h3 className="font-sans text-base text-white font-bold">
-              Стойкость от 10 до 14 дней при правильном уходе
+              Стойкость при правильном уходе [ПРОВЕРИТЬ: 10–14 дней]
             </h3>
             <p className="text-xs text-white/85 font-normal leading-relaxed">
-              Прямые поставки французских роз, пионов и гортензий. Только отборная срезка первой категории свежести.
+              Свежие поставки роз, пионов и сортовых цветов [ПРОВЕРИТЬ: прямые поставки с плантаций]. Отборная срезка первой категории.
             </p>
           </div>
         </div>

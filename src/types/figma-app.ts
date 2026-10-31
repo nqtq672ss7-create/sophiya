@@ -9,6 +9,9 @@ export interface Bouquet {
   color: BouquetColor;
   inStock: boolean;
   image: string;
+  hasRealPhoto?: boolean;
+  tags?: string[];
+  flowerTypes?: string[];
   description: string;
   characteristics: {
     height: string;

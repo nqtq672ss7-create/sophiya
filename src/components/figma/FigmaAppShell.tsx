@@ -13,7 +13,7 @@ import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
-import { getRouteByPath, SEO_ROUTES, SeoRoute } from '../../utils/routes';
+import { getRouteByPath, SEO_ROUTES, SeoRoute, filterBouquetsForRoute } from '../../utils/routes';
 
 export const FigmaAppShell: React.FC = () => {
   const { customer, openAuthModal } = useAuth();
@@ -38,7 +38,7 @@ export const FigmaAppShell: React.FC = () => {
   const [filters, setFilters] = useState<FilterOptions>({
     minPrice: 0,
     maxPrice: 30000,
-    category: initialRoute.categoryFilter || 'Все',
+    category: initialRoute.categoryFilter || initialRoute.targetCategory || 'Все',
     color: 'Все',
   });
 
@@ -52,15 +52,18 @@ export const FigmaAppShell: React.FC = () => {
     return raw - Math.round((raw * discount) / 100);
   }, [cartItems, customer]);
 
+  const routeBouquets = useMemo(() => {
+    return filterBouquetsForRoute(bouquets, currentRoute, filters.category);
+  }, [bouquets, currentRoute, filters.category]);
+
   const filteredBouquets = useMemo(() => {
-    return bouquets.filter((b) => {
-      if (filters.category !== 'Все' && b.category !== filters.category) return false;
+    return routeBouquets.filter((b) => {
       if (filters.color !== 'Все' && b.color !== filters.color) return false;
       if (b.price < filters.minPrice) return false;
       if (filters.maxPrice > 0 && b.price > filters.maxPrice) return false;
       return true;
     });
-  }, [filters, bouquets]);
+  }, [routeBouquets, filters]);
 
   const handleAddToCart = (bouquet: Bouquet, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -108,8 +111,9 @@ export const FigmaAppShell: React.FC = () => {
         setActiveTab('profile');
       } else {
         setActiveTab('catalog');
-        if (targetRoute.categoryFilter) {
-          setFilters((prev) => ({ ...prev, category: targetRoute.categoryFilter }));
+        const cat = targetRoute.categoryFilter || targetRoute.targetCategory;
+        if (cat) {
+          setFilters((prev) => ({ ...prev, category: cat }));
         }
       }
 
@@ -141,8 +145,9 @@ export const FigmaAppShell: React.FC = () => {
         setActiveTab('profile');
       } else {
         setActiveTab('catalog');
-        if (route.categoryFilter) {
-          setFilters((prev) => ({ ...prev, category: route.categoryFilter }));
+        const cat = route.categoryFilter || route.targetCategory;
+        if (cat) {
+          setFilters((prev) => ({ ...prev, category: cat }));
         }
       }
 
@@ -219,9 +224,9 @@ export const FigmaAppShell: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 overflow-x-auto no-scrollbar font-normal">
           <div className="flex items-center gap-2.5 shrink-0">
             <span className="text-[#C5A880] text-xs">✦</span>
-            <span className="font-medium text-white tracking-wide">Доставка цветов по Нижнекамску от 30 минут</span>
+            <span className="font-medium text-white tracking-wide">Салон цветов «София» • пр. Шинников, 13В</span>
             <span className="text-white/30 hidden sm:inline">•</span>
-            <span className="text-white/70 hidden sm:inline">Поставка свежих цветов каждый день</span>
+            <span className="text-white/70 hidden sm:inline">Ежедневно: 08:00 – 21:00</span>
           </div>
 
           <div className="hidden sm:flex items-center gap-3.5 shrink-0 text-white/80 text-[11px] sm:text-xs">

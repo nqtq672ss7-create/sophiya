@@ -3,7 +3,7 @@ import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSq
 import { Bouquet } from '../../types/figma-app';
 import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
-import { SeoRoute } from '../../utils/routes';
+import { SeoRoute, formatShownCount } from '../../utils/routes';
 
 interface FigmaCatalogScreenProps {
   bouquets: Bouquet[];
@@ -126,7 +126,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             <div className="max-w-2xl space-y-3.5">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold tracking-wider text-amber-200 border border-white/15">
                 <span className="text-[#C5A880]">✦</span>
-                <span>Быстрая доставка от 30 мин • Поставка свежих цветов каждый день</span>
+                <span>Поставка свежих цветов каждый день</span>
               </div>
 
               {/* THE ONLY H1 ON THE ENTIRE PAGE - ALWAYS VISIBLE */}
@@ -142,7 +142,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               <div className="pt-1 flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-light text-white/90">
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Доставка от 30 минут</span>
+                  <span>Доставка по Нижнекамску [ПРОВЕРИТЬ: от 30 мин]</span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <MapPin className="w-3.5 h-3.5 text-[#C5A880]" />
@@ -150,7 +150,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Подкормка в подарок</span>
+                  <span>Открытка в подарок [ПРОВЕРИТЬ: подкормка Chrysal]</span>
                 </span>
               </div>
             </div>
@@ -254,28 +254,47 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <div className="flex items-baseline justify-between mb-6 pb-2 border-b border-zinc-200">
           <h2 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
-            Каталог: {currentRoute.breadcrumbLabel}
+            {currentRoute.path === '/' ? 'Каталог букетов' : `Каталог: ${currentRoute.breadcrumbLabel}`}
           </h2>
           <span className="text-xs text-zinc-500 font-light">
-            Показано {displayedBouquets.length} из {bouquets.length} букетов
+            {formatShownCount(displayedBouquets.length)}
           </span>
         </div>
 
         {displayedBouquets.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-base text-zinc-600 mb-4">
-              По вашему запросу букетов не найдено
+          <div className="py-16 text-center bg-white rounded-3xl border border-zinc-200/80 p-8 shadow-sm">
+            <div className="w-16 h-16 mx-auto rounded-full bg-amber-50 flex items-center justify-center text-amber-800 text-2xl mb-4">
+              🌸
+            </div>
+            <h3 className="font-serif text-xl sm:text-2xl text-zinc-900 font-normal mb-2">
+              Позиции в категории «{currentRoute.breadcrumbLabel}» собираются под заказ
+            </h3>
+            <p className="text-xs sm:text-sm text-zinc-500 font-light max-w-md mx-auto mb-6 leading-relaxed">
+              Наши шеф-флористы соберут букет из свежих цветов сегодняшней поставки с обязательным фотоотчетом в WhatsApp перед передачей курьеру.
             </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                onSelectCategory('Все');
-                onNavigate('/');
-              }}
-              className="px-6 py-2.5 rounded-xl bg-[#6C1E26] text-white text-xs font-medium cursor-pointer"
-            >
-              Сбросить фильтры
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href={`https://wa.me/79172563235?text=${encodeURIComponent(
+                  `Здравствуйте! Хочу заказать букет в категории «${currentRoute.breadcrumbLabel}» в Нижнекамске.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center justify-center gap-2 shadow"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Связаться с шеф-флористом</span>
+              </a>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  onSelectCategory('Все');
+                  onNavigate('/');
+                }}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium cursor-pointer"
+              >
+                Посмотреть весь каталог
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -316,6 +335,13 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#6C1E26] text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm">
                       {bouquet.category}
                     </div>
+
+                    {/* Photo placeholder badge if not real photo */}
+                    {!bouquet.hasRealPhoto && (
+                      <div className="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md text-amber-200 text-[10px] font-medium px-2 py-1 rounded-xl text-center border border-white/10">
+                        Фото подготавливается [ПРОВЕРИТЬ]
+                      </div>
+                    )}
                   </div>
 
                   {/* Info Container */}
