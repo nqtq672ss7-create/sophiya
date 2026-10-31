@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
@@ -17,7 +17,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   onClose,
 }) => {
   const { allCustomers, refreshCustomers } = useAuth();
-  const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault } = useCatalog();
+  const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog } = useCatalog();
   const { reviews, publishedReviews, addReview, deleteReview, togglePublished, resetToDefault: resetReviewsToDefault } = useReviews();
 
   // Security Gate PIN State (Default PIN: 3235 — last 4 digits of salon phone)
@@ -51,6 +51,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [newPackaging, setNewPackaging] = useState('Фирменная дизайнерская упаковка «София»');
   const [newDescription, setNewDescription] = useState('');
   const [newImage, setNewImage] = useState('/bouquet-1.jpg');
+  const [imageCompressionNotice, setImageCompressionNotice] = useState<string>('');
 
   // New Review Form State
   const [reviewAuthor, setReviewAuthor] = useState('');
@@ -126,6 +127,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageCompressionNotice('Оптимизация изображения...');
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
@@ -134,7 +136,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           img.onload = () => {
             try {
               const canvas = document.createElement('canvas');
-              const maxDim = 1200;
+              const maxDim = 900;
               let width = img.width;
               let height = img.height;
               if (width > height) {
@@ -153,17 +155,30 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 ctx.drawImage(img, 0, 0, width, height);
-                const compressed = canvas.toDataURL('image/jpeg', 0.82);
+                // First attempt modern WebP format
+                let compressed = canvas.toDataURL('image/webp', 0.80);
+                if (!compressed.startsWith('data:image/webp')) {
+                  compressed = canvas.toDataURL('image/jpeg', 0.78);
+                }
+                // If over 350KB, compress further to protect database limits
+                if (compressed.length > 400000) {
+                  compressed = canvas.toDataURL('image/jpeg', 0.65);
+                }
+                const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
+                setImageCompressionNotice(`✓ Сжато: ~${approxKb} КБ (мгновенная загрузка)`);
                 setNewImage(compressed);
               } else {
                 setNewImage(rawResult);
+                setImageCompressionNotice('');
               }
             } catch {
               setNewImage(rawResult);
+              setImageCompressionNotice('');
             }
           };
           img.onerror = () => {
             setNewImage(rawResult);
+            setImageCompressionNotice('');
           };
           img.src = rawResult;
         }
@@ -549,9 +564,15 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                           className="hidden"
                         />
                       </label>
-                      <span className="block text-[10px] text-white/40 mt-1">
-                        Фото сразу оптимизируется и появится на витрине сайта
-                      </span>
+                      {imageCompressionNotice ? (
+                        <span className="block text-[11px] text-emerald-400 font-medium mt-1">
+                          {imageCompressionNotice}
+                        </span>
+                      ) : (
+                        <span className="block text-[10px] text-white/40 mt-1">
+                          Фото автоматически сжимается до ~100–250 КБ для быстрой работы
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -597,6 +618,25 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
                 />
               </div>
+
+              {/* Cloud Sync Button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  const ok = await syncCatalog();
+                  if (ok) {
+                    setSuccessNotice('Каталог успешно синхронизирован с облаком для всех покупателей');
+                    setIsSuccessMessage(true);
+                    setTimeout(() => setIsSuccessMessage(false), 2500);
+                  }
+                }}
+                disabled={isSyncing}
+                className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                title="Синхронизировать весь каталог с облачной базой"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-[#C5A880] ${isSyncing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Синхронизация</span>
+              </button>
 
               {/* Backup & Export Button */}
               <button

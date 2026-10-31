@@ -12,6 +12,9 @@ interface CatalogContextType {
   resetToDefault: () => void;
   clearAllBouquets: () => void;
   refreshCatalog: () => Promise<void>;
+  isSyncing: boolean;
+  lastSyncedAt: Date | null;
+  syncCatalog: () => Promise<boolean>;
 }
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
@@ -20,12 +23,15 @@ const STORAGE_KEY = 'sophiya_catalog_bouquets_v3';
 const BACKUP_STORAGE_KEY = 'sophiya_catalog_bouquets_v2';
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_STORAGE_KEY);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       }
@@ -45,53 +51,58 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Sync catalog to cloud server
-  const syncToCloud = async (items: Bouquet[]) => {
+  const syncToCloud = async (items: Bouquet[]): Promise<boolean> => {
     try {
-      await fetch(getApiUrl('/api/catalog'), {
+      const res = await fetch(getApiUrl('/api/catalog'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
       });
+      return res.ok;
     } catch (e) {
       console.warn('Failed to sync catalog to cloud:', e);
+      return false;
     }
   };
 
   // Fetch catalog from cloud on mount
   const refreshCatalog = useCallback(async () => {
+    setIsSyncing(true);
     try {
       const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`), {
         headers: { 'Cache-Control': 'no-cache' },
       });
       if (res.ok) {
         const remote = await res.json();
-        if (Array.isArray(remote) && remote.length > 0) {
-          setBouquets((localPrev) => {
-            // Merge custom bouquets created locally so they are never lost
-            const customLocal = localPrev.filter((b) => b.id.startsWith('custom_'));
-            const remoteIds = new Set(remote.map((r: Bouquet) => r.id));
-            const merged = [
-              ...customLocal.filter((b) => !remoteIds.has(b.id)),
-              ...remote,
-            ];
-            saveToStorage(merged);
-            return merged;
-          });
-        } else {
-          // Cloud not yet initialized: seed it with current local bouquets
-          const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_STORAGE_KEY);
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                syncToCloud(parsed);
-              }
-            } catch {}
+        if (Array.isArray(remote)) {
+          // Automatic seed/repair: If cloud only contains 1 test item and local has the full catalogue
+          if (remote.length === 1 && remote[0].id === '6' && BOUQUETS_CATALOG.length > 1) {
+            console.info('Seeding cloud with initial full catalog...');
+            await syncToCloud(BOUQUETS_CATALOG);
+            setBouquets(BOUQUETS_CATALOG);
+            saveToStorage(BOUQUETS_CATALOG);
+            setLastSyncedAt(new Date());
+            return;
+          }
+
+          if (remote.length > 0) {
+            // Server is the Single Source of Truth: no ghost/zombie resurrecting from localStorage
+            setBouquets(remote);
+            saveToStorage(remote);
+            setLastSyncedAt(new Date());
+          } else {
+            // Cloud not yet initialized: seed with default catalog
+            await syncToCloud(BOUQUETS_CATALOG);
+            setBouquets(BOUQUETS_CATALOG);
+            saveToStorage(BOUQUETS_CATALOG);
+            setLastSyncedAt(new Date());
           }
         }
       }
     } catch (err) {
       console.warn('Failed to fetch remote catalog:', err);
+    } finally {
+      setIsSyncing(false);
     }
   }, []);
 
@@ -152,6 +163,19 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     syncToCloud(BOUQUETS_CATALOG);
   };
 
+  const syncCatalog = async (): Promise<boolean> => {
+    setIsSyncing(true);
+    try {
+      const ok = await syncToCloud(bouquets);
+      if (ok) {
+        setLastSyncedAt(new Date());
+      }
+      return ok;
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <CatalogContext.Provider
       value={{
@@ -163,6 +187,9 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         resetToDefault,
         clearAllBouquets,
         refreshCatalog,
+        isSyncing,
+        lastSyncedAt,
+        syncCatalog,
       }}
     >
       {children}
