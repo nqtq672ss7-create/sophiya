@@ -52,6 +52,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [newDescription, setNewDescription] = useState('');
   const [newImage, setNewImage] = useState('/bouquet-1.jpg');
   const [imageCompressionNotice, setImageCompressionNotice] = useState<string>('');
+  const [isSavingBouquet, setIsSavingBouquet] = useState(false);
 
   // New Review Form State
   const [reviewAuthor, setReviewAuthor] = useState('');
@@ -187,35 +188,42 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     }
   };
 
-  const handleCreateBouquet = (e: React.FormEvent) => {
+  const handleCreateBouquet = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newPrice) return;
+    if (!newTitle.trim() || !newPrice || isSavingBouquet) return;
 
-    addBouquet({
-      title: newTitle.trim(),
-      price: Number(newPrice),
-      category: newCategory,
-      color: newColor,
-      inStock: true,
-      image: newImage,
-      description: newDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
-      characteristics: {
-        height: newHeight,
-        flowersCount: newComposition || 'Отборные цветы премиум сортов',
-        durability: newDurability,
-        packaging: newPackaging,
-      },
-    });
+    setIsSavingBouquet(true);
+    try {
+      await addBouquet({
+        title: newTitle.trim(),
+        price: Number(newPrice),
+        category: newCategory,
+        color: newColor,
+        inStock: true,
+        image: newImage,
+        description: newDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
+        characteristics: {
+          height: newHeight,
+          flowersCount: newComposition || 'Отборные цветы премиум сортов',
+          durability: newDurability,
+          packaging: newPackaging,
+        },
+      });
 
-    // Reset Form
-    setNewTitle('');
-    setNewPrice('');
-    setNewComposition('');
-    setNewDescription('');
-    setIsAddBouquetOpen(false);
-    setSuccessNotice('Новый букет успешно добавлен в витрину и доступен для заказа!');
-    setIsSuccessMessage(true);
-    setTimeout(() => setIsSuccessMessage(false), 3000);
+      // Reset Form
+      setNewTitle('');
+      setNewPrice('');
+      setNewComposition('');
+      setNewDescription('');
+      setIsAddBouquetOpen(false);
+      setSuccessNotice('Новый букет успешно добавлен и синхронизирован со всеми устройствами!');
+      setIsSuccessMessage(true);
+      setTimeout(() => setIsSuccessMessage(false), 3000);
+    } catch {
+      alert('Ошибка при сохранении в облако. Попробуйте еще раз.');
+    } finally {
+      setIsSavingBouquet(false);
+    }
   };
 
   const handleCreateReview = (e: React.FormEvent) => {
@@ -598,9 +606,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-white text-xs font-semibold shadow-md"
+                    disabled={isSavingBouquet}
+                    className="px-6 py-2.5 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-white text-xs font-semibold shadow-md disabled:opacity-50 cursor-pointer"
                   >
-                    Опубликовать на сайт
+                    {isSavingBouquet ? 'Сохранение в облако...' : 'Опубликовать на сайт'}
                   </button>
                 </div>
               </form>
@@ -731,15 +740,15 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
                     {/* Delete */}
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (confirm(`Удалить букет «${b.title}» из каталога?`)) {
-                          deleteBouquet(b.id);
+                          await deleteBouquet(b.id);
                           setSuccessNotice(`Букет «${b.title}» удален со всех устройств`);
                           setIsSuccessMessage(true);
                           setTimeout(() => setIsSuccessMessage(false), 2500);
                         }
                       }}
-                      className="p-2 text-white/40 hover:text-red-400 transition-colors"
+                      className="p-2 text-white/40 hover:text-red-400 transition-colors cursor-pointer"
                       title="Удалить позицию"
                     >
                       <Trash2 className="w-4 h-4" />

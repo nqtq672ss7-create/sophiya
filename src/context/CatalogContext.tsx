@@ -5,12 +5,12 @@ import { getApiUrl } from '../config/api';
 
 interface CatalogContextType {
   bouquets: Bouquet[];
-  addBouquet: (newBouquet: Omit<Bouquet, 'id'>) => Bouquet;
-  updateBouquet: (id: string, updates: Partial<Bouquet>) => void;
-  deleteBouquet: (id: string) => void;
-  toggleStock: (id: string) => void;
-  resetToDefault: () => void;
-  clearAllBouquets: () => void;
+  addBouquet: (newBouquet: Omit<Bouquet, 'id'>) => Promise<Bouquet>;
+  updateBouquet: (id: string, updates: Partial<Bouquet>) => Promise<void>;
+  deleteBouquet: (id: string) => Promise<boolean>;
+  toggleStock: (id: string) => Promise<boolean>;
+  resetToDefault: () => Promise<void>;
+  clearAllBouquets: () => Promise<void>;
   refreshCatalog: () => Promise<void>;
   isSyncing: boolean;
   lastSyncedAt: Date | null;
@@ -110,57 +110,87 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     refreshCatalog();
   }, [refreshCatalog]);
 
-  const addBouquet = (newBouquetData: Omit<Bouquet, 'id'>): Bouquet => {
+  const addBouquet = async (newBouquetData: Omit<Bouquet, 'id'>): Promise<Bouquet> => {
     const newBouquet: Bouquet = {
       ...newBouquetData,
       id: `custom_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     };
-    setBouquets((prev) => {
-      const updated = [newBouquet, ...prev];
-      saveToStorage(updated);
-      syncToCloud(updated);
-      return updated;
-    });
+    const updated = [newBouquet, ...bouquets];
+    setBouquets(updated);
+    saveToStorage(updated);
+    setIsSyncing(true);
+    try {
+      const ok = await syncToCloud(updated);
+      if (ok) setLastSyncedAt(new Date());
+    } finally {
+      setIsSyncing(false);
+    }
     return newBouquet;
   };
 
-  const updateBouquet = (id: string, updates: Partial<Bouquet>) => {
-    setBouquets((prev) => {
-      const updated = prev.map((b) => (b.id === id ? { ...b, ...updates } : b));
-      saveToStorage(updated);
-      syncToCloud(updated);
-      return updated;
-    });
+  const updateBouquet = async (id: string, updates: Partial<Bouquet>): Promise<void> => {
+    const updated = bouquets.map((b) => (b.id === id ? { ...b, ...updates } : b));
+    setBouquets(updated);
+    saveToStorage(updated);
+    setIsSyncing(true);
+    try {
+      const ok = await syncToCloud(updated);
+      if (ok) setLastSyncedAt(new Date());
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const deleteBouquet = (id: string) => {
-    setBouquets((prev) => {
-      const updated = prev.filter((b) => b.id !== id);
-      saveToStorage(updated);
-      syncToCloud(updated);
-      return updated;
-    });
+  const deleteBouquet = async (id: string): Promise<boolean> => {
+    const updated = bouquets.filter((b) => b.id !== id);
+    setBouquets(updated);
+    saveToStorage(updated);
+    setIsSyncing(true);
+    try {
+      const ok = await syncToCloud(updated);
+      if (ok) setLastSyncedAt(new Date());
+      return ok;
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const toggleStock = (id: string) => {
-    setBouquets((prev) => {
-      const updated = prev.map((b) => (b.id === id ? { ...b, inStock: !b.inStock } : b));
-      saveToStorage(updated);
-      syncToCloud(updated);
-      return updated;
-    });
+  const toggleStock = async (id: string): Promise<boolean> => {
+    const updated = bouquets.map((b) => (b.id === id ? { ...b, inStock: !b.inStock } : b));
+    setBouquets(updated);
+    saveToStorage(updated);
+    setIsSyncing(true);
+    try {
+      const ok = await syncToCloud(updated);
+      if (ok) setLastSyncedAt(new Date());
+      return ok;
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const clearAllBouquets = () => {
+  const clearAllBouquets = async (): Promise<void> => {
     setBouquets([]);
     saveToStorage([]);
-    syncToCloud([]);
+    setIsSyncing(true);
+    try {
+      await syncToCloud([]);
+      setLastSyncedAt(new Date());
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const resetToDefault = () => {
+  const resetToDefault = async (): Promise<void> => {
     setBouquets(BOUQUETS_CATALOG);
     saveToStorage(BOUQUETS_CATALOG);
-    syncToCloud(BOUQUETS_CATALOG);
+    setIsSyncing(true);
+    try {
+      await syncToCloud(BOUQUETS_CATALOG);
+      setLastSyncedAt(new Date());
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const syncCatalog = async (): Promise<boolean> => {

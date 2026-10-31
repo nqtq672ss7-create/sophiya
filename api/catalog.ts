@@ -46,7 +46,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 2. POST: Update global catalog across all devices
   if (req.method === 'POST') {
     try {
-      const items = req.body;
+      let items = req.body;
+      if (typeof items === 'string') {
+        try {
+          items = JSON.parse(items);
+        } catch {
+          return res.status(400).json({ error: 'Invalid JSON payload' });
+        }
+      }
       if (!Array.isArray(items)) {
         return res.status(400).json({ error: 'Expected array of bouquets' });
       }
