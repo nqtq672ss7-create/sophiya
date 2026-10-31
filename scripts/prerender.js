@@ -556,11 +556,6 @@ function generatePreRenderedHtml(route) {
           <div class="absolute top-3 left-3 bg-[#6C1E26]/90 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full">
             ${b.category}
           </div>
-          ${!hasReal ? `
-            <div class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-amber-200 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-200/30">
-              Фото подготавливается
-            </div>
-          ` : ''}
         </div>
         <div class="p-5 sm:p-6 flex-1 flex flex-col justify-between">
           <div>

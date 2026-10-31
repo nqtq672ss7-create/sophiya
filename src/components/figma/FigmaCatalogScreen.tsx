@@ -335,13 +335,6 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#6C1E26] text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm">
                       {bouquet.category}
                     </div>
-
-                    {/* Photo placeholder badge if not real photo */}
-                    {!bouquet.hasRealPhoto && (
-                      <div className="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md text-amber-200 text-[10px] font-medium px-2 py-1 rounded-xl text-center border border-white/10">
-                        Фото подготавливается
-                      </div>
-                    )}
                   </div>
 
                   {/* Info Container */}

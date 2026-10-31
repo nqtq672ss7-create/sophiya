@@ -201,6 +201,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         color: newColor,
         inStock: true,
         image: newImage,
+        hasRealPhoto: true,
         description: newDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
         characteristics: {
           height: newHeight,
