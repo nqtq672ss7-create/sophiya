@@ -17,7 +17,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   onClose,
 }) => {
   const { allCustomers, refreshCustomers } = useAuth();
-  const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog } = useCatalog();
+  const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog, refreshCatalog } = useCatalog();
   const { reviews, publishedReviews, addReview, deleteReview, togglePublished, resetToDefault: resetReviewsToDefault } = useReviews();
 
   // Security Gate PIN State (Default PIN: 3235 — last 4 digits of salon phone)
@@ -645,6 +645,23 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-[#C5A880] ${isSyncing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Синхронизация</span>
+              </button>
+
+              {/* Refresh from cloud button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  await refreshCatalog();
+                  setSuccessNotice('Каталог обновлен из облачной базы данных');
+                  setIsSuccessMessage(true);
+                  setTimeout(() => setIsSuccessMessage(false), 2000);
+                }}
+                disabled={isSyncing}
+                className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                title="Загрузить свежие букеты из облачной базы"
+              >
+                <RotateCcw className={`w-3.5 h-3.5 text-[#C5A880] ${isSyncing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Обновить</span>
               </button>
 
               {/* Backup & Export Button */}
