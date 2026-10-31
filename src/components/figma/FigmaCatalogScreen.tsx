@@ -40,7 +40,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-zinc-900 font-sans">
       {/* 1. Mobile Header (Only on screens < md: Exact Figma frame 5 with official logo) */}
-      <div className="md:hidden relative bg-gradient-to-b from-[#8C1B2F] via-[#731525] to-[#5A121A] text-white pt-7 pb-9 px-5 sm:px-6 shadow-md">
+      <div className="md:hidden relative bg-rose-texture-hero text-white pt-7 pb-9 px-5 sm:px-6 shadow-md border-b border-white/10">
         <div className="flex items-center justify-between mb-5 gap-3">
           <div className="flex items-center">
             <img
@@ -164,7 +164,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
       {/* 2. Desktop Hero Banner (Returned with chic Quiet Luxury & Official Sofia Branding) */}
       <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#8C1B2F] via-[#731525] to-[#5A121A] text-white p-8 lg:p-12 shadow-xl border border-white/10">
+        <div className="relative overflow-hidden rounded-3xl bg-rose-texture-hero text-white p-8 lg:p-12 shadow-xl border border-white/10">
           {/* Subtle floral watermark / ambient light */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-black/20 rounded-full blur-2xl pointer-events-none" />
@@ -319,7 +319,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 <div
                   key={b.id}
                   onClick={() => onSelectBouquet(b)}
-                  className="group flex flex-col bg-[#6C1E26] text-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border border-[#8C1B2F]/60 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer select-none"
+                  className="group flex flex-col bg-rose-texture-card text-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border border-[#8C1B2F]/70 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer select-none"
                 >
                   {/* Bouquet Image Frame */}
                   <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black/20 shadow-sm">

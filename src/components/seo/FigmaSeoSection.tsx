@@ -36,7 +36,7 @@ export const FigmaSeoSection: React.FC = () => {
 
         {/* Right Column: 4 SEO Feature Highlights */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+          <div className="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <Truck className="w-4 h-4" />
             </div>
@@ -48,7 +48,7 @@ export const FigmaSeoSection: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+          <div className="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
             </div>
@@ -60,7 +60,7 @@ export const FigmaSeoSection: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+          <div className="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <Heart className="w-4 h-4" />
             </div>
@@ -72,7 +72,7 @@ export const FigmaSeoSection: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#6C1E26] text-white border border-[#8C1B2F]/60 shadow-md space-y-2">
+          <div className="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>

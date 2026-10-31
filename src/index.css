@@ -75,6 +75,29 @@ body {
   .berry-glow-lg {
     box-shadow: 0 0 45px rgba(108, 30, 38, 0.6);
   }
+
+  /* Luxury Dark Velvet Rose Petals Textures */
+  .bg-rose-texture-card {
+    position: relative;
+    background-color: #430c14;
+    background-image: 
+      linear-gradient(165deg, rgba(67, 12, 20, 0.42) 0%, rgba(18, 3, 5, 0.78) 100%),
+      url('/rose-petals-dark.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .bg-rose-texture-hero {
+    position: relative;
+    background-color: #4a0d15;
+    background-image: 
+      radial-gradient(circle at 65% 35%, rgba(120, 20, 35, 0.35) 0%, rgba(15, 3, 5, 0.82) 100%),
+      url('/rose-petals-dark.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 }
 
 .webgl-canvas {

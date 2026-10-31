@@ -117,7 +117,7 @@ export const FigmaReviewsSection: React.FC = () => {
               style={{ width: `${100 / cardsPerView}%` }}
               className="shrink-0 p-2 sm:p-3"
             >
-              <div className="h-full p-5 sm:p-6 bg-[#6C1E26] text-white rounded-3xl border border-[#8C1B2F]/60 shadow-md hover:shadow-xl transition-all flex flex-col justify-between">
+              <div className="h-full p-5 sm:p-6 bg-rose-texture-card text-white rounded-3xl border border-[#8C1B2F]/70 shadow-md hover:shadow-xl transition-all flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Rating Stars & Verified Badge */}
                   <div className="flex items-center justify-between">

@@ -147,7 +147,7 @@ export const FigmaAppShell: React.FC = () => {
             <span className="text-white/70 hidden sm:inline">Поставка свежих цветов каждый день</span>
           </div>
 
-          <div className="flex items-center gap-3.5 shrink-0 text-white/80 text-[11px] sm:text-xs">
+          <div className="hidden sm:flex items-center gap-3.5 shrink-0 text-white/80 text-[11px] sm:text-xs">
             <a
               href="https://yandex.ru/maps/?text=Нижнекамск+Шинников+13В"
               target="_blank"
