@@ -10,17 +10,26 @@ import { FigmaDesktopHeader } from './FigmaDesktopHeader';
 import { FigmaFooter } from './FigmaFooter';
 import { AuthModal } from '../auth/AuthModal';
 import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
-import { BOUQUETS_CATALOG } from '../../data/bouquets';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
+import { getRouteByPath, SEO_ROUTES, SeoRoute } from '../../utils/routes';
 
 export const FigmaAppShell: React.FC = () => {
   const { customer, openAuthModal } = useAuth();
   const { bouquets } = useCatalog();
 
+  const initialPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const initialRoute = getRouteByPath(initialPath);
+
+  const [currentRoute, setCurrentRoute] = useState<SeoRoute>(initialRoute);
   const [showSplash, setShowSplash] = useState(false);
-  const [activeTab, setActiveTab] = useState<FigmaTab>('catalog');
+  const [activeTab, setActiveTab] = useState<FigmaTab>(() => {
+    if (initialPath.startsWith('/cart')) return 'cart';
+    if (initialPath.startsWith('/profile')) return 'profile';
+    return 'catalog';
+  });
+
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -29,7 +38,7 @@ export const FigmaAppShell: React.FC = () => {
   const [filters, setFilters] = useState<FilterOptions>({
     minPrice: 0,
     maxPrice: 30000,
-    category: 'Все',
+    category: initialRoute.categoryFilter || 'Все',
     color: 'Все',
   });
 
@@ -83,6 +92,74 @@ export const FigmaAppShell: React.FC = () => {
   const handleRemoveItem = (bouquetId: string) => {
     setCartItems((prev) => prev.filter((item) => item.bouquet.id !== bouquetId));
   };
+
+  // HTML5 History API Navigation Router
+  const handleNavigate = (newPath: string, options?: { tab?: FigmaTab }) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', newPath);
+      const targetRoute = getRouteByPath(newPath);
+      setCurrentRoute(targetRoute);
+
+      if (options?.tab) {
+        setActiveTab(options.tab);
+      } else if (newPath.startsWith('/cart')) {
+        setActiveTab('cart');
+      } else if (newPath.startsWith('/profile')) {
+        setActiveTab('profile');
+      } else {
+        setActiveTab('catalog');
+        if (targetRoute.categoryFilter) {
+          setFilters((prev) => ({ ...prev, category: targetRoute.categoryFilter }));
+        }
+      }
+
+      // Sync SEO metadata in DOM
+      document.title = targetRoute.title;
+      const canonicalTag = document.querySelector('link[rel="canonical"]');
+      if (canonicalTag) {
+        canonicalTag.setAttribute('href', `https://xn----ctbjn3arftl7c8b.xn--p1ai${targetRoute.path}`);
+      }
+      const descTag = document.querySelector('meta[name="description"]');
+      if (descTag) {
+        descTag.setAttribute('content', targetRoute.description);
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Browser back/forward button integration (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      const route = getRouteByPath(path);
+      setCurrentRoute(route);
+
+      if (path.startsWith('/cart')) {
+        setActiveTab('cart');
+      } else if (path.startsWith('/profile')) {
+        setActiveTab('profile');
+      } else {
+        setActiveTab('catalog');
+        if (route.categoryFilter) {
+          setFilters((prev) => ({ ...prev, category: route.categoryFilter }));
+        }
+      }
+
+      document.title = route.title;
+      const canonicalTag = document.querySelector('link[rel="canonical"]');
+      if (canonicalTag) {
+        canonicalTag.setAttribute('href', `https://xn----ctbjn3arftl7c8b.xn--p1ai${route.path}`);
+      }
+      const descTag = document.querySelector('meta[name="description"]');
+      if (descTag) {
+        descTag.setAttribute('content', route.description);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Secret access to CRM for owner: /admin, /crm, #admin, or #crm in URL
   const handleCloseAdminCrm = () => {
@@ -174,6 +251,7 @@ export const FigmaAppShell: React.FC = () => {
           cartCount={cartCount}
           cartTotal={cartTotal}
           onSecretCrmTrigger={() => setIsAdminCrmOpen(true)}
+          onNavigate={handleNavigate}
         />
       </div>
 
@@ -190,6 +268,8 @@ export const FigmaAppShell: React.FC = () => {
               onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
               userDiscount={customer?.discountPercent || 0}
               onOpenCrm={() => setIsAdminCrmOpen(true)}
+              currentRoute={currentRoute}
+              onNavigate={handleNavigate}
             />
           )}
 
@@ -198,7 +278,7 @@ export const FigmaAppShell: React.FC = () => {
               items={cartItems}
               onUpdateQuantity={handleUpdateQuantity}
               onRemoveItem={handleRemoveItem}
-              onExploreCatalog={() => setActiveTab('catalog')}
+              onExploreCatalog={() => handleNavigate('/')}
               onClearCart={() => setCartItems([])}
             />
           )}
@@ -207,10 +287,7 @@ export const FigmaAppShell: React.FC = () => {
             <FigmaProfileScreen
               onOpenAuth={openAuthModal}
               onOpenCrm={() => setIsAdminCrmOpen(true)}
-              onGoToCatalog={() => {
-                setActiveTab('catalog');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+              onGoToCatalog={() => handleNavigate('/')}
             />
           )}
         </div>
@@ -224,6 +301,7 @@ export const FigmaAppShell: React.FC = () => {
           }}
           cartCount={cartCount}
           className="md:hidden"
+          onNavigate={handleNavigate}
         />
 
         {/* Luxury Desktop Footer */}
@@ -233,6 +311,7 @@ export const FigmaAppShell: React.FC = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onOpenCrm={() => setIsAdminCrmOpen(true)}
+          onNavigate={handleNavigate}
         />
       </main>
 

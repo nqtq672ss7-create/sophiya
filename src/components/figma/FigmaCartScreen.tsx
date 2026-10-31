@@ -195,9 +195,9 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
         <div className="flex items-baseline justify-between border-b border-zinc-200 pb-4">
           <div>
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#6C1E26] font-normal tracking-wider uppercase">
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#6C1E26] font-normal tracking-wider uppercase">
               ВАША КОРЗИНА
-            </h1>
+            </h2>
             <span className="text-xs text-zinc-500 font-light">
               Салон цветов «София» • г. Нижнекамск, пр. Шинников, 13В
             </span>

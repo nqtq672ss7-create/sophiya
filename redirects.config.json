@@ -1,0 +1,47 @@
+{
+  "canonicalHost": "xn----ctbjn3arftl7c8b.xn--p1ai",
+  "canonicalUrl": "https://xn----ctbjn3arftl7c8b.xn--p1ai",
+  "cyrillicHost": "цветы-софия.рф",
+  "protocol": "https",
+  "forceHttps": true,
+  "forceNonWww": true,
+  "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "http://*/*",
+      "target": "https://xn----ctbjn3arftl7c8b.xn--p1ai/$2",
+      "statusCode": 301,
+      "purpose": "HTTP to HTTPS strict security redirect for Yandex and Google"
+    },
+    {
+      "source": "https://www.xn----ctbjn3arftl7c8b.xn--p1ai/*",
+      "target": "https://xn----ctbjn3arftl7c8b.xn--p1ai/$1",
+      "statusCode": 301,
+      "purpose": "Canonical non-www consolidation to avoid domain mirror split"
+    },
+    {
+      "source": "https://www.цветы-софия.рф/*",
+      "target": "https://цветы-софия.рф/$1",
+      "statusCode": 301,
+      "purpose": "Cyrillic non-www consolidation"
+    },
+    {
+      "source": "/dostavka-cvetov",
+      "target": "/dostavka/",
+      "statusCode": 301,
+      "purpose": "Legacy delivery alias redirect"
+    },
+    {
+      "source": "/admin",
+      "target": "/admin/",
+      "statusCode": 301,
+      "purpose": "Admin panel route normalization"
+    },
+    {
+      "source": "/crm",
+      "target": "/crm/",
+      "statusCode": 301,
+      "purpose": "CRM route normalization"
+    }
+  ]
+}

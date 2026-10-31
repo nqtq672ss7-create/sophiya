@@ -161,9 +161,9 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
         {/* Desktop Breadcrumb/Title */}
         <div className="hidden md:flex items-baseline justify-between border-b border-zinc-200 pb-4 mb-8">
           <div>
-            <h1 className="font-serif text-3xl sm:text-4xl text-[#6C1E26] font-normal tracking-wider uppercase">
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#6C1E26] font-normal tracking-wider uppercase">
               ЛИЧНЫЙ КАБИНЕТ
-            </h1>
+            </h2>
             <span className="text-xs text-zinc-500 font-light">
               Клуб постоянных клиентов салона «София» • Нижнекамск
             </span>

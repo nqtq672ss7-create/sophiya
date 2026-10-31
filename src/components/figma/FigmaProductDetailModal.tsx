@@ -96,9 +96,9 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
             </div>
 
             {/* Title */}
-            <h1 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal leading-tight mb-3">
+            <h2 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal leading-tight mb-3">
               {bouquet.title}
-            </h1>
+            </h2>
 
             {/* Price Row */}
             <div className="flex items-baseline gap-3 mb-6">

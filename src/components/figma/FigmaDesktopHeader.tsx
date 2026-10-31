@@ -9,6 +9,7 @@ interface FigmaDesktopHeaderProps {
   cartCount: number;
   cartTotal?: number;
   onSecretCrmTrigger?: () => void;
+  onNavigate?: (path: string, options?: { tab?: FigmaTab }) => void;
 }
 
 export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
@@ -17,12 +18,17 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
   cartCount,
   cartTotal = 0,
   onSecretCrmTrigger,
+  onNavigate,
 }) => {
   const { customer, openAuthModal } = useAuth();
   const [logoClicks, setLogoClicks] = useState(0);
 
   const handleLogoClick = () => {
-    onTabChange('catalog');
+    if (onNavigate) {
+      onNavigate('/');
+    } else {
+      onTabChange('catalog');
+    }
     const next = logoClicks + 1;
     if (next >= 3) {
       setLogoClicks(0);
@@ -30,6 +36,15 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
     } else {
       setLogoClicks(next);
       setTimeout(() => setLogoClicks(0), 1200);
+    }
+  };
+
+  const handleLinkClick = (e: React.MouseEvent, path: string, tab?: FigmaTab) => {
+    e.preventDefault();
+    if (onNavigate) {
+      onNavigate(path, tab ? { tab } : undefined);
+    } else if (tab) {
+      onTabChange(tab);
     }
   };
 
@@ -49,10 +64,11 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
           />
         </div>
 
-        {/* 2. Center: Minimalist Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <button
-            onClick={() => onTabChange('catalog')}
+        {/* 2. Center: Minimalist Navigation Links with Real URLs */}
+        <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+          <a
+            href="/"
+            onClick={(e) => handleLinkClick(e, '/', 'catalog')}
             className={`transition-colors relative py-1 ${
               activeTab === 'catalog'
                 ? 'text-[#6C1E26] font-semibold'
@@ -63,10 +79,43 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             {activeTab === 'catalog' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6C1E26] rounded-full animate-fadeIn" />
             )}
-          </button>
+          </a>
 
-          <button
-            onClick={() => onTabChange('cart')}
+          <a
+            href="/rozy/"
+            onClick={(e) => handleLinkClick(e, '/rozy/')}
+            className="transition-colors relative py-1 text-zinc-600 hover:text-[#6C1E26]"
+          >
+            Розы
+          </a>
+
+          <a
+            href="/monobukety/"
+            onClick={(e) => handleLinkClick(e, '/monobukety/')}
+            className="transition-colors relative py-1 text-zinc-600 hover:text-[#6C1E26]"
+          >
+            Монобукеты
+          </a>
+
+          <a
+            href="/avtorskie-bukety/"
+            onClick={(e) => handleLinkClick(e, '/avtorskie-bukety/')}
+            className="transition-colors relative py-1 text-zinc-600 hover:text-[#6C1E26]"
+          >
+            Авторские
+          </a>
+
+          <a
+            href="/dostavka/"
+            onClick={(e) => handleLinkClick(e, '/dostavka/')}
+            className="transition-colors relative py-1 text-zinc-600 hover:text-[#6C1E26]"
+          >
+            Доставка
+          </a>
+
+          <a
+            href="/cart/"
+            onClick={(e) => handleLinkClick(e, '/cart/', 'cart')}
             className={`transition-colors relative py-1 flex items-center gap-1.5 ${
               activeTab === 'cart'
                 ? 'text-[#6C1E26] font-semibold'
@@ -82,10 +131,11 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             {activeTab === 'cart' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6C1E26] rounded-full animate-fadeIn" />
             )}
-          </button>
+          </a>
 
-          <button
-            onClick={() => onTabChange('profile')}
+          <a
+            href="/profile/"
+            onClick={(e) => handleLinkClick(e, '/profile/', 'profile')}
             className={`transition-colors relative py-1 flex items-center gap-1.5 ${
               activeTab === 'profile'
                 ? 'text-[#6C1E26] font-semibold'
@@ -101,7 +151,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             {activeTab === 'profile' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6C1E26] rounded-full animate-fadeIn" />
             )}
-          </button>
+          </a>
         </nav>
 
         {/* 3. Right: Clean Contacts & Actions */}
@@ -121,57 +171,32 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
               href="https://wa.me/79172563235"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1.5 text-xs sm:text-sm text-zinc-700 hover:text-[#6C1E26] transition-colors"
+              className="px-3.5 py-2 rounded-full bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-700 transition-all text-xs sm:text-sm font-semibold active:scale-95"
               title="Написать в WhatsApp"
             >
-              <span className="font-semibold">+7 (917) 256-32-35</span>
+              WhatsApp
             </a>
           </div>
 
-          {/* User Auth / Profile */}
-          {customer ? (
-            <button
-              onClick={() => onTabChange('profile')}
-              className="flex items-center gap-2 text-xs sm:text-sm text-zinc-800 hover:text-[#6C1E26] transition-colors"
-            >
-              <div className="w-8 h-8 rounded-full bg-[#6C1E26]/10 text-[#6C1E26] font-serif flex items-center justify-center text-sm font-semibold">
-                {customer.firstName[0]}
-              </div>
-              <span className="hidden lg:inline font-medium">{customer.firstName}</span>
-            </button>
-          ) : (
-            <button
-              onClick={openAuthModal}
-              className="flex items-center gap-1.5 text-xs sm:text-sm text-zinc-700 hover:text-[#6C1E26] transition-colors"
-            >
-              <User className="w-4 h-4 text-zinc-500" />
-              <span>Войти</span>
-            </button>
-          )}
-
-          {/* Cart Icon Button */}
-          <button
-            onClick={() => onTabChange('cart')}
-            className="relative p-2.5 rounded-full bg-[#6C1E26] text-white hover:bg-[#5A121A] transition-all shadow-sm active:scale-95 flex items-center gap-2 cursor-pointer"
-            aria-label="Открыть корзину"
+          {/* Quick Cart Pill Button */}
+          <a
+            href="/cart/"
+            onClick={(e) => handleLinkClick(e, '/cart/', 'cart')}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-all shadow-md active:scale-95 cursor-pointer"
+            title="Открыть корзину"
           >
-            <ShoppingBag className="w-4 h-4" />
-            {cartCount > 0 && (
-              <span className="text-xs font-semibold pr-1">
-                {cartCount}
-              </span>
-            )}
-          </button>
-
-          {/* Quick Admin CRM Trigger */}
-          <button
-            onClick={onSecretCrmTrigger}
-            className="p-2.5 rounded-full text-zinc-400 hover:text-[#6C1E26] hover:bg-[#6C1E26]/10 transition-colors cursor-pointer"
-            title="Панель управления салоном (CRM & Каталог)"
-            aria-label="Панель управления"
-          >
-            <ShieldCheck className="w-4 h-4" />
-          </button>
+            <div className="relative">
+              <ShoppingBag className="w-4 h-4 text-white" />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-amber-400 text-zinc-900 text-[10px] font-bold flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </div>
+            <span className="hidden sm:inline">
+              {cartTotal > 0 ? `${cartTotal.toLocaleString('ru-RU')} ₽` : 'Корзина'}
+            </span>
+          </a>
         </div>
       </div>
     </header>

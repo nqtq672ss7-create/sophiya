@@ -6,13 +6,25 @@ import { RequisitesModal } from '../payment/RequisitesModal';
 interface FigmaFooterProps {
   onTabChange: (tab: FigmaTab) => void;
   onOpenCrm: () => void;
+  onNavigate?: (path: string, options?: { tab?: FigmaTab }) => void;
 }
 
 export const FigmaFooter: React.FC<FigmaFooterProps> = ({
   onTabChange,
   onOpenCrm,
+  onNavigate,
 }) => {
   const [isRequisitesOpen, setIsRequisitesOpen] = useState(false);
+
+  const handleLink = (e: React.MouseEvent, path: string, tab?: FigmaTab) => {
+    e.preventDefault();
+    if (onNavigate) {
+      onNavigate(path, tab ? { tab } : undefined);
+    } else if (tab) {
+      onTabChange(tab);
+    }
+  };
+
   return (
     <footer className="w-full bg-[#180B0D] text-white/80 font-sans border-t border-white/10 mt-20 pb-24 md:pb-12 pt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,7 +55,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           {/* Location & Schedule */}
           <div className="space-y-3">
             <h4 className="font-serif text-lg text-white font-normal">Салон</h4>
-            <ul className="space-y-2 text-xs font-light text-white/70">
+            <ul className="space-y-2 text-xs font-light text-white/70 list-none p-0">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5" />
                 <span>г. Нижнекамск, пр. Шинников, 13В</span>
@@ -82,38 +94,69 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
             </div>
           </div>
 
-          {/* Navigation & CRM */}
+          {/* Navigation & Categories with Real URLs */}
           <div className="space-y-3">
             <h4 className="font-serif text-lg text-white font-normal">Клиентам</h4>
-            <ul className="space-y-2 text-xs font-light text-white/70">
+            <ul className="space-y-2 text-xs font-light text-white/70 list-none p-0">
               <li>
-                <button
-                  onClick={() => onTabChange('catalog')}
+                <a
+                  href="/"
+                  onClick={(e) => handleLink(e, '/', 'catalog')}
                   className="hover:text-white transition-colors"
                 >
                   Каталог букетов
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => onTabChange('cart')}
+                <a
+                  href="/rozy/"
+                  onClick={(e) => handleLink(e, '/rozy/')}
+                  className="hover:text-white transition-colors"
+                >
+                  Розы в Нижнекамске
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/monobukety/"
+                  onClick={(e) => handleLink(e, '/monobukety/')}
+                  className="hover:text-white transition-colors"
+                >
+                  Монобукеты
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/dostavka/"
+                  onClick={(e) => handleLink(e, '/dostavka/')}
+                  className="hover:text-white transition-colors"
+                >
+                  Условия доставки
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/cart/"
+                  onClick={(e) => handleLink(e, '/cart/', 'cart')}
                   className="hover:text-white transition-colors"
                 >
                   Корзина
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  onClick={() => onTabChange('profile')}
+                <a
+                  href="/profile/"
+                  onClick={(e) => handleLink(e, '/profile/', 'profile')}
                   className="hover:text-white transition-colors"
                 >
                   Личный кабинет & Скидки
-                </button>
+                </a>
               </li>
               <li>
                 <button
+                  type="button"
                   onClick={() => setIsRequisitesOpen(true)}
-                  className="hover:text-[#C5A880] text-white/90 transition-colors flex items-center gap-1.5"
+                  className="hover:text-[#C5A880] text-white/90 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>Реквизиты и оплата</span>
@@ -121,8 +164,9 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
               </li>
               <li>
                 <button
+                  type="button"
                   onClick={onOpenCrm}
-                  className="hover:text-[#C5A880] text-[#C5A880]/90 transition-colors flex items-center gap-1.5"
+                  className="hover:text-[#C5A880] text-[#C5A880]/90 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>Панель управления (CRM)</span>
@@ -142,6 +186,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={() => setIsRequisitesOpen(true)}
             className="text-[#C5A880] hover:underline cursor-pointer shrink-0"
           >
@@ -151,8 +196,9 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
           <button
+            type="button"
             onClick={onOpenCrm}
-            className="hover:text-white/60 transition-colors text-left"
+            className="hover:text-white/60 transition-colors text-left cursor-pointer"
             title="Салон цветов «София»"
           >
             © 2026 Салон цветов «София». Все права защищены.
@@ -161,6 +207,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
         </div>
       </div>
 
+      {/* Official Sberbank & Tax Requisites Modal */}
       <RequisitesModal
         isOpen={isRequisitesOpen}
         onClose={() => setIsRequisitesOpen(false)}

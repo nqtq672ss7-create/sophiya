@@ -3,24 +3,112 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Салон цветов «София»</title>
-    <script>
-      (function() {
-        var path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
-        var hash = window.location.hash;
-        var search = window.location.search;
-        if (path.endsWith('/admin') || path.endsWith('/crm')) {
-          window.location.replace('/#admin');
-        } else {
-          window.location.replace('/' + search + hash);
-        }
-      })();
-    </script>
+    <title>Страница не найдена (404) | Салон цветов «София» Нижнекамск</title>
+    <meta name="robots" content="noindex, follow" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background-color: #140506;
+        color: #FAF7F5;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+        text-align: center;
+      }
+      .card {
+        max-width: 520px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 24px;
+        padding: 40px 32px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      .logo {
+        height: 64px;
+        margin-bottom: 24px;
+        object-fit: contain;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: rgba(197, 168, 128, 0.15);
+        color: #C5A880;
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #FFFFFF;
+      }
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.75);
+        margin-bottom: 28px;
+      }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .btn-primary {
+        display: block;
+        padding: 14px 24px;
+        border-radius: 14px;
+        background: #6C1E26;
+        color: #FFFFFF;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      .btn-primary:hover { background: #851D28; }
+      .btn-secondary {
+        display: block;
+        padding: 12px 24px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #FAF7F5;
+        text-decoration: none;
+        font-size: 13px;
+        transition: background 0.2s;
+      }
+      .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+      .contacts {
+        margin-top: 24px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .contacts a {
+        color: #C5A880;
+        text-decoration: none;
+      }
+    </style>
   </head>
-  <body style="background: #140506; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0;">
-    <div style="text-align: center;">
-      <p style="font-size: 16px; letter-spacing: 0.1em; color: #C5A880;">Салон цветов «София»</p>
-      <p style="font-size: 13px; color: rgba(255,255,255,0.6);">Загрузка страницы...</p>
+  <body>
+    <div class="card">
+      <img src="/logo-light.png" alt="Салон цветов София" class="logo" />
+      <div><span class="badge">Ошибка 404</span></div>
+      <h1>Страница не найдена</h1>
+      <p>Возможно, этот букет уже доставили счастливому получателю, либо ссылка устарела. Перейдите в каталог свежих цветов или свяжитесь с флористом.</p>
+      <div class="actions">
+        <a href="/" class="btn-primary">Перейти в каталог букетов</a>
+        <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="btn-secondary">Написать флористу в WhatsApp</a>
+      </div>
+      <div class="contacts">
+        Салон цветов «София» • г. Нижнекамск, пр. Шинников, 13В<br />
+        Телефон: <a href="tel:+79172563235">+7 (917) 256-32-35</a> (08:00 – 21:00)
+      </div>
     </div>
   </body>
 </html>

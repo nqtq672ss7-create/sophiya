@@ -3,6 +3,7 @@ import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSq
 import { Bouquet } from '../../types/figma-app';
 import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
+import { SeoRoute } from '../../utils/routes';
 
 interface FigmaCatalogScreenProps {
   bouquets: Bouquet[];
@@ -13,6 +14,8 @@ interface FigmaCatalogScreenProps {
   onSelectCategory: (cat: string) => void;
   userDiscount?: number;
   onOpenCrm?: () => void;
+  currentRoute: SeoRoute;
+  onNavigate: (path: string) => void;
 }
 
 export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
@@ -24,10 +27,22 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   onSelectCategory,
   userDiscount = 0,
   onOpenCrm,
+  currentRoute,
+  onNavigate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const categories = ['Все', 'Монобукеты', 'Авторские', 'Коробки', 'Корзины'];
+  const CATEGORY_ITEMS = [
+    { label: 'Все', path: '/', category: 'Все' },
+    { label: 'Розы', path: '/rozy/', category: 'Монобукеты' },
+    { label: 'Монобукеты', path: '/monobukety/', category: 'Монобукеты' },
+    { label: 'Авторские', path: '/avtorskie-bukety/', category: 'Авторские' },
+    { label: 'Коробки', path: '/cvety-v-korobke/', category: 'Коробки' },
+    { label: 'Корзины', path: '/korziny-cvetov/', category: 'Корзины' },
+    { label: 'Свадебные', path: '/svadebnye-bukety/', category: 'Авторские' },
+    { label: 'Пионы', path: '/piony/', category: 'Монобукеты' },
+    { label: 'Хризантемы', path: '/hrizantemy/', category: 'Монобукеты' },
+  ];
 
   const displayedBouquets = bouquets.filter((b) => {
     if (!searchQuery.trim()) return true;
@@ -41,9 +56,9 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-zinc-900 font-sans">
-      {/* 1. Mobile Header (Only on screens < md: Exact Figma frame 5 with official logo) */}
-      <div className="md:hidden relative bg-rose-texture-hero text-white pt-7 pb-9 px-5 sm:px-6 shadow-md border-b border-white/10">
-        <div className="flex items-center justify-between mb-5 gap-3">
+      {/* 1. Mobile-only Top Brand Header */}
+      <div className="md:hidden bg-rose-texture-hero text-white pt-6 pb-4 px-5 sm:px-6 shadow-md border-b border-white/10">
+        <div className="flex items-center justify-between gap-3">
           <div
             onClick={onOpenCrm}
             className="flex items-center cursor-pointer group"
@@ -70,147 +85,80 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
           </a>
         </div>
-
-        {/* Refined Delivery & City Hero Card */}
-        <div className="mt-2 mb-4 p-4 rounded-2xl bg-black/35 backdrop-blur-md border border-white/15 shadow-xl space-y-3">
-          <div className="flex items-center justify-between text-xs text-white/90">
-            <div className="flex items-center gap-1.5 font-semibold text-amber-200">
-              <MapPin className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
-              <span>г. Нижнекамск, пр. Шинников, 13В</span>
-            </div>
-            <span className="text-white/60 text-[11px] font-medium">08:00 – 21:00</span>
-          </div>
-
-          <div>
-            <div className="text-base sm:text-lg font-bold text-white leading-snug">
-              Быстрая доставка цветов от 30 минут
-            </div>
-            <p className="text-xs text-white/80 font-normal mt-0.5">
-              Бережно привезём букет в аквабоксе или подготовим самовывоз
-            </p>
-          </div>
-
-          {/* 3 Spacious, Balanced Benefit Cards */}
-          <div className="grid grid-cols-3 gap-2 pt-1">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-2 px-1.5 flex flex-col justify-center items-center text-center border border-white/10">
-              <span className="text-[10px] uppercase tracking-wider text-amber-200/90 font-medium mb-0.5">
-                Скорость
-              </span>
-              <span className="text-xs font-bold text-white leading-tight">
-                от 30 мин
-              </span>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-2 px-1.5 flex flex-col justify-center items-center text-center border border-white/10">
-              <span className="text-[10px] uppercase tracking-wider text-amber-200/90 font-medium mb-0.5">
-                Контроль
-              </span>
-              <span className="text-xs font-bold text-white leading-tight">
-                Фото в WhatsApp
-              </span>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl py-2 px-1.5 flex flex-col justify-center items-center text-center border border-white/10">
-              <span className="text-[10px] uppercase tracking-wider text-amber-200/90 font-medium mb-0.5">
-                Свежесть
-              </span>
-              <span className="text-xs font-bold text-white leading-tight">
-                Каждый день
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <h2 className="font-sans text-2xl font-bold tracking-wider uppercase mb-3">
-          КАТАЛОГ БУКЕТОВ
-        </h2>
-
-        {/* Filter Chips Bar (Exact Figma frame 5) */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button
-            onClick={onOpenFilter}
-            className="h-9 px-3.5 rounded-xl bg-white text-[#6C1E26] flex items-center justify-center shadow-sm shrink-0 hover:bg-white/95 transition-colors"
-            title="Открыть фильтры"
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onOpenFilter}
-            className="h-9 px-4 rounded-xl bg-white text-zinc-800 text-xs font-medium flex items-center gap-1 shadow-sm shrink-0"
-          >
-            <span>Тип</span>
-            <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-          </button>
-
-          <button
-            onClick={onOpenFilter}
-            className="h-9 px-4 rounded-xl bg-white text-zinc-800 text-xs font-medium flex items-center gap-1 shadow-sm shrink-0"
-          >
-            <span>Цвет</span>
-            <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-          </button>
-
-          <button
-            onClick={onOpenFilter}
-            className="h-9 px-4 rounded-xl bg-white text-zinc-800 text-xs font-medium flex items-center gap-1 shadow-sm shrink-0"
-          >
-            <span>Цена</span>
-            <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-          </button>
-        </div>
       </div>
 
-      {/* Mobile Active Category Subtitle */}
-      <div className="md:hidden px-5 sm:px-6 pt-5 pb-2">
-        <h3 className="font-sans text-xl sm:text-2xl text-[#6C1E26] font-bold tracking-tight">
-          {activeCategory === 'Все' ? 'Поставка свежих цветов каждый день' : activeCategory}
-        </h3>
-      </div>
+      {/* 2. Breadcrumbs (Visible on non-root pages) */}
+      {currentRoute.path !== '/' && (
+        <nav
+          aria-label="Хлебные крошки"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-xs text-zinc-500 font-sans"
+          itemScope
+          itemType="https://schema.org/BreadcrumbList"
+        >
+          <ol className="flex items-center gap-2 list-none p-0 m-0">
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="flex items-center gap-2">
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate('/');
+                }}
+                itemProp="item"
+                className="hover:text-[#6C1E26] text-zinc-600 transition-colors"
+              >
+                <span itemProp="name">Главная</span>
+              </a>
+              <meta itemProp="position" content="1" />
+              <span className="text-zinc-400">/</span>
+            </li>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" className="text-zinc-900 font-semibold">
+              <span itemProp="name">{currentRoute.breadcrumbLabel}</span>
+              <meta itemProp="position" content="2" />
+            </li>
+          </ol>
+        </nav>
+      )}
 
-      {/* 2. Desktop Hero Banner (Returned with chic Quiet Luxury & Official Sofia Branding) */}
-      <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="relative overflow-hidden rounded-3xl bg-rose-texture-hero text-white p-8 lg:p-12 shadow-xl border border-white/10">
-          {/* Subtle floral watermark / ambient light */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-black/20 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-            <div className="max-w-2xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold tracking-wider text-amber-200 border border-white/15">
+      {/* 3. Primary Hero Banner: Single H1 Tag (Visible on ALL devices) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 w-full">
+        <div className="relative overflow-hidden rounded-3xl bg-rose-texture-hero text-white p-5 sm:p-8 lg:p-12 shadow-xl border border-white/10">
+          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
+            <div className="max-w-2xl space-y-3.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-xs font-semibold tracking-wider text-amber-200 border border-white/15">
                 <span className="text-[#C5A880]">✦</span>
                 <span>Быстрая доставка от 30 мин • Поставка свежих цветов каждый день</span>
               </div>
 
-              <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
-                Салон цветов «София» в Нижнекамске
+              {/* THE ONLY H1 ON THE ENTIRE PAGE - ALWAYS VISIBLE */}
+              <h1 className="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
+                {currentRoute.h1}
               </h1>
 
-              <p className="text-base sm:text-lg text-white/90 font-medium leading-relaxed">
-                Свежие поставки каждый день: эквадорские розы, пионы, гортензии и авторские композиции. Доставка по Нижнекамску от 30 минут с обязательным фотоотчетом в WhatsApp перед выездом курьера.
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg text-white/90 font-normal leading-relaxed">
+                {currentRoute.description}
               </p>
 
-              {/* Minimalist guarantees */}
-              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-light text-white/90">
-                <span className="flex items-center gap-1.5 bg-black/25 px-3 py-1.5 rounded-full border border-white/10">
+              {/* Guarantees Pills */}
+              <div className="pt-1 flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-light text-white/90">
+                <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>Доставка от 30 минут</span>
                 </span>
-                <span className="flex items-center gap-1.5 bg-black/25 px-3 py-1.5 rounded-full border border-white/10">
+                <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <MapPin className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>пр. Шинников, 13В</span>
                 </span>
-                <span className="flex items-center gap-1.5 bg-black/25 px-3 py-1.5 rounded-full border border-white/10">
-                  <span className="text-[#C5A880]">✦</span>
+                <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
+                  <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>Подкормка в подарок</span>
                 </span>
               </div>
             </div>
 
-            {/* Quick Contact & WhatsApp Card */}
-            <div className="bg-black/25 backdrop-blur-md border border-white/15 rounded-2xl p-6 lg:w-80 shrink-0 text-center space-y-3.5 shadow-xl">
+            {/* Quick Contact & WhatsApp Card (Desktop & Mobile accessible) */}
+            <div className="w-full lg:w-80 bg-black/30 backdrop-blur-md border border-white/15 rounded-2xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-xl">
               <span className="text-[11px] uppercase tracking-[0.2em] text-[#C5A880] font-medium block">
-                Связь с флористом
+                Связь с шеф-флористом
               </span>
 
               <a
@@ -221,14 +169,14 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               </a>
 
               <p className="text-xs text-white/70 font-light">
-                Индивидуальный букет или подбор сортов по фото
+                Индивидуальная сборка или подбор сортов по фото в WhatsApp
               </p>
 
               <a
                 href="https://wa.me/79172563235"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md"
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md active:scale-95"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Написать в WhatsApp</span>
@@ -236,143 +184,203 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* 3. Filter & Category Bar */}
+      {/* 4. Filter & Category Bar with Real Canonical Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
           {/* Category Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => onSelectCategory(cat)}
-                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 ${
-                  activeCategory === cat
-                    ? 'bg-[#6C1E26] text-white shadow-sm'
-                    : 'bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200'
+            {CATEGORY_ITEMS.map((item) => (
+              <a
+                key={item.path}
+                href={item.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate(item.path);
+                  onSelectCategory(item.category);
+                }}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all shrink-0 whitespace-nowrap ${
+                  (currentRoute.path === item.path || (currentRoute.path === '/' && item.category === activeCategory))
+                    ? 'bg-[#6C1E26] text-white shadow-md'
+                    : 'bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 border border-zinc-200/80'
                 }`}
               >
-                {cat}
-              </button>
+                {item.label}
+              </a>
             ))}
           </div>
 
-          {/* Search & Filter */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="relative flex-1 md:w-64">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          {/* Search Input & Filter Button */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
+                placeholder="Поиск букета..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск букета..."
-                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-white border border-zinc-200 rounded-xl text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#6C1E26] transition-colors"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-zinc-200 text-xs sm:text-sm focus:outline-none focus:border-[#6C1E26] transition-colors"
               />
             </div>
 
             <button
               onClick={onOpenFilter}
-              className="px-4 py-2 rounded-xl bg-white border border-zinc-200 hover:border-[#6C1E26] text-zinc-800 text-xs sm:text-sm font-medium flex items-center gap-2 shadow-sm transition-colors shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:text-[#6C1E26] hover:border-[#6C1E26] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-sm"
+              title="Открыть фильтры"
             >
-              <SlidersHorizontal className="w-4 h-4 text-[#6C1E26]" />
+              <SlidersHorizontal className="w-4 h-4" />
               <span className="hidden sm:inline">Фильтры</span>
             </button>
           </div>
         </div>
-
-        {/* Category Header Label */}
-        <div className="flex items-baseline justify-between mt-6 mb-4">
-          <div className="flex items-baseline gap-3">
-            <h3 className="font-serif text-2xl sm:text-3xl text-[#6C1E26] font-normal">
-              {activeCategory === 'Все' ? 'Все букеты' : activeCategory}
-            </h3>
-            <span className="text-xs text-zinc-400 font-light">
-              ({displayedBouquets.length} композиций)
-            </span>
-          </div>
-
-          <span className="text-xs text-zinc-500 font-light hidden sm:inline">
-            📍 Нижнекамск, пр. Шинников, 13В
-          </span>
-        </div>
       </div>
 
-      {/* 4. Responsive Product Grid (4 columns desktop, 2 columns mobile) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 5. Editorial Category Overview (Local SEO Content for Humans) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-3">
+          <h2 className="font-serif text-xl sm:text-2xl text-zinc-900 font-normal leading-snug">
+            {currentRoute.introHeading}
+          </h2>
+          <div className="space-y-2.5 text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
+            {currentRoute.introText.map((p, idx) => (
+              <p key={idx}>{p}</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Bouquets Catalog Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex items-baseline justify-between mb-6 pb-2 border-b border-zinc-200">
+          <h2 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
+            Каталог: {currentRoute.breadcrumbLabel}
+          </h2>
+          <span className="text-xs text-zinc-500 font-light">
+            Показано {displayedBouquets.length} из {bouquets.length} букетов
+          </span>
+        </div>
+
         {displayedBouquets.length === 0 ? (
-          <div className="py-16 text-center text-zinc-500 bg-white rounded-3xl border border-zinc-200 p-8 my-6">
-            <p className="font-serif text-xl text-zinc-700 mb-2">Букеты не найдены</p>
-            <p className="text-xs font-light">Попробуйте изменить поисковый запрос</p>
+          <div className="py-16 text-center">
+            <p className="text-base text-zinc-600 mb-4">
+              По вашему запросу букетов не найдено
+            </p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 onSelectCategory('Все');
+                onNavigate('/');
               }}
-              className="mt-4 px-5 py-2 rounded-xl bg-[#6C1E26] text-white text-xs font-medium"
+              className="px-6 py-2.5 rounded-xl bg-[#6C1E26] text-white text-xs font-medium cursor-pointer"
             >
-              Показать все букеты
+              Сбросить фильтры
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {displayedBouquets.map((b) => {
-              const finalPrice = userDiscount > 0
-                ? Math.round(b.price * (1 - userDiscount / 100))
-                : b.price;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {displayedBouquets.map((bouquet) => {
+              const discountedPrice =
+                userDiscount > 0
+                  ? bouquet.price - Math.round((bouquet.price * userDiscount) / 100)
+                  : bouquet.price;
 
               return (
                 <div
-                  key={b.id}
-                  onClick={() => onSelectBouquet(b)}
-                  className="group flex flex-col bg-rose-texture-card text-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border border-[#8C1B2F]/70 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer select-none"
+                  key={bouquet.id}
+                  onClick={() => onSelectBouquet(bouquet)}
+                  className="bg-white rounded-3xl border border-zinc-200/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-zinc-300 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
                 >
-                  {/* Bouquet Image Frame */}
-                  <div className="relative aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black/20 shadow-sm">
+                  {/* Image Container */}
+                  <div className="relative overflow-hidden aspect-[4/5] bg-zinc-100">
                     <img
-                      src={b.image}
-                      alt={b.title}
+                      src={bouquet.image}
+                      alt={`${bouquet.title} в Нижнекамске — салон цветов София`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
 
-                    {/* Circular Cart Action Button */}
-                    <button
-                      onClick={(e) => onAddToCart(b, e)}
-                      className="absolute bottom-2.5 right-2.5 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#6C1E26] shadow-md flex items-center justify-center hover:scale-110 active:scale-95 transition-transform hover:bg-amber-300 hover:text-zinc-900"
-                      aria-label={`Добавить ${b.title} в корзину`}
-                      title="Добавить в корзину"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </button>
-
-                    {/* Loyalty Discount Badge */}
-                    {userDiscount > 0 && (
-                      <div className="absolute top-2.5 left-2.5 bg-white text-[#6C1E26] text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow">
-                        -{userDiscount}%
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="pt-3 px-1 flex-1 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[11px] tracking-wider uppercase text-white/70 font-medium block">
-                        {b.category} • {b.characteristics.height}
-                      </span>
-                      <h4 className="text-sm sm:text-base font-semibold text-white line-clamp-2 leading-snug group-hover:text-amber-200 transition-colors mt-1">
-                        {b.title}
-                      </h4>
-                    </div>
-
-                    <div className="flex items-baseline gap-2 mt-2 pt-2 border-t border-white/15">
-                      {userDiscount > 0 && (
-                        <span className="text-xs text-white/50 line-through">
-                          {b.price.toLocaleString('ru-RU')} ₽
+                    {/* Stock badge */}
+                    <div className="absolute top-3 left-3">
+                      {bouquet.inStock ? (
+                        <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-full shadow">
+                          В наличии
+                        </span>
+                      ) : (
+                        <span className="bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-full shadow">
+                          Под заказ
                         </span>
                       )}
-                      <span className="font-serif text-xl sm:text-2xl text-amber-300 font-bold tracking-tight">
-                        {finalPrice.toLocaleString('ru-RU')} ₽
-                      </span>
+                    </div>
+
+                    {/* Category pill */}
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-[#6C1E26] text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm">
+                      {bouquet.category}
+                    </div>
+                  </div>
+
+                  {/* Info Container */}
+                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-zinc-400 font-light mb-1">
+                        <span>{bouquet.characteristics.flowersCount}</span>
+                        <span>{bouquet.characteristics.height}</span>
+                      </div>
+
+                      <h3 className="font-serif text-lg sm:text-xl text-zinc-900 font-medium leading-snug group-hover:text-[#6C1E26] transition-colors mb-2">
+                        {bouquet.title}
+                      </h3>
+
+                      <p className="text-xs text-zinc-500 font-light line-clamp-2 leading-relaxed mb-4">
+                        {bouquet.description}
+                      </p>
+                    </div>
+
+                    {/* Price & Action */}
+                    <div>
+                      <div className="flex items-baseline justify-between pt-3 border-t border-zinc-100 mb-3">
+                        <div>
+                          {userDiscount > 0 ? (
+                            <div className="flex items-baseline gap-2">
+                              <span className="font-serif text-2xl font-bold text-[#6C1E26]">
+                                {discountedPrice.toLocaleString('ru-RU')} ₽
+                              </span>
+                              <span className="text-xs text-zinc-400 line-through">
+                                {bouquet.price.toLocaleString('ru-RU')} ₽
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="font-serif text-2xl font-bold text-[#6C1E26]">
+                              {bouquet.price.toLocaleString('ru-RU')} ₽
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-zinc-400 font-light">
+                          {bouquet.characteristics.durability}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={(e) => onAddToCart(bouquet, e)}
+                          className="w-full py-2.5 px-3 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          <span>В корзину</span>
+                        </button>
+
+                        <a
+                          href={`https://wa.me/79172563235?text=${encodeURIComponent(
+                            `Здравствуйте! Хочу заказать букет «${bouquet.title}» (${bouquet.price} ₽) с доставкой в Нижнекамске.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 text-center"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -382,10 +390,10 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
         )}
       </div>
 
-      {/* 5. Customer Reviews Section */}
+      {/* 7. Rotating Reviews Section */}
       <FigmaReviewsSection />
 
-      {/* 6. Semantic Local SEO Section */}
+      {/* 8. Local SEO & Trust Features Section */}
       <FigmaSeoSection />
     </div>
   );
