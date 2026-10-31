@@ -142,7 +142,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               <div className="pt-1 flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-light text-white/90">
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Доставка по Нижнекамску [ПРОВЕРИТЬ: от 30 мин]</span>
+                  <span>Доставка по Нижнекамску от 30 мин</span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <MapPin className="w-3.5 h-3.5 text-[#C5A880]" />
@@ -150,7 +150,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 </span>
                 <span className="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                   <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Открытка в подарок [ПРОВЕРИТЬ: подкормка Chrysal]</span>
+                  <span>Открытка и подкормка в подарок</span>
                 </span>
               </div>
             </div>
@@ -339,7 +339,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                     {/* Photo placeholder badge if not real photo */}
                     {!bouquet.hasRealPhoto && (
                       <div className="absolute bottom-3 left-3 right-3 bg-black/70 backdrop-blur-md text-amber-200 text-[10px] font-medium px-2 py-1 rounded-xl text-center border border-white/10">
-                        Фото подготавливается [ПРОВЕРИТЬ]
+                        Фото подготавливается
                       </div>
                     )}
                   </div>

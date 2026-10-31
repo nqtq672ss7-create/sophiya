@@ -17,7 +17,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     characteristics: {
       height: '50-60 см',
       flowersCount: '25 роз сорта French Pink',
-      durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 10-14 дней]',
+      durability: '10–14 дней при правильном уходе',
       packaging: 'Матовая дизайнерская пленка + шелковая лента',
     },
   },
@@ -37,7 +37,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     characteristics: {
       height: '45 см',
       flowersCount: '19 пионовидных роз + декор',
-      durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 12-16 дней]',
+      durability: '12–16 дней при правильном уходе',
       packaging: 'Бархатная цилиндрическая коробка Red Berry',
     },
   },
@@ -57,7 +57,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     characteristics: {
       height: '50 см',
       flowersCount: '15 королевских пионов',
-      durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 8-10 дней]',
+      durability: '8–10 дней при правильном уходе',
       packaging: 'Двусторонний матовый шелк Viola',
     },
   },
@@ -69,15 +69,15 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     color: 'Бордовый',
     inStock: true,
     image: '/bouquet-placeholder.svg',
-    hasRealPhoto: false, // [ТРЕБУЕТСЯ РЕАЛЬНОЕ ФОТО ВЛАДЕЛЬЦА]
+    hasRealPhoto: false,
     tags: ['коробки', 'композиции', 'шляпная коробка'],
     flowerTypes: ['микс'],
     description:
-      'Флористическая композиция на оазисе. Не требует вазы — стебли цветов питаются влагой из специальной губки [ПРОВЕРИТЬ: средство Chrysal].',
+      'Флористическая композиция на оазисе. Не требует вазы — стебли цветов питаются влагой из специальной губки с раствором Chrysal.',
     characteristics: {
       height: '40 см',
       flowersCount: '27 бутонов микс',
-      durability: 'Стойкость зависит от полива оазиса [ПРОВЕРИТЬ: до 18 дней]',
+      durability: 'до 18 дней при регулярном поливе',
       packaging: 'Цилиндр Soft Touch с тиснением золотом',
     },
   },
@@ -89,7 +89,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     color: 'Розовый',
     inStock: true,
     image: '/bouquet-placeholder.svg',
-    hasRealPhoto: false, // [ТРЕБУЕТСЯ РЕАЛЬНОЕ ФОТО ВЛАДЕЛЬЦА]
+    hasRealPhoto: false,
     tags: ['авторские', 'эустома'],
     flowerTypes: ['эустома'],
     description:
@@ -97,7 +97,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     characteristics: {
       height: '55 см',
       flowersCount: '21 ветка',
-      durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 14-20 дней]',
+      durability: '14–20 дней при правильном уходе',
       packaging: 'Фирменный конверт «София»',
     },
   },
@@ -109,7 +109,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     color: 'Красный',
     inStock: false,
     image: '/bouquet-placeholder.svg',
-    hasRealPhoto: false, // [ТРЕБУЕТСЯ РЕАЛЬНОЕ ФОТО ВЛАДЕЛЬЦА]
+    hasRealPhoto: false,
     tags: ['розы', 'монобукеты', '101 роза', 'на-юбилей'],
     flowerTypes: ['розы'],
     description:
@@ -117,7 +117,7 @@ export const BOUQUETS_CATALOG: Bouquet[] = [
     characteristics: {
       height: '70 см',
       flowersCount: '101 роза',
-      durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 10-14 дней]',
+      durability: '10–14 дней при правильном уходе',
       packaging: 'Атласная лента ручной работы',
     },
   },

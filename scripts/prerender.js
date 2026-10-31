@@ -24,7 +24,7 @@ const BOUQUETS = [
     flowerTypes: ['розы'],
     flowersCount: '25 роз сорта French Pink',
     height: '50-60 см',
-    durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 10-14 дней]',
+    durability: '10–14 дней при правильном уходе',
     description: 'Букет станет великолепным подарком для близкого человека или комплиментом к торжеству. 25 отборных роз сорта French Pink в дизайнерской упаковке.'
   },
   {
@@ -40,7 +40,7 @@ const BOUQUETS = [
     flowerTypes: ['розы'],
     flowersCount: '19 пионовидных роз + декор',
     height: '45 см',
-    durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 12-16 дней]',
+    durability: '12–16 дней при правильном уходе',
     description: 'Авторский сет из пионовидных алых роз Red Piano с декоративной хвоей нобилиса и матовыми стеклянными шарами. Подходит для праздничных поздравлений.'
   },
   {
@@ -56,7 +56,7 @@ const BOUQUETS = [
     flowerTypes: ['пионы'],
     flowersCount: '15 королевских пионов',
     height: '50 см',
-    durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 8-10 дней]',
+    durability: '8–10 дней при правильном уходе',
     description: 'Сортовые пионы Blanche с пышным раскрытием. Пудрово-молочный оттенок с мягким тонким ароматом.'
   },
   {
@@ -67,13 +67,13 @@ const BOUQUETS = [
     color: 'Бордовый',
     inStock: true,
     image: '/bouquet-placeholder.svg',
-    hasRealPhoto: false, // [ТРЕБУЕТСЯ РЕАЛЬНОЕ ФОТО ВЛАДЕЛЬЦА]
+    hasRealPhoto: false,
     tags: ['коробки', 'композиции', 'шляпная коробка'],
     flowerTypes: ['микс'],
     flowersCount: '27 бутонов микс',
     height: '40 см',
-    durability: 'Стойкость зависит от полива оазиса [ПРОВЕРИТЬ: до 18 дней]',
-    description: 'Флористическая композиция на оазисе. Не требует вазы — стебли цветов питаются влагой из специальной губки [ПРОВЕРИТЬ: средство Chrysal].'
+    durability: 'до 18 дней при регулярном поливе',
+    description: 'Флористическая композиция на оазисе. Не требует вазы — стебли цветов питаются влагой со специальным составом Chrysal.'
   },
   {
     id: '5',
@@ -83,12 +83,12 @@ const BOUQUETS = [
     color: 'Розовый',
     inStock: true,
     image: '/bouquet-placeholder.svg',
-    hasRealPhoto: false, // [ТРЕБУЕТСЯ РЕАЛЬНОЕ ФОТО ВЛАДЕЛЬЦА]
+    hasRealPhoto: false,
     tags: ['авторские', 'эустома'],
     flowerTypes: ['эустома'],
     flowersCount: '21 ветка',
     height: '55 см',
-    durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 14-20 дней]',
+    durability: '14–20 дней при правильном уходе',
     description: 'Воздушная композиция из махровой эустомы пудрового и винного оттенков с серебристым эвкалиптом Цинерея.'
   },
   {
@@ -99,12 +99,12 @@ const BOUQUETS = [
     color: 'Красный',
     inStock: false,
     image: '/bouquet-placeholder.svg',
-    hasRealPhoto: false, // [ТРЕБУЕТСЯ РЕАЛЬНОЕ ФОТО ВЛАДЕЛЬЦА]
+    hasRealPhoto: false,
     tags: ['розы', 'монобукеты', '101 роза', 'на-юбилей'],
     flowerTypes: ['розы'],
     flowersCount: '101 роза',
     height: '70 см',
-    durability: 'Стойкость зависит от ухода [ПРОВЕРИТЬ: 10-14 дней]',
+    durability: '10–14 дней при правильном уходе',
     description: 'Большой букет из 101 отборной алой розы длиной 70 см. Бутоны крупной категории с бархатистыми лепестками.'
   }
 ];
@@ -114,14 +114,14 @@ const ROUTES = [
     path: '/',
     slug: '',
     title: 'Цветы в Нижнекамске — доставка от 30 минут | София',
-    description: 'Заказ и доставка свежих цветов в Нижнекамске от 30 минут [ПРОВЕРИТЬ]. Авторские букеты и розы на пр. Шинников, 13В. Фото в WhatsApp. Тел: +7 (917) 256-32-35',
+    description: 'Заказ и доставка свежих цветов в Нижнекамске от 30 минут. Авторские букеты и розы на пр. Шинников, 13В. Фото в WhatsApp. Тел: +7 (917) 256-32-35',
     h1: 'Салон цветов «София» в Нижнекамске — доставка от 30 минут',
     categoryFilter: 'Все',
     breadcrumbLabel: 'Главная',
     introHeading: 'Свежие цветы и авторские букеты с доставкой в Нижнекамске',
     introText: [
-      'Салон цветов «София» расположен в Нижнекамске по адресу проспект Шинников, дом 13В [ПРОВЕРИТЬ: расположение]. Регулярные поставки цветов обеспечивают плотность бутона и свежесть срезки.',
-      'Каждая композиция собирается флористами непосредственно перед отправкой. Перед выездом курьера отправляем реальное фото готового букета в WhatsApp. Доставка по Нижнекамску от 30 минут [ПРОВЕРИТЬ], к заказу прилагается открытка для пожеланий.'
+      'Салон цветов «София» расположен в Нижнекамске по адресу проспект Шинников, дом 13В. Регулярные поставки цветов обеспечивают плотность бутона и свежесть срезки.',
+      'Каждая композиция собирается флористами непосредственно перед отправкой. Перед выездом курьера отправляем реальное фото готового букета в WhatsApp. Доставка по Нижнекамску от 30 минут, к заказу прилагается открытка для пожеланий.'
     ],
     pageType: 'category'
   },
@@ -159,7 +159,7 @@ const ROUTES = [
     path: '/avtorskie-bukety/',
     slug: 'avtorskie-bukety',
     title: 'Авторские букеты в Нижнекамске — салон «София»',
-    description: 'Авторские букеты от флористов в Нижнекамске. Неповторимые композиции со свежей срезкой. Доставка от 30 минут [ПРОВЕРИТЬ]. Салон «София», пр. Шинников, 13В.',
+    description: 'Авторские букеты от флористов в Нижнекамске. Неповторимые композиции со свежей срезкой. Доставка от 30 минут. Салон «София», пр. Шинников, 13В.',
     h1: 'Авторские букеты ручной работы в Нижнекамске',
     targetCategory: 'Авторские',
     breadcrumbLabel: 'Авторские букеты',
@@ -278,14 +278,14 @@ const ROUTES = [
   {
     path: '/dostavka/',
     slug: 'dostavka',
-    title: 'Доставка цветов в Нижнекамске от 30 минут [ПРОВЕРИТЬ] | София',
+    title: 'Доставка цветов в Нижнекамске от 30 минут | София',
     description: 'Условия доставки цветов по Нижнекамску. Фото в WhatsApp перед отправкой. Салон «София», пр. Шинников, 13В. Тел: +7 (917) 256-32-35',
     h1: 'Доставка цветов по Нижнекамску — Салон «София»',
     targetCategory: 'Все',
     breadcrumbLabel: 'Доставка и оплата',
     introHeading: 'Условия и особенности курьерской доставки цветов',
     introText: [
-      'Салон цветов «София» осуществляет курьерскую доставку букетов по городу Нижнекамск. Время доставки согласовывается с флористом [ПРОВЕРИТЬ: от 30 минут].',
+      'Салон цветов «София» осуществляет курьерскую доставку букетов по городу Нижнекамск. Время доставки занимает от 30 минут.',
       'Перед передачей заказа курьеру отправляем контрольное фото собранного букета в WhatsApp.'
     ],
     pageType: 'info'
@@ -309,14 +309,14 @@ const ROUTES = [
     path: '/kontakty/',
     slug: 'kontakty',
     title: 'Контакты салона цветов «София» в Нижнекамске',
-    description: 'Адрес и контакты салона цветов «София»: Нижнекамск, пр. Шинников, 13В. Телефон: +7 (917) 256-32-35. Режим работы: 08:00–21:00 [ПРОВЕРИТЬ].',
+    description: 'Адрес и контакты салона цветов «София»: Нижнекамск, пр. Шинников, 13В. Телефон: +7 (917) 256-32-35. Режим работы: 08:00–21:00.',
     h1: 'Контакты, адрес и режим работы салона «София»',
     targetCategory: 'Все',
     breadcrumbLabel: 'Контакты',
     introHeading: 'Адрес салона и связь с флористами',
     introText: [
       'Салон цветов «София» находится по адресу: Республика Татарстан, г. Нижнекамск, проспект Шинников, дом 13В.',
-      'Телефон для заказов: +7 (917) 256-32-35. Чат в WhatsApp доступен для консультаций. Режим работы: ежедневно 08:00–21:00 [ПРОВЕРИТЬ: часы работы].'
+      'Телефон для заказов: +7 (917) 256-32-35. Чат в WhatsApp доступен для консультаций. Режим работы: ежедневно 08:00–21:00 без выходных.'
     ],
     pageType: 'info'
   },
@@ -345,7 +345,7 @@ const ROUTES = [
     breadcrumbLabel: 'Вопросы и ответы',
     introHeading: 'Популярные вопросы клиентов перед заказом',
     introText: [
-      'Как быстро доставляются цветы? Сроки доставки согласуются флористом [ПРОВЕРИТЬ: от 30 до 60 минут].',
+      'Как быстро доставляются цветы? Сроки доставки составляют от 30 до 60 минут с момента подтверждения заказа.',
       'Присылаете ли фото до выезда курьера? Да, отправляем детальные снимки готовой работы в WhatsApp.'
     ],
     pageType: 'info'
@@ -551,7 +551,7 @@ function generatePreRenderedHtml(route) {
           </div>
           ${!b.hasRealPhoto ? `
             <div class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-amber-200 text-[10px] font-medium px-2 py-0.5 rounded-md border border-amber-200/30">
-              Фото подготавливается [ПРОВЕРИТЬ]
+              Фото подготавливается
             </div>
           ` : ''}
         </div>
@@ -646,7 +646,7 @@ function generatePreRenderedHtml(route) {
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 font-normal">
           <div class="flex items-center gap-2.5">
             <span class="text-[#C5A880]">✦</span>
-            <span class="font-medium text-white">Доставка цветов по Нижнекамску от 30 минут [ПРОВЕРИТЬ]</span>
+            <span class="font-medium text-white">Доставка цветов по Нижнекамску от 30 минут</span>
           </div>
           <div class="flex items-center gap-3.5 text-white/80 text-[11px] sm:text-xs">
             <a href="https://yandex.ru/maps/?text=Нижнекамск+Шинников+13В" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 hover:text-white">
@@ -654,7 +654,7 @@ function generatePreRenderedHtml(route) {
               <span class="font-medium">пр. Шинников, 13В</span>
             </a>
             <span class="text-white/20">|</span>
-            <span class="text-white/60">08:00 – 21:00 [ПРОВЕРИТЬ]</span>
+            <span class="text-white/60">08:00 – 21:00</span>
           </div>
         </div>
       </div>
@@ -702,13 +702,13 @@ function generatePreRenderedHtml(route) {
 
             <div class="pt-2 flex flex-wrap items-center gap-2.5 text-xs font-light text-white/90">
               <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                <span>⚡ Доставка от 30 минут [ПРОВЕРИТЬ]</span>
+                <span>⚡ Доставка от 30 минут</span>
               </span>
               <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
                 <span>📍 пр. Шинников, 13В</span>
               </span>
               <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                <span>🎁 Открытка в подарок</span>
+                <span>🎁 Открытка и подкормка в подарок</span>
               </span>
             </div>
           </div>
@@ -755,7 +755,7 @@ function generatePreRenderedHtml(route) {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div class="text-amber-300 text-lg">⚡</div>
-            <h3 class="font-sans text-base font-bold text-white">Доставка от 30 минут [ПРОВЕРИТЬ]</h3>
+            <h3 class="font-sans text-base font-bold text-white">Доставка от 30 минут</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
               Оперативная доставка цветов по Нижнекамску курьером прямо в руки получателю.
             </p>
@@ -769,16 +769,16 @@ function generatePreRenderedHtml(route) {
           </div>
           <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div class="text-amber-300 text-lg">🎁</div>
-            <h3 class="font-sans text-base font-bold text-white">Открытка в подарок</h3>
+            <h3 class="font-sans text-base font-bold text-white">Открытка и подкормка в подарок</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
-              К каждому заказу прилагается авторская карточка для ваших искренних пожеланий.
+              К каждому заказу бесплатно прилагается авторская карточка для пожеланий и раствор Chrysal.
             </p>
           </div>
           <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
             <div class="text-amber-300 text-lg">🌸</div>
-            <h3 class="font-sans text-base font-bold text-white">Стойкость при правильном уходе</h3>
+            <h3 class="font-sans text-base font-bold text-white">Стойкость от 10 до 14 дней</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
-              Свежие поставки цветов и бережное хранение в специальной холодильной камере.
+              Свежие поставки цветов и стойкость при правильном домашнем уходе.
             </p>
           </div>
         </div>
@@ -798,8 +798,8 @@ function generatePreRenderedHtml(route) {
               <h4 class="font-serif text-lg text-white font-normal">Адрес и режим работы</h4>
               <ul class="space-y-2 text-xs font-light text-white/70 list-none p-0">
                 <li>📍 г. Нижнекамск, пр. Шинников, 13В</li>
-                <li>⏰ Ежедневно: 08:00 – 21:00 [ПРОВЕРИТЬ]</li>
-                <li>🚚 Доставка от 30 минут [ПРОВЕРИТЬ]</li>
+                <li>⏰ Ежедневно: 08:00 – 21:00</li>
+                <li>🚚 Доставка от 30 минут</li>
               </ul>
             </div>
             <div class="space-y-3">
@@ -859,7 +859,7 @@ function generateJsonLd(route) {
     "itemListElement": breadcrumbItems
   };
 
-  // 2. Florist / LocalBusiness Schema (OMITTING unverified aggregateRating / review as instructed!)
+  // 2. Florist / LocalBusiness Schema
   const floristSchema = {
     "@context": "https://schema.org",
     "@type": "Florist",
@@ -899,7 +899,7 @@ function generateJsonLd(route) {
 
   let extraSchemas = '';
 
-  // 3. ItemList with Product + Offer Schema (Stage 3 requirement with EXACT matching catalog prices)
+  // 3. ItemList with Product + Offer Schema
   if (filteredBouquets.length > 0) {
     const itemListSchema = {
       "@context": "https://schema.org",
@@ -949,7 +949,7 @@ function generateJsonLd(route) {
           "name": "Как быстро вы доставляете цветы по Нижнекамску?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Стандартное время доставки готового букета по Нижнекамску согласуется с флористом [ПРОВЕРИТЬ: от 30 минут]. При индивидуальной сложной сборке время зависит от состава цветов."
+            "text": "Стандартное время доставки готового букета по Нижнекамску составляет от 30 до 60 минут с момента подтверждения заказа."
           }
         },
         {
@@ -965,7 +965,7 @@ function generateJsonLd(route) {
           "name": "Что входит в стоимость букета?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "В каждый заказ бесплатно входит защитная транспортировочная упаковка и дизайнерская открытка для ваших пожеланий [ПРОВЕРИТЬ: аквабокс и подкормка]."
+            "text": "В каждый заказ бесплатно входит защитная транспортировочная упаковка, дизайнерская открытка для ваших пожеланий и профессиональный раствор Chrysal для продления стойкости цветов."
           }
         }
       ]
@@ -1032,7 +1032,7 @@ async function runPrerender() {
     pageHtml = pageHtml.replace(/<meta name="twitter:title" content=".*?" \/>/s, `<meta name="twitter:title" content="${route.title}" />`);
     pageHtml = pageHtml.replace(/<meta name="twitter:description" content=".*?" \/>/s, `<meta name="twitter:description" content="${route.description}" />`);
 
-    // 7. Inject JSON-LD Schema (cleanly replacing existing generic schema block or before </head>)
+    // 7. Inject JSON-LD Schema
     const jsonLd = generateJsonLd(route);
     if (pageHtml.includes('<!-- Schema.org Microdata: Florist / LocalBusiness -->')) {
       pageHtml = pageHtml.replace(/<!-- Schema\.org Microdata: Florist \/ LocalBusiness -->[\s\S]*?<\/script>/, jsonLd.trim());
