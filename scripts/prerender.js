@@ -748,6 +748,61 @@ function generatePreRenderedHtml(route) {
         </div>
       </section>
 
+      <!-- 7. Salon Map Section (Yandex Maps) -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8 font-sans text-zinc-900">
+        <div class="bg-white rounded-3xl border border-zinc-200/80 p-6 sm:p-8 lg:p-10 shadow-sm overflow-hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
+              <div class="space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
+                  <span>📍 Салон в Нижнекамске</span>
+                </div>
+                <h2 class="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal leading-tight">
+                  Ждём вас на проспекте Шинников, 13В
+                </h2>
+                <p class="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
+                  Приходите выбрать букет вживую или оформите заказ с доставкой по городу от 30 минут. Перед выездом курьера отправляем контрольное фото собранной композиции в WhatsApp.
+                </p>
+                <div class="space-y-3 pt-2 text-xs text-zinc-700">
+                  <div>
+                    <span class="font-medium text-zinc-900 block">Адрес:</span>
+                    <span class="text-zinc-600 font-light">г. Нижнекамск, пр. Шинников, д. 13В</span>
+                  </div>
+                  <div>
+                    <span class="font-medium text-zinc-900 block">Режим работы:</span>
+                    <span class="text-zinc-600 font-light">Ежедневно с 08:00 до 21:00 без выходных</span>
+                  </div>
+                  <div>
+                    <span class="font-medium text-zinc-900 block">Телефон:</span>
+                    <a href="tel:+79172563235" class="text-[#6C1E26] font-medium">+7 (917) 256-32-35</a>
+                  </div>
+                </div>
+              </div>
+              <div class="pt-4 border-t border-zinc-100 flex flex-wrap gap-3">
+                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-2xl bg-[#6C1E26] text-white font-medium text-xs sm:text-sm text-center inline-block">
+                  Построить маршрут
+                </a>
+                <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-2xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">
+                  Чат в WhatsApp
+                </a>
+              </div>
+            </div>
+            <div class="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-100">
+              <iframe
+                src="https://yandex.ru/map-widget/v1/org/sofiya/105599949171"
+                width="100%"
+                height="100%"
+                frameborder="0"
+                allowfullscreen="true"
+                loading="lazy"
+                title="Салон цветов «София» на Яндекс Картах"
+                class="w-full h-full min-h-[360px] sm:min-h-[420px] border-0 rounded-2xl sm:rounded-3xl"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- 8. Footer -->
       <footer class="w-full bg-[#180B0D] text-white/80 font-sans border-t border-white/10 pt-12 pb-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

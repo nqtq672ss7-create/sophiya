@@ -3,6 +3,7 @@ import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSq
 import { Bouquet } from '../../types/figma-app';
 import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
+import { FigmaMapSection } from './FigmaMapSection';
 import { SeoRoute, formatShownCount } from '../../utils/routes';
 
 interface FigmaCatalogScreenProps {
@@ -402,6 +403,9 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
       {/* 8. Local SEO & Trust Features Section */}
       <FigmaSeoSection />
+
+      {/* 9. Interactive Salon Map Section (Yandex Maps) */}
+      <FigmaMapSection />
     </div>
   );
 };
