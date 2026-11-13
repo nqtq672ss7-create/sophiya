@@ -5,14 +5,13 @@ import { RequisitesModal } from '../payment/RequisitesModal';
 
 interface FigmaFooterProps {
   onTabChange: (tab: FigmaTab) => void;
-  onOpenCrm: () => void;
+  onOpenCrm?: () => void;
   onNavigate?: (path: string, options?: { tab?: FigmaTab }) => void;
   onOpenLegal?: (tab: 'privacy'|'offer'|'refund'|'cookie') => void;
 }
 
 export const FigmaFooter: React.FC<FigmaFooterProps> = ({
   onTabChange,
-  onOpenCrm,
   onNavigate,
   onOpenLegal,
 }) => {
@@ -181,16 +180,6 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   <span>Реквизиты и оплата</span>
                 </button>
               </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={onOpenCrm}
-                  className="hover:text-[#C5A880] text-[#C5A880]/90 transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Панель управления (CRM)</span>
-                </button>
-              </li>
             </ul>
           </div>
         </div>
@@ -244,14 +233,9 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
         </div>
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
-          <button
-            type="button"
-            onClick={onOpenCrm}
-            className="hover:text-white/60 transition-colors text-left cursor-pointer"
-            title="Салон цветов «София»"
-          >
+          <span>
             © 2026 Салон цветов «София». Все права защищены.
-          </button>
+          </span>
           <a
             href="https://yandex.ru/maps/org/sofiya/105599949171"
             target="_blank"

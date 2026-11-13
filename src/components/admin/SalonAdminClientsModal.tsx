@@ -91,12 +91,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         sessionStorage.setItem('sophiya_admin_token', data.token);
         refreshCustomers();
       } else {
-        setPinError(data.error || 'Неверный PIN-код доступа. Попробуйте снова.');
+        setPinError(data.error || 'Неверный пароль доступа. Попробуйте снова.');
         setPinInput('');
       }
     } catch (err) {
       console.error('Login request failed:', err);
-      if (pin === '3235' || pin === 'софия' || pin === 'admin') {
+      if (pin === '3235') {
         setIsUnlocked(true);
         setPinError('');
         setPinInput('');
@@ -311,7 +311,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             <div>
               <input
                 type="password"
-                maxLength={16}
+                maxLength={32}
                 autoFocus
                 disabled={isAuthenticating}
                 value={pinInput}
@@ -319,8 +319,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   setPinInput(e.target.value);
                   setPinError('');
                 }}
-                placeholder="PIN-код"
-                className={`w-full text-center tracking-[0.4em] font-mono text-xl py-3 px-4 bg-white/5 border rounded-xl text-white placeholder-white/30 focus:outline-none transition-colors ${
+                placeholder="Пароль доступа"
+                className={`w-full text-center tracking-wider font-sans text-base py-3 px-4 bg-white/5 border rounded-xl text-white placeholder-white/30 focus:outline-none transition-colors ${
                   pinError
                     ? 'border-red-500 focus:border-red-500 bg-red-950/20'
                     : 'border-white/15 focus:border-[#C5A880]'
@@ -335,10 +335,6 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               )}
             </div>
 
-            <p className="text-[11px] text-white/40 font-light text-center">
-              Подсказка: последние 4 цифры официального телефона (3235)
-            </p>
-
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
@@ -349,7 +345,6 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 Отмена
               </button>
               <button
-                
                 disabled={isAuthenticating}
                 className="flex-1 py-3 px-4 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-xs text-white font-semibold transition-colors shadow-lg cursor-pointer flex items-center justify-center gap-2"
               >
@@ -361,17 +356,6 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 ) : (
                   <span>Войти в CRM</span>
                 )}
-              </button>
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                disabled={isAuthenticating}
-                onClick={() => handleUnlock(undefined, '3235')}
-                className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-amber-200 border border-[#C5A880]/30 transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-medium"
-              >
-                <span> Быстрый вход для владелицы (PIN: 3235)</span>
               </button>
             </div>
           </form>

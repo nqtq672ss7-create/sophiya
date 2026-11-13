@@ -85,7 +85,7 @@ function isPasswordValid(password: string|null|undefined): boolean {
   const clean = password.trim();
   const adminPass = process.env.ADMIN_PASSWORD;
   if (adminPass && clean === adminPass.trim()) return true;
-  return clean === '3235' || clean.toLowerCase() === 'софия' || clean.toLowerCase() === 'admin';
+  return clean === '3235';
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

@@ -249,7 +249,7 @@ export const FigmaAppShell: React.FC = () => {
               activeCategory={filters.category}
               onSelectCategory={(cat) => setFilters((prev) => ({ ...prev, category: cat }))}
               userDiscount={customer?.discountPercent || 0}
-              onOpenCrm={() => setIsAdminCrmOpen(true)}
+              onOpenCrm={() => handleNavigate('/')}
               currentRoute={currentRoute}
               onNavigate={handleNavigate}
             />
@@ -268,7 +268,7 @@ export const FigmaAppShell: React.FC = () => {
           {activeTab === 'profile' && (
             <FigmaProfileScreen
               onOpenAuth={openAuthModal}
-              onOpenCrm={() => setIsAdminCrmOpen(true)}
+              onOpenCrm={() => {}}
               onGoToCatalog={() => handleNavigate('/')}
             />
           )}
@@ -292,7 +292,6 @@ export const FigmaAppShell: React.FC = () => {
             setActiveTab(tab);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          onOpenCrm={() => setIsAdminCrmOpen(true)}
           onNavigate={handleNavigate}
           onOpenLegal={(tab) => setLegalTab(tab)}
         />
