@@ -19,7 +19,9 @@ rm -rf /tmp/sophiya-gh-pages
 git worktree add -B gh-pages /tmp/sophiya-gh-pages
 rsync -a --delete --exclude '.git' "$ROOT_DIR/dist/" /tmp/sophiya-gh-pages/
 git -C /tmp/sophiya-gh-pages add -A
-git -C /tmp/sophiya-gh-pages commit -m "deploy: update GitHub Pages build $(date +'%Y-%m-%d %H:%M:%S')" || true
+TREE=$(git -C /tmp/sophiya-gh-pages write-tree)
+COMMIT=$(git -C /tmp/sophiya-gh-pages commit-tree "$TREE" -m "deploy: update GitHub Pages build $(date +'%Y-%m-%d %H:%M:%S')")
+git -C /tmp/sophiya-gh-pages update-ref refs/heads/gh-pages "$COMMIT"
 git -C /tmp/sophiya-gh-pages push origin gh-pages --force
 git worktree remove --force /tmp/sophiya-gh-pages 2>/dev/null || true
 git worktree prune 2>/dev/null || true
