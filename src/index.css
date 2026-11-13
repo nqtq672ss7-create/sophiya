@@ -68,3 +68,15 @@ body {
   touch-action: none;
   outline: none;
 }
+
+/* Light surface for the visitor review dialog. Tokens are scoped to the dialog. */
+.review-modal {
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --text: #1e0708;
+  --muted: #5c494c;
+  --accent: #6c1e26;
+  --accent-strong: #4f141b;
+  --line: #ddd3cd;
+  --error: #a4262c;
+}

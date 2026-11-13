@@ -71,33 +71,90 @@ function verifyToken(token: string|null|undefined): boolean {
   }
 }
 
+function escapeMarkdown(value: unknown): string {
+  return String(value ?? '').replace(/([_*`\[\]()~>#+\-=|{}.!\\])/g, '\\$1');
+}
+
 async function notifyTelegramReview(review: any) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId || !review) return;
 
-  const ratingVal = Math.max(1, Math.min(5, review.rating || 5));
   const text =
-    `*НОВЫЙ ОТЗЫВ НА САЙТЕ «СОФИЯ»*\n\n` +
-    `*Автор:* ${review.author || 'Гость'}\n` +
-    `*Оценка:* ${ratingVal}/5\n` +
-    (review.bouquetTitle ? `*Букет:* ${review.bouquetTitle}\n` : '') +
-    `*Отзыв:* «${review.comment || ''}»\n\n` +
-    `*Время (МСК):* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`;
+    '*НОВЫЙ ОТЗЫВ НА МОДЕРАЦИИ «СОФИЯ»*\n\n' +
+    `*Автор:* ${escapeMarkdown(review.author)}\n` +
+    `*Оценка:* ${escapeMarkdown(review.rating)}/5\n` +
+    (review.bouquetTitle ? `*Букет:* ${escapeMarkdown(review.bouquetTitle)}\n` : '') +
+    `*Отзыв:* «${escapeMarkdown(review.comment)}»\n\n` +
+    'Опубликовать или удалить можно в CRM, вкладка «Отзывы клиентов».';
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'Markdown',
-      }),
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'MarkdownV2' }),
     });
   } catch (err) {
     console.error('Failed to dispatch Telegram review notice:', err);
   }
+}
+
+const PUBLIC_KEY = 'salon_reviews';
+const PENDING_KEY = 'salon_reviews_pending';
+const SUBMISSIONS_PER_HOUR = 3;
+const MAX_PENDING = 200;
+
+function getClientIp(req: VercelRequest): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  const first = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  if (typeof first === 'string' && first.trim()) return first.split(',')[0].trim();
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function bearerToken(req: VercelRequest): string {
+  const authHeader = req.headers.authorization;
+  return typeof authHeader === 'string' ? authHeader.replace(/^Bearer\s+/i, '').trim() : '';
+}
+
+function moscowDate(): string {
+  return new Date()
+    .toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow' })
+    .replace(/\s*г\.$/, '');
+}
+
+function parseBody(req: VercelRequest): any {
+  try {
+    return typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch {
+    return undefined;
+  }
+}
+
+// Builds a review from untrusted input. Returns an error string when invalid.
+function buildSubmittedReview(input: any): { review?: any; error?: string } {
+  if (!input || typeof input !== 'object') return { error: 'Некорректный отзыв' };
+  const author = String(input.author ?? '').trim().slice(0, 60);
+  const comment = String(input.comment ?? '').trim();
+  const bouquetTitle = String(input.bouquetTitle ?? '').trim().slice(0, 120);
+  const rating = Number(input.rating);
+
+  if (!author) return { error: 'Укажите имя' };
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return { error: 'Оценка должна быть от 1 до 5' };
+  if (comment.length < 5) return { error: 'Отзыв слишком короткий' };
+  if (comment.length > 2000) return { error: 'Отзыв слишком длинный (максимум 2000 символов)' };
+
+  return {
+    review: {
+      id: 'rev_' + Date.now() + '_' + crypto.randomBytes(3).toString('hex'),
+      author,
+      rating,
+      date: moscowDate(),
+      bouquetTitle: bouquetTitle || undefined,
+      comment,
+      isVerified: false,
+      isPublished: false,
+    },
+  };
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -109,49 +166,113 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const client = getKVClient();
 
-  // 1. GET: Fetch global reviews (public)
+  // 1. GET: published reviews are public; admin also gets hidden ones and the pending queue
   if (req.method === 'GET') {
+    const isAdmin = verifyToken(bearerToken(req));
+    const wantsPending = String(req.query?.pending ?? '') === '1';
+
+    if (wantsPending && !isAdmin) {
+      return res.status(401).json({ error: 'Доступ запрещён: требуется авторизация администратора.' });
+    }
+
     try {
-      const data = await client.get('salon_reviews');
-      if (data) {
-        return res.status(200).json(data);
+      if (wantsPending) {
+        const pending = await client.get<any[]>(PENDING_KEY);
+        return res.status(200).json(Array.isArray(pending) ? pending : []);
       }
-      return res.status(200).json(null);
+      const data = await client.get<any[]>(PUBLIC_KEY);
+      if (!data) return res.status(200).json(null);
+      if (!Array.isArray(data) || isAdmin) return res.status(200).json(data);
+      return res.status(200).json(data.filter((r) => r && r.isPublished === true));
     } catch (e) {
       console.error('Error fetching reviews from KV:', e);
       return res.status(200).json(null);
     }
   }
 
-  // 2. POST: Admin review moderation & creation (authenticated)
-  if (req.method === 'POST') {
-    const authHeader = req.headers.authorization;
-    const token = typeof authHeader === 'string' ? authHeader.replace(/^Bearer\s+/i, '').trim() : '';
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-    if (!verifyToken(token)) {
-      return res.status(401).json({
-        error: 'Доступ запрещён: требуется авторизация администратора.',
-      });
+  const body = parseBody(req);
+  if (body === undefined || body === null) {
+    return res.status(400).json({ error: 'Некорректный запрос' });
+  }
+
+  // 2a. POST action=create: public, goes to the moderation queue only
+  if (!Array.isArray(body) && body.action === 'create') {
+    if (body.company_website || body.honeypot || body.hp_token) {
+      return res.status(400).json({ error: 'Bad request' });
     }
 
     try {
-      const items = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      if (!Array.isArray(items)) {
-        return res.status(400).json({ error: 'Ожидается массив отзывов' });
+      const key = 'ratelimit_reviews_' + getClientIp(req).replace(/[^a-zA-Z0-9_.:-]/g, '_');
+      const attempts = await client.incr(key);
+      if (attempts === 1) await client.expire(key, 3600);
+      if (attempts > SUBMISSIONS_PER_HOUR) {
+        return res.status(429).json({ error: 'Слишком много отзывов с одного адреса. Попробуйте позже.' });
       }
+    } catch (err) {
+      console.error('Rate limit store unavailable:', err);
+      return res.status(503).json({ error: 'Сервис временно недоступен' });
+    }
 
-      await client.set('salon_reviews', items);
+    const { review, error } = buildSubmittedReview(body.review);
+    if (!review) return res.status(400).json({ error });
 
-      if (items.length > 0 && items[0]?.date === 'Сегодня') {
-        notifyTelegramReview(items[0]).catch(() => {});
+    try {
+      const pending = (await client.get<any[]>(PENDING_KEY)) || [];
+      if (pending.length >= MAX_PENDING) {
+        return res.status(429).json({ error: 'Очередь отзывов переполнена. Попробуйте позже.' });
       }
-
-      return res.status(200).json({ success: true, count: items.length });
+      await client.set(PENDING_KEY, [review, ...pending]);
+      notifyTelegramReview(review).catch(() => {});
+      return res.status(200).json({ success: true, status: 'pending' });
     } catch (e) {
-      console.error('Error saving reviews to KV:', e);
-      return res.status(500).json({ error: 'Failed to persist reviews' });
+      console.error('Error saving pending review to KV:', e);
+      return res.status(500).json({ error: 'Не удалось сохранить отзыв' });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  // Everything below is admin-only
+  if (!verifyToken(bearerToken(req))) {
+    return res.status(401).json({
+      error: 'Доступ запрещён: требуется авторизация администратора.',
+    });
+  }
+
+  // 2b. POST action=moderate: approve or reject a pending review
+  if (!Array.isArray(body) && body.action === 'moderate') {
+    const id = String(body.id ?? '');
+    if (!id || (body.decision !== 'approve' && body.decision !== 'reject')) {
+      return res.status(400).json({ error: 'Некорректный запрос модерации' });
+    }
+    try {
+      const pending = (await client.get<any[]>(PENDING_KEY)) || [];
+      const target = pending.find((r) => r && r.id === id);
+      if (!target) return res.status(404).json({ error: 'Отзыв не найден в очереди' });
+
+      if (body.decision === 'approve') {
+        const published = (await client.get<any[]>(PUBLIC_KEY)) || [];
+        await client.set(PUBLIC_KEY, [{ ...target, isPublished: true, isVerified: false }, ...published]);
+      }
+      await client.set(PENDING_KEY, pending.filter((r) => r && r.id !== id));
+      return res.status(200).json({ success: true });
+    } catch (e) {
+      console.error('Error moderating review:', e);
+      return res.status(500).json({ error: 'Не удалось обработать отзыв' });
+    }
+  }
+
+  // 2c. POST array: admin replaces the public list (the pending queue is untouched)
+  if (!Array.isArray(body)) {
+    return res.status(400).json({ error: 'Ожидается массив отзывов' });
+  }
+  try {
+    await client.set(PUBLIC_KEY, body);
+    return res.status(200).json({ success: true, count: body.length });
+  } catch (e) {
+    console.error('Error saving reviews to KV:', e);
+    return res.status(500).json({ error: 'Failed to persist reviews' });
+  }
 }

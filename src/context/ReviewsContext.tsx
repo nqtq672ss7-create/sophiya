@@ -3,10 +3,30 @@ import { Review } from '../types/review';
 import { INITIAL_REVIEWS } from '../data/reviews';
 import { getApiUrl } from '../config/api';
 
+export interface SubmitReviewInput {
+  author: string;
+  rating: number;
+  bouquetTitle?: string;
+  comment: string;
+}
+
+function adminAuthHeader(): Record<string, string> {
+  try {
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 interface ReviewsContextType {
   reviews: Review[];
   publishedReviews: Review[];
+  pendingReviews: Review[];
   addReview: (newReviewData: Omit<Review, 'id'>) => Review;
+  submitReview: (data: SubmitReviewInput) => Promise<{ ok: boolean; error?: string }>;
+  moderateReview: (id: string, approve: boolean) => Promise<boolean>;
+  refreshPending: () => Promise<void>;
   updateReview: (id: string, updates: Partial<Review>) => void;
   deleteReview: (id: string) => void;
   togglePublished: (id: string) => void;
@@ -45,11 +65,7 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const syncToCloud = async (items: Review[]) => {
     try {
-      const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+      const headers: Record<string, string> = { 'Content-Type': 'application/json', ...adminAuthHeader() };
       await fetch(getApiUrl('/api/reviews'), {
         method: 'POST',
         headers,
@@ -62,7 +78,9 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const refreshReviews = useCallback(async () => {
     try {
-      const res = await fetch(getApiUrl(`/api/reviews?t=${Date.now()}`), { headers: { 'Cache-Control': 'no-cache' } });
+      const res = await fetch(getApiUrl(`/api/reviews?t=${Date.now()}`), {
+        headers: { 'Cache-Control': 'no-cache', ...adminAuthHeader() },
+      });
       if (res.ok) {
         const remote = await res.json();
         if (Array.isArray(remote)) {
@@ -78,6 +96,58 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     refreshReviews();
   }, [refreshReviews]);
+
+  const [pendingReviews, setPendingReviews] = useState<Review[]>([]);
+
+  const refreshPending = useCallback(async () => {
+    const headers = adminAuthHeader();
+    if (!headers.Authorization) {
+      setPendingReviews([]);
+      return;
+    }
+    try {
+      const res = await fetch(getApiUrl(`/api/reviews?pending=1&t=${Date.now()}`), {
+        headers: { 'Cache-Control': 'no-cache', ...headers },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingReviews(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch pending reviews:', err);
+    }
+  }, []);
+
+  // Public visitors send reviews to the moderation queue; nothing is published until the salon approves it.
+  const submitReview = async (data: SubmitReviewInput): Promise<{ ok: boolean; error?: string }> => {
+    try {
+      const res = await fetch(getApiUrl('/api/reviews'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', review: data }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok && payload.success === true) return { ok: true };
+      return { ok: false, error: payload.error || 'Не удалось отправить отзыв. Попробуйте ещё раз.' };
+    } catch {
+      return { ok: false, error: 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.' };
+    }
+  };
+
+  const moderateReview = async (id: string, approve: boolean): Promise<boolean> => {
+    try {
+      const res = await fetch(getApiUrl('/api/reviews'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...adminAuthHeader() },
+        body: JSON.stringify({ action: 'moderate', id, decision: approve ? 'approve' : 'reject' }),
+      });
+      if (!res.ok) return false;
+      await Promise.all([refreshPending(), refreshReviews()]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const addReview = (newReviewData: Omit<Review, 'id'>): Review => {
     const newReview: Review = {
@@ -135,7 +205,11 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{
         reviews,
         publishedReviews,
+        pendingReviews,
         addReview,
+        submitReview,
+        moderateReview,
+        refreshPending,
         updateReview,
         deleteReview,
         togglePublished,
