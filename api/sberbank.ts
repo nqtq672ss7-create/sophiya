@@ -4,15 +4,12 @@ const ALLOWED_ORIGINS = [
   'https://xn----ctbjn3arftl7c8b.xn--p1ai',
   'https://цветы-софия.рф',
   'https://sitesophiya.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:5173',
 ];
 
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin as string;
   if (origin) {
-    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (ALLOWED_ORIGINS.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
       res.setHeader('Access-Control-Allow-Origin', 'null');

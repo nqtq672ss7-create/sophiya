@@ -6,16 +6,12 @@ const ALLOWED_ORIGINS = [
   'https://xn----ctbjn3arftl7c8b.xn--p1ai',
   'https://цветы-софия.рф',
   'https://sitesophiya.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:5173',
 ];
 
-const SECRET_SALT =
-  process.env.AUTH_SECRET ||
-  process.env.KV_REST_API_TOKEN ||
-  process.env.STORAGE_REST_API_TOKEN ||
-  'sophiya_sovereign_flower_vault_key_2026';
+// Signing key comes only from the environment. No fallback: if it is missing or
+// short, token signing and verification fail closed.
+const SECRET_SALT = process.env.AUTH_SECRET || '';
+const SECRET_OK = SECRET_SALT.length >= 32;
 
 function getKVClient() {
   const url =
@@ -36,7 +32,7 @@ function getKVClient() {
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin as string;
   if (origin) {
-    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (ALLOWED_ORIGINS.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
       res.setHeader('Access-Control-Allow-Origin', 'null');
@@ -81,11 +77,13 @@ function generateToken(): string {
 }
 
 function isPasswordValid(password: string|null|undefined): boolean {
+  const adminPass = process.env.ADMIN_PASSWORD?.trim();
+  if (!adminPass) return false;
   if (!password || typeof password !== 'string') return false;
-  const clean = password.trim();
-  const adminPass = process.env.ADMIN_PASSWORD;
-  if (adminPass && clean === adminPass.trim()) return true;
-  return clean === '3235';
+  // Compare fixed-length digests so neither length nor content leaks through timing.
+  const given = crypto.createHash('sha256').update(password.trim()).digest();
+  const expected = crypto.createHash('sha256').update(adminPass).digest();
+  return crypto.timingSafeEqual(given, expected);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -99,10 +97,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!SECRET_OK || !process.env.ADMIN_PASSWORD?.trim()) {
+    console.error('Admin login is not configured: set ADMIN_PASSWORD and AUTH_SECRET (32+ chars).');
+    return res.status(503).json({ error: 'Вход администратора не настроен на сервере.' });
+  }
+
   const client = getKVClient();
   const ip = getClientIp(req);
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+  let body: any;
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+  } catch {
+    return res.status(400).json({ error: 'Bad request' });
+  }
   if (body.company_website || body.honeypot || body.hp_token) {
     return res.status(400).json({ error: 'Bad request' });
   }

@@ -6,16 +6,12 @@ const ALLOWED_ORIGINS = [
   'https://xn----ctbjn3arftl7c8b.xn--p1ai',
   'https://цветы-софия.рф',
   'https://sitesophiya.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:5173',
 ];
 
-const SECRET_SALT =
-  process.env.AUTH_SECRET ||
-  process.env.KV_REST_API_TOKEN ||
-  process.env.STORAGE_REST_API_TOKEN ||
-  'sophiya_sovereign_flower_vault_key_2026';
+// Signing key comes only from the environment. No fallback: if it is missing or
+// short, token signing and verification fail closed.
+const SECRET_SALT = process.env.AUTH_SECRET || '';
+const SECRET_OK = SECRET_SALT.length >= 32;
 
 function getKVClient() {
   const url =
@@ -36,7 +32,7 @@ function getKVClient() {
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin as string;
   if (origin) {
-    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (ALLOWED_ORIGINS.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
       res.setHeader('Access-Control-Allow-Origin', 'null');
@@ -58,6 +54,7 @@ function setSecureCors(req: VercelRequest, res: VercelResponse) {
 }
 
 function verifyToken(token: string|null|undefined): boolean {
+  if (!SECRET_OK) return false;
   if (!token || typeof token !== 'string') return false;
   const parts = token.split('.');
   if (parts.length !== 2) return false;
