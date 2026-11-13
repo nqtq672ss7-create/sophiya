@@ -6,16 +6,12 @@ const ALLOWED_ORIGINS = [
   'https://xn----ctbjn3arftl7c8b.xn--p1ai',
   'https://цветы-софия.рф',
   'https://sitesophiya.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:5173',
 ];
 
-const SECRET_SALT =
-  process.env.AUTH_SECRET ||
-  process.env.KV_REST_API_TOKEN ||
-  process.env.STORAGE_REST_API_TOKEN ||
-  'sophiya_sovereign_flower_vault_key_2026';
+// Signing key comes only from the environment. No fallback: if it is missing or
+// short, token signing and verification fail closed.
+const SECRET_SALT = process.env.AUTH_SECRET || '';
+const SECRET_OK = SECRET_SALT.length >= 32;
 
 function getKVClient() {
   const url =
@@ -36,7 +32,7 @@ function getKVClient() {
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin as string;
   if (origin) {
-    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (ALLOWED_ORIGINS.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
       res.setHeader('Access-Control-Allow-Origin', 'null');
@@ -58,6 +54,7 @@ function setSecureCors(req: VercelRequest, res: VercelResponse) {
 }
 
 function verifyToken(token: string|null|undefined): boolean {
+  if (!SECRET_OK) return false;
   if (!token || typeof token !== 'string') return false;
   const parts = token.split('.');
   if (parts.length !== 2) return false;
@@ -74,37 +71,57 @@ function verifyToken(token: string|null|undefined): boolean {
   }
 }
 
+function escapeMarkdown(value: unknown): string {
+  return String(value ?? '').replace(/([_*`\[\]()~>#+\-=|{}.!\\])/g, '\\$1');
+}
+
 async function notifyTelegram(customer: any) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return;
 
-  const isNew = !customer.ordersCount || customer.ordersCount === 0;
-  const title = isNew
-    ? '*НОВЫЙ КЛИЕНТ В САЛОНЕ «СОФИЯ»*'
-    : '*ОБНОВЛЕНИЕ ДАННЫХ КЛИЕНТА «СОФИЯ»*';
-
   const text =
-    `${title}\n\n` +
-    `*Клиент:* ${customer.firstName} ${customer.lastName}\n` +
-    `*Телефон:* \`${customer.phone}\`\n` +
-    `*День рождения:* ${customer.birthDate || 'Не указан'}\n` +
-    `*Дата регистрации:* ${customer.registeredAt || new Date().toISOString().split('T')[0]}\n` +
-    `*Время (МСК):* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`;
+    '*НОВЫЙ КЛИЕНТ В САЛОНЕ «СОФИЯ»*\n\n' +
+    `*Клиент:* ${escapeMarkdown(customer.firstName)} ${escapeMarkdown(customer.lastName)}\n` +
+    `*Телефон:* ${escapeMarkdown(customer.phone)}\n` +
+    `*День рождения:* ${escapeMarkdown(customer.birthDate || 'Не указан')}\n` +
+    `*Дата регистрации:* ${escapeMarkdown(customer.registeredAt)}\n` +
+    `*Время \\(МСК\\):* ${escapeMarkdown(new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }))}`;
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'Markdown',
-      }),
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'MarkdownV2' }),
     });
   } catch (err) {
-    console.error('Failed to dispatch Telegram backup notice:', err);
+    console.error('Failed to dispatch Telegram notice:', err);
   }
+}
+
+const TIER_NAMES = ['Клиент', 'Серебряный', 'Золотой', 'Платиновый'];
+const REGISTRATIONS_PER_HOUR = 5;
+
+function getClientIp(req: VercelRequest): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  const first = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  if (typeof first === 'string' && first.trim()) return first.split(',')[0].trim();
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function normalizePhoneDigits(phone: unknown): string {
+  const digits = String(phone ?? '').replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('8')) return '7' + digits.slice(1);
+  return digits;
+}
+
+function cleanText(value: unknown, max: number): string {
+  return String(value ?? '').trim().slice(0, max);
+}
+
+function nonNegativeNumber(value: unknown, max: number): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 && n <= max ? n : null;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -139,32 +156,106 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 2. POST: Upsert customer (registration / loyalty club)
+  // 2. POST: public registration (create-only) or admin update
   if (req.method === 'POST') {
+    let input: any;
     try {
-      const customer = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      if (!customer || !customer.id || !customer.phone) {
-        return res.status(400).json({ error: 'Некорректные данные клиента' });
-      }
+      input = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    } catch {
+      return res.status(400).json({ error: 'Некорректные данные клиента' });
+    }
+    if (!input || typeof input !== 'object') {
+      return res.status(400).json({ error: 'Некорректные данные клиента' });
+    }
 
-      customer.firstName = String(customer.firstName || '').slice(0, 50).trim();
-      customer.lastName = String(customer.lastName || '').slice(0, 50).trim();
-      customer.phone = String(customer.phone || '').slice(0, 30).trim();
+    const authHeader = req.headers.authorization;
+    const token = typeof authHeader === 'string' ? authHeader.replace(/^Bearer\s+/i, '').trim() : '';
+    const isAdmin = verifyToken(token);
 
-      notifyTelegram(customer).catch(() => {});
+    const id = cleanText(input.id, 64);
+    const phoneDigits = normalizePhoneDigits(input.phone);
+    const firstName = cleanText(input.firstName, 50);
+    const lastName = cleanText(input.lastName, 50);
+    const birthDate = cleanText(input.birthDate, 10);
 
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(id) || phoneDigits.length !== 11 || !firstName || !lastName) {
+      return res.status(400).json({ error: 'Некорректные данные клиента' });
+    }
+    if (birthDate && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+      return res.status(400).json({ error: 'Некорректная дата рождения' });
+    }
+
+    if (!isAdmin) {
       try {
-        const existing = (await client.get<any[]>('salon_customers')) || [];
-        const updated = [customer, ...existing.filter((c) => c.id !== customer.id)];
-        await client.set('salon_customers', updated);
+        const key = 'ratelimit_customers_' + getClientIp(req).replace(/[^a-zA-Z0-9_.:-]/g, '_');
+        const attempts = await client.incr(key);
+        if (attempts === 1) await client.expire(key, 3600);
+        if (attempts > REGISTRATIONS_PER_HOUR) {
+          return res.status(429).json({ error: 'Слишком много запросов. Попробуйте позже.' });
+        }
       } catch (err) {
-        console.error('Error saving customer to KV:', err);
+        console.error('Rate limit store unavailable:', err);
+        return res.status(503).json({ error: 'Сервис временно недоступен' });
+      }
+    }
+
+    const phone = '+7 (' + phoneDigits.slice(1, 4) + ') ' + phoneDigits.slice(4, 7) + '-' + phoneDigits.slice(7, 9) + '-' + phoneDigits.slice(9, 11);
+
+    try {
+      const existing = ((await client.get<any[]>('salon_customers')) || []).filter(Boolean);
+      const byId = existing.find((c) => c.id === id);
+      const byPhone = existing.find((c) => normalizePhoneDigits(c.phone) === phoneDigits);
+
+      if (!isAdmin) {
+        // Public callers may only create. They cannot touch existing records or loyalty data.
+        if (byId || byPhone) {
+          return res.status(409).json({ error: 'Клиент с таким номером уже зарегистрирован' });
+        }
+        const created = {
+          id,
+          phone,
+          firstName,
+          lastName,
+          birthDate: birthDate || undefined,
+          totalSpent: 0,
+          ordersCount: 0,
+          discountPercent: 0,
+          tier: 'Клиент',
+          orders: [] as unknown[],
+          registeredAt: new Date().toISOString().split('T')[0],
+        };
+        await client.set('salon_customers', [created, ...existing]);
+        notifyTelegram(created).catch(() => {});
+        return res.status(200).json({ success: true, customer: created });
       }
 
-      return res.status(200).json({ success: true, customer });
-    } catch (e) {
-      console.error('Error saving customer in API:', e);
-      return res.status(500).json({ error: 'Failed to persist customer' });
+      // Admin update: loyalty fields are validated, nothing else is trusted.
+      const totalSpent = nonNegativeNumber(input.totalSpent, 1e9);
+      const ordersCount = nonNegativeNumber(input.ordersCount, 1e6);
+      const discountPercent = nonNegativeNumber(input.discountPercent, 100);
+      const tier = TIER_NAMES.includes(input.tier) ? input.tier : null;
+      if (totalSpent === null || ordersCount === null || discountPercent === null || !tier) {
+        return res.status(400).json({ error: 'Некорректные данные лояльности' });
+      }
+      const orders = Array.isArray(input.orders) ? input.orders.slice(0, 500) : [];
+      const record = {
+        id,
+        phone,
+        firstName,
+        lastName,
+        birthDate: birthDate || undefined,
+        totalSpent,
+        ordersCount,
+        discountPercent,
+        tier,
+        orders,
+        registeredAt: cleanText(input.registeredAt, 10) || byId?.registeredAt || new Date().toISOString().split('T')[0],
+      };
+      await client.set('salon_customers', [record, ...existing.filter((c) => c.id !== id)]);
+      return res.status(200).json({ success: true, customer: record });
+    } catch (err) {
+      console.error('Error saving customer to KV:', err);
+      return res.status(500).json({ error: 'Не удалось сохранить клиента' });
     }
   }
 

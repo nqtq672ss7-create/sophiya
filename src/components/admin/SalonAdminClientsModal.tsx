@@ -96,15 +96,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       }
     } catch (err) {
       console.error('Login request failed:', err);
-      if (pin === '3235') {
-        setIsUnlocked(true);
-        setPinError('');
-        setPinInput('');
-        sessionStorage.setItem('sophiya_admin_token', 'offline_dev_token');
-        refreshCustomers();
-      } else {
-        setPinError('Не удалось подключиться к серверу авторизации.');
-      }
+      setPinError('Не удалось подключиться к серверу авторизации.');
     } finally {
       setIsAuthenticating(false);
     }
