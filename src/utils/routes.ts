@@ -12,15 +12,15 @@ export interface SeoRoute {
   breadcrumbLabel: string;
   introHeading: string;
   introText: string[];
-  activeTab?: 'catalog' | 'cart' | 'profile';
-  pageType?: 'category' | 'occasion' | 'info';
+  activeTab?: 'catalog'|'cart'|'profile';
+  pageType?: 'category'|'occasion'|'info';
 }
 
 export const SEO_ROUTES: SeoRoute[] = [
   {
     path: '/',
     slug: '',
-    title: 'Цветы «София» Нижнекамск — Доставка свежих букетов | Шинников 13В',
+    title: 'Цветы «София» Нижнекамск — Доставка свежих букетов — Шинников 13В',
     description: 'Салон цветов «София» в Нижнекамске (пр. Шинников, 13В). Авторские букеты и розы со свежей доставкой по городу. Фото букета в WhatsApp перед отправкой.',
     h1: 'Салон цветов «София» в Нижнекамске — доставка свежих букетов',
     breadcrumbLabel: 'Главная',
@@ -79,7 +79,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   {
     path: '/cvety-v-korobke/',
     slug: 'cvety-v-korobke',
-    title: 'Цветы в коробке в Нижнекамске с доставкой | София',
+    title: 'Цветы в коробке в Нижнекамске с доставкой — София',
     description: 'Композиции и цветы в шляпных коробках в Нижнекамске. Доставка курьером. Фото в WhatsApp перед отправкой. Салон «София», пр. Шинников, 13В.',
     h1: 'Цветы в шляпных коробках с доставкой в Нижнекамске',
     targetCategory: 'Коробки',
@@ -184,7 +184,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   {
     path: '/dostavka/',
     slug: 'dostavka',
-    title: 'Доставка цветов в Нижнекамске | Салон «София»',
+    title: 'Доставка цветов в Нижнекамске — Салон «София»',
     description: 'Условия и зоны доставки цветов по Нижнекамску. Фото в WhatsApp перед выездом курьера. Салон «София», пр. Шинников, 13В. Тел: +7 (917) 256-32-35',
     h1: 'Доставка цветов по Нижнекамску — Салон «София»',
     breadcrumbLabel: 'Доставка и оплата',

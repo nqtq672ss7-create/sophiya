@@ -113,7 +113,7 @@ const ROUTES = [
   {
     path: '/',
     slug: '',
-    title: 'Цветы в Нижнекамске — доставка от 30 минут | София',
+    title: 'Цветы в Нижнекамске — доставка от 30 минут — София',
     description: 'Заказ и доставка свежих цветов в Нижнекамске от 30 минут. Авторские букеты и розы на пр. Шинников, 13В. Фото в WhatsApp. Тел: +7 (917) 256-32-35',
     h1: 'Салон цветов «София» в Нижнекамске — доставка от 30 минут',
     categoryFilter: 'Все',
@@ -173,7 +173,7 @@ const ROUTES = [
   {
     path: '/cvety-v-korobke/',
     slug: 'cvety-v-korobke',
-    title: 'Цветы в коробке в Нижнекамске с доставкой | София',
+    title: 'Цветы в коробке в Нижнекамске с доставкой — София',
     description: 'Композиции и цветы в шляпных коробках в Нижнекамске. Доставка курьером. Подарочная открытка. Салон «София», пр. Шинников, 13В.',
     h1: 'Цветы в шляпных коробках с доставкой в Нижнекамске',
     targetCategory: 'Коробки',
@@ -278,7 +278,7 @@ const ROUTES = [
   {
     path: '/dostavka/',
     slug: 'dostavka',
-    title: 'Доставка цветов в Нижнекамске от 30 минут | София',
+    title: 'Доставка цветов в Нижнекамске от 30 минут — София',
     description: 'Условия доставки цветов по Нижнекамску. Фото в WhatsApp перед отправкой. Салон «София», пр. Шинников, 13В. Тел: +7 (917) 256-32-35',
     h1: 'Доставка цветов по Нижнекамску — Салон «София»',
     targetCategory: 'Все',
@@ -517,16 +517,16 @@ function generatePreRenderedHtml(route) {
   const filteredBouquets = filterBouquetsForRoute(route);
 
   const breadcrumbsHtml = route.path !== '/' ? `
-    <nav aria-label="Хлебные крошки" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-xs text-zinc-500 font-sans" itemscope itemtype="https://schema.org/BreadcrumbList">
+    <nav aria-label="Хлебные крошки" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-xs text-[#7C636B] font-sans" itemscope itemtype="https://schema.org/BreadcrumbList">
       <ol class="flex items-center gap-2 list-none p-0 m-0">
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="flex items-center gap-2">
-          <a href="/" itemprop="item" class="hover:text-[#6C1E26] text-zinc-600 transition-colors">
+          <a href="/" itemprop="item" class="hover:text-[#6C1E26] text-[#5C454C] transition-colors">
             <span itemprop="name">Главная</span>
           </a>
           <meta itemprop="position" content="1" />
-          <span class="text-zinc-400">/</span>
+          <span class="text-[#9C828B]">/</span>
         </li>
-        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="text-zinc-900 font-semibold">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="text-[#1C1215] font-semibold">
           <span itemprop="name">${route.breadcrumbLabel}</span>
           <meta itemprop="position" content="2" />
         </li>
@@ -542,8 +542,8 @@ function generatePreRenderedHtml(route) {
       const imageSrc = b.image || '/bouquet-placeholder.svg';
       const hasReal = b.hasRealPhoto ?? (imageSrc && !imageSrc.includes('placeholder'));
       return `
-      <article class="bg-white rounded-3xl border border-zinc-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between" itemscope itemtype="https://schema.org/Product" id="product-${b.id}">
-        <div class="relative overflow-hidden aspect-[4/5] bg-zinc-100">
+      <article class="bg-white rounded-xl border border-white/10 overflow-hidden shadow-sm hover:shadow-xl transition-colors duration-300 flex flex-col justify-between" itemscope itemtype="https://schema.org/Product" id="product-${b.id}">
+        <div class="relative overflow-hidden aspect-auto bg-white/5">
           <img
             src="${imageSrc}"
             alt="${b.title} в Нижнекамске — салон цветов София"
@@ -553,32 +553,32 @@ function generatePreRenderedHtml(route) {
             class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             itemprop="image"
           />
-          <div class="absolute top-3 left-3 bg-[#6C1E26]/90 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full">
+          <div class="absolute top-3 left-3 bg-[#6C1E26]/90  text-white text-[11px] font-medium px-2.5 py-1 rounded-xl">
             ${b.category}
           </div>
         </div>
         <div class="p-5 sm:p-6 flex-1 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-zinc-400 font-light mb-1">
+            <div class="flex items-center justify-between text-xs text-[#9C828B] font-light mb-1">
               <span>${flowersCount}</span>
               <span>${height}</span>
             </div>
-            <h3 class="font-serif text-lg sm:text-xl text-zinc-900 font-medium leading-snug mb-2" itemprop="name">
+            <h3 class="font-sans font-medium text-lg sm:text-xl text-[#1C1215] font-medium leading-snug mb-2" itemprop="name">
               ${b.title}
             </h3>
-            <p class="text-xs text-zinc-600 font-light line-clamp-2 mb-4" itemprop="description">
+            <p class="text-xs text-[#5C454C] font-light line-clamp-2 mb-4" itemprop="description">
               ${b.description || 'Авторский букет из свежих цветов салона «София».'}
             </p>
           </div>
           <div>
-            <div class="flex items-baseline justify-between pt-3 border-t border-zinc-100 mb-4" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <div class="flex items-baseline justify-between pt-3 border-t border-white/5 mb-4" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
               <link itemprop="availability" href="${b.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}" />
               <meta itemprop="priceCurrency" content="RUB" />
               <meta itemprop="price" content="${b.price}" />
-              <span class="font-serif text-2xl font-bold text-[#6C1E26]">
+              <span class="font-sans font-medium text-2xl font-bold text-[#6C1E26]">
                 ${Number(b.price).toLocaleString('ru-RU')} ₽
               </span>
-              <span class="text-[11px] ${b.inStock ? 'text-emerald-700 bg-emerald-50' : 'text-zinc-600 bg-zinc-100'} px-2 py-0.5 rounded-full font-medium">
+              <span class="text-[11px] ${b.inStock ? 'text-emerald-700 bg-emerald-50' : 'text-[#5C454C] bg-white/5'} px-2 py-0.5 rounded-xl font-medium">
                 ${b.inStock ? 'В наличии' : 'Под заказ'}
               </span>
             </div>
@@ -586,7 +586,7 @@ function generatePreRenderedHtml(route) {
               href="https://wa.me/79172563235?text=${encodeURIComponent(`Здравствуйте! Хочу заказать букет «${b.title}» (${b.price} ₽) с доставкой в Нижнекамске.`)}"
               target="_blank"
               rel="noopener noreferrer"
-              class="w-full py-3 px-4 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs sm:text-sm text-center block transition-all shadow-md active:scale-95"
+              class="w-full py-3 px-4 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs sm:text-sm text-center block transition-colors shadow-md active:scale-95"
             >
               Заказать с доставкой
             </a>
@@ -597,10 +597,10 @@ function generatePreRenderedHtml(route) {
     }).join('\n');
   } else {
     bouquetsCardsHtml = `
-      <div class="col-span-full bg-white rounded-3xl p-8 sm:p-12 border border-zinc-200 text-center space-y-4 shadow-sm my-4">
-        <div class="text-4xl">🌸</div>
-        <h3 class="font-serif text-xl sm:text-2xl text-zinc-900 font-medium">Композиции этой категории собираются под индивидуальный заказ</h3>
-        <p class="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
+      <div class="col-span-full bg-white rounded-xl p-8 sm:p-12 border border-white/10 text-center space-y-4 shadow-sm my-4">
+        <div class="text-4xl"></div>
+        <h3 class="font-sans font-medium text-xl sm:text-2xl text-[#1C1215] font-medium">Композиции этой категории собираются под индивидуальный заказ</h3>
+        <p class="text-xs sm:text-sm text-[#5C454C] max-w-md mx-auto leading-relaxed">
           В данный момент букеты из раздела «${route.breadcrumbLabel}» составляются нашими флористами со свежей срезки под ваши пожелания и бюджет.
         </p>
         <div class="pt-2">
@@ -608,7 +608,7 @@ function generatePreRenderedHtml(route) {
             href="https://wa.me/79172563235?text=${encodeURIComponent(`Здравствуйте! Хочу уточнить наличие цветов в категории «${route.breadcrumbLabel}» в Нижнекамске.`)}"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block py-3 px-6 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs sm:text-sm transition-all shadow-md active:scale-95"
+            class="inline-block py-3 px-6 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs sm:text-sm transition-colors shadow-md active:scale-95"
           >
             Написать флористу в WhatsApp
           </a>
@@ -634,7 +634,7 @@ function generatePreRenderedHtml(route) {
   const categoryChipsHtml = navCategories.map(c => `
     <a
       href="${c.href}"
-      class="px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#6C1E26] text-white shadow-sm font-semibold' : 'bg-white/90 text-zinc-700 hover:bg-white border border-zinc-200/70 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
+      class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#6C1E26] text-white shadow-sm font-semibold' : 'bg-white/90 text-[#3D2C31] hover:bg-white border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
     >
       ${c.label}
     </a>
@@ -643,23 +643,23 @@ function generatePreRenderedHtml(route) {
   const catalogTitle = route.path === '/' ? 'Каталог букетов' : `Каталог: ${route.breadcrumbLabel}`;
 
   return `
-    <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white font-sans">
+    <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#6C1E26] selection:text-white font-sans">
       <!-- 2. Header -->
-      <header class="w-full bg-[#FAF7F5]/95 backdrop-blur-md border-b border-zinc-200 sticky top-0 z-40">
+      <header class="w-full bg-[#FAF7F5]/95  border-b border-white/10 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
           <a href="/" class="flex items-center gap-3" title="Салон цветов «София» Нижнекамск">
             <img src="/logo.png" alt="Салон цветов София" width="160" height="60" class="h-14 sm:h-18 w-auto object-contain" />
           </a>
           <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-            <a href="/" class="hover:text-[#6C1E26] text-zinc-700">Каталог</a>
-            <a href="/rozy/" class="hover:text-[#6C1E26] text-zinc-700">Розы</a>
-            <a href="/monobukety/" class="hover:text-[#6C1E26] text-zinc-700">Монобукеты</a>
-            <a href="/avtorskie-bukety/" class="hover:text-[#6C1E26] text-zinc-700">Авторские</a>
-            <a href="/dostavka/" class="hover:text-[#6C1E26] text-zinc-700">Доставка</a>
-            <a href="/kontakty/" class="hover:text-[#6C1E26] text-zinc-700">Контакты</a>
+            <a href="/" class="hover:text-[#6C1E26] text-[#3D2C31]">Каталог</a>
+            <a href="/rozy/" class="hover:text-[#6C1E26] text-[#3D2C31]">Розы</a>
+            <a href="/monobukety/" class="hover:text-[#6C1E26] text-[#3D2C31]">Монобукеты</a>
+            <a href="/avtorskie-bukety/" class="hover:text-[#6C1E26] text-[#3D2C31]">Авторские</a>
+            <a href="/dostavka/" class="hover:text-[#6C1E26] text-[#3D2C31]">Доставка</a>
+            <a href="/kontakty/" class="hover:text-[#6C1E26] text-[#3D2C31]">Контакты</a>
           </nav>
-          <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-full bg-[#6C1E26] text-white text-xs font-semibold shadow hover:bg-[#5A121A]">
-            <span>📞</span>
+          <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#6C1E26] text-white text-xs font-semibold shadow hover:bg-[#5A121A]">
+            <span></span>
             <span>+7 (917) 256-32-35</span>
           </a>
         </div>
@@ -669,7 +669,7 @@ function generatePreRenderedHtml(route) {
 
       <!-- 3. Primary Hero Section with SINGLE Visible H1 on ALL screens -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 w-full">
-        <div class="relative overflow-hidden rounded-3xl bg-rose-texture-hero text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
+        <div class="relative overflow-hidden rounded-xl bg-rose-texture-hero text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div class="max-w-3xl space-y-4">
             <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
             <h1 class="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
@@ -677,14 +677,14 @@ function generatePreRenderedHtml(route) {
             </h1>
 
             <div class="pt-2 flex flex-wrap items-center gap-2.5 text-xs font-light text-white/90">
-              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                <span>⚡ Доставка от 30 минут</span>
+              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
+                <span> Доставка от 30 минут</span>
               </span>
-              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                <span>📍 пр. Шинников, 13В</span>
+              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
+                <span> пр. Шинников, 13В</span>
               </span>
-              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                <span>📸 Фото букета в WhatsApp</span>
+              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
+                <span> Фото букета в WhatsApp</span>
               </span>
             </div>
           </div>
@@ -693,18 +693,18 @@ function generatePreRenderedHtml(route) {
 
       <!-- 4. Category Navigation Chips (PillNav Style) -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full">
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-1 border-b border-zinc-200/60">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-1 border-b border-white/10">
           ${categoryChipsHtml}
         </div>
       </section>
 
       <!-- 6. Catalog Bouquets Grid -->
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 w-full">
-        <div class="flex items-baseline justify-between mb-6 pb-2 border-b border-zinc-200">
-          <h2 class="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
+        <div class="flex items-baseline justify-between mb-6 pb-2 border-b border-white/10">
+          <h2 class="font-sans font-medium text-2xl sm:text-3xl text-[#1C1215] font-normal">
             ${catalogTitle}
           </h2>
-          <span class="text-xs text-zinc-500 font-light">
+          <span class="text-xs text-[#7C636B] font-light">
             ${formatShownCount(filteredBouquets.length)}
           </span>
         </div>
@@ -717,29 +717,29 @@ function generatePreRenderedHtml(route) {
       <!-- 7. Trust & Guarantees (4 Cards) -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg">⚡</div>
+          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
+            <div class="text-amber-300 text-lg"></div>
             <h3 class="font-sans text-base font-bold text-white">Доставка от 30 минут</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
               Оперативная доставка цветов по Нижнекамску курьером прямо в руки получателю.
             </p>
           </div>
-          <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg">📱</div>
+          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
+            <div class="text-amber-300 text-lg"></div>
             <h3 class="font-sans text-base font-bold text-white">Фото в WhatsApp перед выездом</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
               Вы всегда точно знаете, как выглядит букет. Флорист присылает детальные фотографии перед отправкой.
             </p>
           </div>
-          <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg">🎀</div>
+          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
+            <div class="text-amber-300 text-lg"></div>
             <h3 class="font-sans text-base font-bold text-white">Дизайнерская упаковка</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
               Каждый букет оформляется в стильную дизайнерскую упаковку с атласными лентами для бережной доставки.
             </p>
           </div>
-          <div class="p-5 rounded-2xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg">🌸</div>
+          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
+            <div class="text-amber-300 text-lg"></div>
             <h3 class="font-sans text-base font-bold text-white">Стойкость от 10 до 14 дней</h3>
             <p class="text-xs text-white/85 font-normal leading-relaxed">
               Свежие поставки цветов и стойкость при правильном домашнем уходе.
@@ -749,45 +749,45 @@ function generatePreRenderedHtml(route) {
       </section>
 
       <!-- 7. Salon Map Section (Yandex Maps) -->
-      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8 font-sans text-zinc-900">
-        <div class="bg-white rounded-3xl border border-zinc-200/80 p-6 sm:p-8 lg:p-10 shadow-sm overflow-hidden">
+      <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8 font-sans text-[#1C1215]">
+        <div class="bg-white rounded-xl border border-white/10 p-6 sm:p-8 lg:p-10 shadow-sm overflow-hidden">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
               <div class="space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
-                  <span>📍 Салон в Нижнекамске</span>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
+                  <span> Салон в Нижнекамске</span>
                 </div>
-                <h2 class="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal leading-tight">
+                <h2 class="font-sans font-medium text-2xl sm:text-3xl text-[#1C1215] font-normal leading-tight">
                   Ждём вас на проспекте Шинников, 13В
                 </h2>
-                <p class="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
+                <p class="text-xs sm:text-sm text-[#5C454C] font-light leading-relaxed">
                   Приходите выбрать букет вживую или оформите заказ с доставкой по городу от 30 минут. Перед выездом курьера отправляем контрольное фото собранной композиции в WhatsApp.
                 </p>
-                <div class="space-y-3 pt-2 text-xs text-zinc-700">
+                <div class="space-y-3 pt-2 text-xs text-[#3D2C31]">
                   <div>
-                    <span class="font-medium text-zinc-900 block">Адрес:</span>
-                    <span class="text-zinc-600 font-light">г. Нижнекамск, пр. Шинников, д. 13В</span>
+                    <span class="font-medium text-[#1C1215] block">Адрес:</span>
+                    <span class="text-[#5C454C] font-light">г. Нижнекамск, пр. Шинников, д. 13В</span>
                   </div>
                   <div>
-                    <span class="font-medium text-zinc-900 block">Режим работы:</span>
-                    <span class="text-zinc-600 font-light">Ежедневно с 08:00 до 21:00 без выходных</span>
+                    <span class="font-medium text-[#1C1215] block">Режим работы:</span>
+                    <span class="text-[#5C454C] font-light">Ежедневно с 08:00 до 21:00 без выходных</span>
                   </div>
                   <div>
-                    <span class="font-medium text-zinc-900 block">Телефон:</span>
+                    <span class="font-medium text-[#1C1215] block">Телефон:</span>
                     <a href="tel:+79172563235" class="text-[#6C1E26] font-medium">+7 (917) 256-32-35</a>
                   </div>
                 </div>
               </div>
-              <div class="pt-4 border-t border-zinc-100 flex flex-wrap gap-3">
-                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-2xl bg-[#6C1E26] text-white font-medium text-xs sm:text-sm text-center inline-block">
+              <div class="pt-4 border-t border-white/5 flex flex-wrap gap-3">
+                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#6C1E26] text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Построить маршрут
                 </a>
-                <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-2xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">
+                <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Чат в WhatsApp
                 </a>
               </div>
             </div>
-            <div class="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-100">
+            <div class="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-xl sm:rounded-xl overflow-hidden border border-white/10 bg-white/5">
               <iframe
                 src="https://yandex.ru/map-widget/v1/org/sofiya/105599949171"
                 width="100%"
@@ -796,7 +796,7 @@ function generatePreRenderedHtml(route) {
                 allowfullscreen="true"
                 loading="lazy"
                 title="Салон цветов «София» на Яндекс Картах"
-                class="w-full h-full min-h-[360px] sm:min-h-[420px] border-0 rounded-2xl sm:rounded-3xl"
+                class="w-full h-full min-h-[360px] sm:min-h-[420px] border-0 rounded-xl sm:rounded-xl"
               ></iframe>
             </div>
           </div>
@@ -814,22 +814,22 @@ function generatePreRenderedHtml(route) {
               </p>
             </div>
             <div class="space-y-3">
-              <h4 class="font-serif text-lg text-white font-normal">Адрес и режим работы</h4>
+              <h4 class="font-sans font-medium text-lg text-white font-normal">Адрес и режим работы</h4>
               <ul class="space-y-2 text-xs font-light text-white/70 list-none p-0">
-                <li>📍 <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="hover:text-white underline decoration-white/30">г. Нижнекамск, пр. Шинников, 13В на Яндекс Картах</a></li>
-                <li>⏰ Ежедневно: 08:00 – 21:00</li>
-                <li>🚚 Доставка от 30 минут</li>
+                <li> <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="hover:text-white underline decoration-white/30">г. Нижнекамск, пр. Шинников, 13В на Яндекс Картах</a></li>
+                <li> Ежедневно: 08:00 – 21:00</li>
+                <li> Доставка от 30 минут</li>
               </ul>
             </div>
             <div class="space-y-3">
-              <h4 class="font-serif text-lg text-white font-normal">Контакты</h4>
+              <h4 class="font-sans font-medium text-lg text-white font-normal">Контакты</h4>
               <div class="space-y-2 text-xs font-light">
-                <a href="tel:+79172563235" class="block text-white hover:text-[#C5A880]">📞 +7 (917) 256-32-35</a>
-                <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="block text-emerald-400 hover:text-emerald-300">💬 WhatsApp: +7 (917) 256-32-35</a>
+                <a href="tel:+79172563235" class="block text-white hover:text-[#C5A880]"> +7 (917) 256-32-35</a>
+                <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="block text-emerald-400 hover:text-emerald-300"> WhatsApp: +7 (917) 256-32-35</a>
               </div>
             </div>
             <div class="space-y-3">
-              <h4 class="font-serif text-lg text-white font-normal">Популярные разделы</h4>
+              <h4 class="font-sans font-medium text-lg text-white font-normal">Популярные разделы</h4>
               <ul class="space-y-1.5 text-xs font-light text-white/70 list-none p-0">
                 <li><a href="/rozy/" class="hover:text-white">Розы в Нижнекамске</a></li>
                 <li><a href="/monobukety/" class="hover:text-white">Монобукеты</a></li>
@@ -841,8 +841,8 @@ function generatePreRenderedHtml(route) {
             </div>
           </div>
           <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/40 gap-4">
-            <p>© 2026 Салон цветов «София». ИП Обручников Дмитрий Владимирович • ИНН 165115143005 • ОГРНИП 324169000033624</p>
-            <p>Нижнекамск, Республика Татарстан • пр. Шинников, 13В</p>
+            <p>© 2026 Салон цветов «София». ИП Обручников Дмитрий Владимирович, ИНН 165115143005, ОГРНИП 324169000033624</p>
+            <p>Нижнекамск, Республика Татарстан, пр. Шинников, 13В</p>
           </div>
         </div>
       </footer>
