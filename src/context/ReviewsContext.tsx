@@ -14,7 +14,7 @@ interface ReviewsContextType {
   refreshReviews: () => Promise<void>;
 }
 
-const ReviewsContext = createContext<ReviewsContextType | undefined>(undefined);
+const ReviewsContext = createContext<ReviewsContextType|undefined>(undefined);
 
 const STORAGE_KEY = 'sophiya_salon_reviews_v3';
 const BACKUP_STORAGE_KEY = 'sophiya_salon_reviews_v2';
@@ -45,9 +45,14 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const syncToCloud = async (items: Review[]) => {
     try {
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       await fetch(getApiUrl('/api/reviews'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(items),
       });
     } catch (e) {

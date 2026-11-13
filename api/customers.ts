@@ -1,23 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, kv } from '@vercel/kv';
+import {
+  setSecureCors,
+  getKVClient,
+  extractAndVerifyToken,
+  createKvBackup,
+} from './_security';
 
-function getKVClient() {
-  const url =
-    process.env.KV_REST_API_URL ||
-    process.env.STORAGE_REST_API_URL ||
-    process.env.UPSTASH_REDIS_REST_URL;
-  const token =
-    process.env.KV_REST_API_TOKEN ||
-    process.env.STORAGE_REST_API_TOKEN ||
-    process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  if (url && token) {
-    return createClient({ url, token });
-  }
-  return kv;
-}
-
-// Telegram backup notification
+// Telegram notification for new customer registrations
 async function notifyTelegram(customer: any) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -25,16 +14,16 @@ async function notifyTelegram(customer: any) {
 
   const isNew = !customer.ordersCount || customer.ordersCount === 0;
   const title = isNew
-    ? '🌸 *НОВЫЙ КЛИЕНТ В САЛОНЕ «СОФИЯ»!*'
-    : '💐 *ОБНОВЛЕНИЕ ДАННЫХ КЛИЕНТА «СОФИЯ»*';
+    ? '*НОВЫЙ КЛИЕНТ В САЛОНЕ «СОФИЯ»*'
+    : '*ОБНОВЛЕНИЕ ДАННЫХ КЛИЕНТА «СОФИЯ»*';
 
   const text =
     `${title}\n\n` +
-    `👤 *Клиент:* ${customer.firstName} ${customer.lastName}\n` +
-    `📱 *Телефон:* \`${customer.phone}\`\n` +
-    `🎂 *День рождения:* ${customer.birthDate || 'Не указан'}\n` +
-    `📅 *Дата регистрации:* ${customer.registeredAt || new Date().toISOString().split('T')[0]}\n` +
-    `⏰ *Время (МСК):* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`;
+    `*Клиент:* ${customer.firstName} ${customer.lastName}\n` +
+    `*Телефон:* \`${customer.phone}\`\n` +
+    `*День рождения:* ${customer.birthDate || 'Не указан'}\n` +
+    `*Дата регистрации:* ${customer.registeredAt || new Date().toISOString().split('T')[0]}\n` +
+    `*Время (МСК):* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`;
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -52,10 +41,7 @@ async function notifyTelegram(customer: any) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  setSecureCors(req, res);
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -63,8 +49,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const client = getKVClient();
 
-  // 1. GET: Fetch all customers
+  // 1. GET: Admin-only access to customer PII (phone numbers, full names)
   if (req.method === 'GET') {
+    if (!extractAndVerifyToken(req)) {
+      return res.status(401).json({
+        error: 'Доступ к базе клиентов ограничен администратором салона.',
+      });
+    }
+
     try {
       const list = await client.get<any[]>('salon_customers');
       if (Array.isArray(list)) {
@@ -77,23 +69,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 2. POST: Upsert customer
+  // 2. POST: Upsert customer (registration / loyalty club)
   if (req.method === 'POST') {
     try {
-      const customer = req.body;
+      const customer = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       if (!customer || !customer.id || !customer.phone) {
-        return res.status(400).json({ error: 'Invalid customer data' });
+        return res.status(400).json({ error: 'Некорректные данные клиента' });
       }
 
-      // Notify Telegram in background
+      // Input sanitization
+      customer.firstName = String(customer.firstName || '').slice(0, 50).trim();
+      customer.lastName = String(customer.lastName || '').slice(0, 50).trim();
+      customer.phone = String(customer.phone || '').slice(0, 30).trim();
+
+      // Telegram notification
       notifyTelegram(customer).catch(() => {});
 
       try {
+        await createKvBackup(client, 'salon_customers', 'pre_write');
         const existing = (await client.get<any[]>('salon_customers')) || [];
         const updated = [customer, ...existing.filter((c) => c.id !== customer.id)];
         await client.set('salon_customers', updated);
       } catch (err) {
-        console.error('Error saving to KV:', err);
+        console.error('Error saving customer to KV:', err);
       }
 
       return res.status(200).json({ success: true, customer });

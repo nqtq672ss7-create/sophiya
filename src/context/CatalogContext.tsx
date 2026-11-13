@@ -14,11 +14,11 @@ interface CatalogContextType {
   refreshCatalog: () => Promise<void>;
   isSyncing: boolean;
   isLoading: boolean;
-  lastSyncedAt: Date | null;
+  lastSyncedAt: Date|null;
   syncCatalog: () => Promise<boolean>;
 }
 
-const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
+const CatalogContext = createContext<CatalogContextType|undefined>(undefined);
 
 // Bumped storage key so that old dirty browser caches in Vivaldi/Safari are instantly ignored
 const STORAGE_KEY = 'sophiya_catalog_bouquets_v5_live';
@@ -26,7 +26,7 @@ const STORAGE_KEY = 'sophiya_catalog_bouquets_v5_live';
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date|null>(null);
 
   // Initial state: starts clean, clears rogue legacy keys
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
@@ -63,9 +63,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const syncToCloud = async (items: Bouquet[]): Promise<boolean> => {
     try {
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch(getApiUrl('/api/catalog'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(items),
       });
       return res.ok;

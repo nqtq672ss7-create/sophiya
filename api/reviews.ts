@@ -1,21 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, kv } from '@vercel/kv';
-
-function getKVClient() {
-  const url =
-    process.env.KV_REST_API_URL ||
-    process.env.STORAGE_REST_API_URL ||
-    process.env.UPSTASH_REDIS_REST_URL;
-  const token =
-    process.env.KV_REST_API_TOKEN ||
-    process.env.STORAGE_REST_API_TOKEN ||
-    process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  if (url && token) {
-    return createClient({ url, token });
-  }
-  return kv;
-}
+import {
+  setSecureCors,
+  getKVClient,
+  extractAndVerifyToken,
+  createKvBackup,
+} from './_security';
 
 // Telegram backup notification for reviews
 async function notifyTelegramReview(review: any) {
@@ -23,14 +12,14 @@ async function notifyTelegramReview(review: any) {
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId || !review) return;
 
-  const stars = '⭐'.repeat(Math.max(1, Math.min(5, review.rating || 5)));
+  const ratingVal = Math.max(1, Math.min(5, review.rating || 5));
   const text =
-    `💐 *НОВЫЙ ОТЗЫВ НА САЙТЕ «СОФИЯ»!*\n\n` +
-    `👤 *Автор:* ${review.author || 'Гость'}\n` +
-    `✨ *Оценка:* ${stars} (${review.rating || 5}/5)\n` +
-    (review.bouquetTitle ? `🌸 *Букет:* ${review.bouquetTitle}\n` : '') +
-    `💬 *Отзыв:* «${review.comment || ''}»\n\n` +
-    `⏰ *Время (МСК):* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`;
+    `*НОВЫЙ ОТЗЫВ НА САЙТЕ «СОФИЯ»*\n\n` +
+    `*Автор:* ${review.author || 'Гость'}\n` +
+    `*Оценка:* ${ratingVal}/5\n` +
+    (review.bouquetTitle ? `*Букет:* ${review.bouquetTitle}\n` : '') +
+    `*Отзыв:* «${review.comment || ''}»\n\n` +
+    `*Время (МСК):* ${new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })}`;
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -48,10 +37,7 @@ async function notifyTelegramReview(review: any) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  setSecureCors(req, res);
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -59,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const client = getKVClient();
 
-  // 1. GET: Fetch global reviews
+  // 1. GET: Fetch global reviews (public)
   if (req.method === 'GET') {
     try {
       const data = await client.get('salon_reviews');
@@ -73,14 +59,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  // 2. POST: Update global reviews
+  // 2. POST: Admin review moderation & creation (authenticated)
   if (req.method === 'POST') {
+    if (!extractAndVerifyToken(req)) {
+      return res.status(401).json({
+        error: 'Доступ запрещён: требуется авторизация администратора.',
+      });
+    }
+
     try {
-      const items = req.body;
+      const items = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       if (!Array.isArray(items)) {
-        return res.status(400).json({ error: 'Expected array of reviews' });
+        return res.status(400).json({ error: 'Ожидается массив отзывов' });
       }
 
+      await createKvBackup(client, 'salon_reviews', 'pre_write');
       await client.set('salon_reviews', items);
 
       if (items.length > 0 && items[0]?.date === 'Сегодня') {

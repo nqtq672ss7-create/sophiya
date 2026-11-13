@@ -125,8 +125,13 @@ export class CustomerDatabaseService {
   static async fetchAllCustomers(): Promise<Customer[]> {
     const local = this.getLocalCustomers();
     try {
+      const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
+      const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const res = await fetch(getApiUrl(`/api/customers?t=${Date.now()}`), {
-        headers: { 'Cache-Control': 'no-cache' },
+        headers,
       });
       if (res.ok) {
         const remote: Customer[] = await res.json();
@@ -147,7 +152,7 @@ export class CustomerDatabaseService {
   }
 
   // Find customer by phone
-  static async findByPhone(phone: string): Promise<Customer | null> {
+  static async findByPhone(phone: string): Promise<Customer|null> {
     const normalized = normalizePhone(phone);
     if (!normalized) return null;
 
@@ -231,7 +236,7 @@ export class CustomerDatabaseService {
   static async recordOrder(
     customerId: string,
     orderData: { items: string[]; totalAmount: number }
-  ): Promise<Customer | null> {
+  ): Promise<Customer|null> {
     const local = this.getLocalCustomers();
     const target = local.find((c) => c.id === customerId);
     if (!target) return null;
@@ -278,7 +283,7 @@ export class CustomerDatabaseService {
   }
 
   // Session handling for current customer
-  static getCurrentCustomer(): Customer | null {
+  static getCurrentCustomer(): Customer|null {
     try {
       const data = localStorage.getItem(CURRENT_CUSTOMER_KEY);
       if (!data) return null;
@@ -293,7 +298,7 @@ export class CustomerDatabaseService {
     }
   }
 
-  static setCurrentCustomer(customer: Customer | null): void {
+  static setCurrentCustomer(customer: Customer|null): void {
     try {
       if (customer) {
         localStorage.setItem(CURRENT_CUSTOMER_KEY, JSON.stringify(customer));
