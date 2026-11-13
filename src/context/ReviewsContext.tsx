@@ -30,7 +30,6 @@ interface ReviewsContextType {
   updateReview: (id: string, updates: Partial<Review>) => void;
   deleteReview: (id: string) => void;
   togglePublished: (id: string) => void;
-  resetToDefault: () => void;
   refreshReviews: () => Promise<void>;
 }
 
@@ -192,12 +191,6 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
-  const resetToDefault = () => {
-    setReviews(INITIAL_REVIEWS);
-    saveToStorage(INITIAL_REVIEWS);
-    syncToCloud(INITIAL_REVIEWS);
-  };
-
   const publishedReviews = reviews.filter((r) => r.isPublished);
 
   return (
@@ -213,7 +206,6 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateReview,
         deleteReview,
         togglePublished,
-        resetToDefault,
         refreshReviews,
       }}
     >
