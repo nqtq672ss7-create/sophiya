@@ -1,5 +1,37 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { setSecureCors } from './_security';
+
+const ALLOWED_ORIGINS = [
+  'https://xn----ctbjn3arftl7c8b.xn--p1ai',
+  'https://цветы-софия.рф',
+  'https://sitesophiya.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+];
+
+function setSecureCors(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers.origin as string;
+  if (origin) {
+    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', 'null');
+    }
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With'
+  );
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.removeHeader('X-Powered-By');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+}
 
 // Sberbank Internet Acquiring Endpoint
 // Merchant Requisites:
@@ -41,7 +73,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userName = process.env.SBER_USER_NAME;
     const password = process.env.SBER_PASSWORD;
 
-    // If Sber API credentials configured, register with Sberbank Gateway
     if (userName && password) {
       try {
         const sberUrl = process.env.SBER_TEST_MODE === 'true'

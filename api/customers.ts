@@ -1,12 +1,79 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import {
-  setSecureCors,
-  getKVClient,
-  extractAndVerifyToken,
-  createKvBackup,
-} from './_security';
+import { createClient, kv } from '@vercel/kv';
+import crypto from 'crypto';
 
-// Telegram notification for new customer registrations
+const ALLOWED_ORIGINS = [
+  'https://xn----ctbjn3arftl7c8b.xn--p1ai',
+  'https://цветы-софия.рф',
+  'https://sitesophiya.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+];
+
+const SECRET_SALT =
+  process.env.AUTH_SECRET ||
+  process.env.KV_REST_API_TOKEN ||
+  process.env.STORAGE_REST_API_TOKEN ||
+  'sophiya_sovereign_flower_vault_key_2026';
+
+function getKVClient() {
+  const url =
+    process.env.KV_REST_API_URL ||
+    process.env.STORAGE_REST_API_URL ||
+    process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ||
+    process.env.STORAGE_REST_API_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (url && token) {
+    return createClient({ url, token });
+  }
+  return kv;
+}
+
+function setSecureCors(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers.origin as string;
+  if (origin) {
+    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', 'null');
+    }
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With'
+  );
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.removeHeader('X-Powered-By');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+}
+
+function verifyToken(token: string|null|undefined): boolean {
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payloadB64, signature] = parts;
+  const expectedSig = crypto.createHmac('sha256', SECRET_SALT).update(payloadB64).digest('base64url');
+  if (signature.length !== expectedSig.length) return false;
+  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (payload.exp && Date.now() > payload.exp) return false;
+    return payload.role === 'admin';
+  } catch {
+    return false;
+  }
+}
+
 async function notifyTelegram(customer: any) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -51,7 +118,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // 1. GET: Admin-only access to customer PII (phone numbers, full names)
   if (req.method === 'GET') {
-    if (!extractAndVerifyToken(req)) {
+    const authHeader = req.headers.authorization;
+    const token = typeof authHeader === 'string' ? authHeader.replace(/^Bearer\s+/i, '').trim() : '';
+
+    if (!verifyToken(token)) {
       return res.status(401).json({
         error: 'Доступ к базе клиентов ограничен администратором салона.',
       });
@@ -77,16 +147,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Некорректные данные клиента' });
       }
 
-      // Input sanitization
       customer.firstName = String(customer.firstName || '').slice(0, 50).trim();
       customer.lastName = String(customer.lastName || '').slice(0, 50).trim();
       customer.phone = String(customer.phone || '').slice(0, 30).trim();
 
-      // Telegram notification
       notifyTelegram(customer).catch(() => {});
 
       try {
-        await createKvBackup(client, 'salon_customers', 'pre_write');
         const existing = (await client.get<any[]>('salon_customers')) || [];
         const updated = [customer, ...existing.filter((c) => c.id !== customer.id)];
         await client.set('salon_customers', updated);
