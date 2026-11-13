@@ -3,7 +3,7 @@ import { Customer } from '../types/customer';
 import { CustomerDatabaseService, normalizePhone, formatRussianPhone } from '../services/customerDb';
 
 interface AuthContextType {
-  customer: Customer | null;
+  customer: Customer|null;
   isAuthModalOpen: boolean;
   isProfileModalOpen: boolean;
   openAuthModal: () => void;
@@ -21,6 +21,7 @@ interface AuthContextType {
   loginWithPhone: (phone: string) => Promise<{ success: boolean; error?: string }>;
   completeRegistration: (firstName: string, lastName: string, birthDate?: string) => void;
   logout: () => void;
+  forgetCustomerData: () => Promise<void>;
   addOrderToCustomer: (orderSummary: { items: string[]; totalAmount: number }) => void;
   allCustomers: Customer[];
   refreshCustomers: () => Promise<void>;
@@ -28,7 +29,7 @@ interface AuthContextType {
   setPendingPhone: (phone: string) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType|undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize clean database without fake seed accounts
@@ -36,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return CustomerDatabaseService.getLocalCustomers();
   });
 
-  const [customer, setCustomer] = useState<Customer | null>(() => {
+  const [customer, setCustomer] = useState<Customer|null>(() => {
     return CustomerDatabaseService.getCurrentCustomer();
   });
 
@@ -144,6 +145,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsProfileModalOpen(false);
   };
 
+  const forgetCustomerData = async () => {
+    if (customer) {
+      CustomerDatabaseService.forgetCustomer(customer.id);
+      setCustomer(null);
+      setIsProfileModalOpen(false);
+      await refreshCustomers();
+    }
+  };
+
   const addOrderToCustomer = async ({ items, totalAmount }: { items: string[]; totalAmount: number }) => {
     if (!customer) return;
     const updated = await CustomerDatabaseService.recordOrder(customer.id, { items, totalAmount });
@@ -169,6 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithPhone,
         completeRegistration,
         logout,
+        forgetCustomerData,
         addOrderToCustomer,
         allCustomers: customersDb,
         refreshCustomers,

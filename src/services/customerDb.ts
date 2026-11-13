@@ -307,4 +307,16 @@ export class CustomerDatabaseService {
       }
     } catch {}
   }
+
+  // Right to be forgotten (152-FZ): delete customer data and wipe session
+  static forgetCustomer(customerId: string): void {
+    try {
+      const local = this.getLocalCustomers();
+      const filtered = local.filter((c) => c.id !== customerId);
+      this.saveLocalCustomers(filtered);
+      localStorage.removeItem(CURRENT_CUSTOMER_KEY);
+    } catch (e) {
+      console.warn('Failed to wipe customer data locally:', e);
+    }
+  }
 }

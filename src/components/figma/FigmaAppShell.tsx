@@ -10,6 +10,8 @@ import { FigmaDesktopHeader } from './FigmaDesktopHeader';
 import { FigmaFooter } from './FigmaFooter';
 import { AuthModal } from '../auth/AuthModal';
 import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
+import { LegalModal, LegalDocTab } from '../legal/LegalModal';
+import { CookieConsentBanner } from '../legal/CookieConsentBanner';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
@@ -31,9 +33,10 @@ export const FigmaAppShell: React.FC = () => {
   });
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [selectedBouquet, setSelectedBouquet] = useState<Bouquet | null>(null);
+  const [selectedBouquet, setSelectedBouquet] = useState<Bouquet|null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdminCrmOpen, setIsAdminCrmOpen] = useState(false);
+  const [legalTab, setLegalTab] = useState<LegalDocTab|null>(null);
 
   const [filters, setFilters] = useState<FilterOptions>({
     minPrice: 0,
@@ -218,7 +221,7 @@ export const FigmaAppShell: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] flex flex-col text-zinc-900 selection:bg-[#6C1E26] selection:text-white">
+    <div className="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#6C1E26] selection:text-white">
       {/* 1. Header: Minimalist Luxury Navigation with Official Logo (Desktop only) */}
       <div className="hidden md:block">
         <FigmaDesktopHeader
@@ -259,6 +262,7 @@ export const FigmaAppShell: React.FC = () => {
               onRemoveItem={handleRemoveItem}
               onExploreCatalog={() => handleNavigate('/')}
               onClearCart={() => setCartItems([])}
+              onOpenLegal={(tab) => setLegalTab(tab)}
             />
           )}
 
@@ -267,6 +271,7 @@ export const FigmaAppShell: React.FC = () => {
               onOpenAuth={openAuthModal}
               onOpenCrm={() => setIsAdminCrmOpen(true)}
               onGoToCatalog={() => handleNavigate('/')}
+              onOpenLegal={(tab) => setLegalTab(tab)}
             />
           )}
         </div>
@@ -291,6 +296,7 @@ export const FigmaAppShell: React.FC = () => {
           }}
           onOpenCrm={() => setIsAdminCrmOpen(true)}
           onNavigate={handleNavigate}
+          onOpenLegal={(tab) => setLegalTab(tab)}
         />
       </main>
 
@@ -315,11 +321,20 @@ export const FigmaAppShell: React.FC = () => {
       {showSplash && <FigmaSplashScreen onEnter={() => setShowSplash(false)} />}
 
       {/* Global Modals: Auth & CRM */}
-      <AuthModal />
+      <AuthModal onOpenLegal={(tab) => setLegalTab(tab)} />
       <SalonAdminClientsModal
         isOpen={isAdminCrmOpen}
         onClose={handleCloseAdminCrm}
       />
+
+      {/* Legal & Cookie Modals */}
+      <LegalModal
+        isOpen={Boolean(legalTab)}
+        activeTab={legalTab || 'privacy'}
+        onClose={() => setLegalTab(null)}
+        onTabChange={(tab) => setLegalTab(tab)}
+      />
+      <CookieConsentBanner onOpenCookiePolicy={() => setLegalTab('cookie')} />
     </div>
   );
 };

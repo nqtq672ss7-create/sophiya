@@ -3,7 +3,11 @@ import { X, ArrowRight, User, Phone, Calendar, CheckCircle2 } from 'lucide-react
 import { useAuth } from '../../context/AuthContext';
 import { formatRussianPhone, normalizePhone } from '../../services/customerDb';
 
-export const AuthModal: React.FC = () => {
+interface AuthModalProps {
+  onOpenLegal?: (tab: 'privacy'|'offer'|'refund'|'cookie') => void;
+}
+
+export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
   const {
     isAuthModalOpen,
     closeAuthModal,
@@ -11,7 +15,7 @@ export const AuthModal: React.FC = () => {
     loginWithPhone,
   } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'register' | 'login'>('register');
+  const [activeTab, setActiveTab] = useState<'register'|'login'>('register');
 
   // Form Fields
   const [phone, setPhone] = useState('');
@@ -34,7 +38,7 @@ export const AuthModal: React.FC = () => {
   };
 
   // Switch tabs
-  const handleTabSwitch = (tab: 'register' | 'login') => {
+  const handleTabSwitch = (tab: 'register'|'login') => {
     setActiveTab(tab);
     setError('');
   };
@@ -102,15 +106,12 @@ export const AuthModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-[#1A0B10] border border-[#6C1E26]/40 rounded-3xl p-7 sm:p-9 shadow-2xl text-[#FAF7F5] overflow-hidden">
-        {/* Subtle Luxury Gradient Accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#6C1E26]/20 to-transparent rounded-full blur-3xl pointer-events-none" />
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fadeIn">
+      <div className="relative w-full max-w-lg bg-[#1A0B10] border border-[#6C1E26]/40 rounded-xl p-7 sm:p-9 shadow-2xl text-[#FAF7F5] overflow-hidden">
         {/* Close Button */}
         <button
           onClick={closeAuthModal}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-5 right-5 w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
           aria-label="Закрыть"
         >
           <X className="w-4 h-4" />
@@ -121,7 +122,7 @@ export const AuthModal: React.FC = () => {
           <span className="text-[10px] uppercase tracking-[0.3em] text-[#C5A880] font-sans block mb-1.5 font-light">
             Салон цветов «София»
           </span>
-          <h3 className="font-serif text-2xl sm:text-3xl text-white font-normal">
+          <h3 className="text-2xl sm:text-3xl text-white font-medium">
             {activeTab === 'register' ? 'Регистрация' : 'Вход в личный кабинет'}
           </h3>
           <p className="text-xs text-white/60 font-light mt-1.5 max-w-sm mx-auto">
@@ -132,11 +133,11 @@ export const AuthModal: React.FC = () => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 p-1 bg-black/40 border border-white/10 rounded-2xl mb-6 text-xs">
+        <div className="grid grid-cols-2 p-1 bg-black/40 border border-white/10 rounded-xl mb-6 text-xs">
           <button
             type="button"
             onClick={() => handleTabSwitch('register')}
-            className={`py-2.5 rounded-xl font-medium transition-all ${
+            className={`py-2.5 rounded-lg font-medium transition-colors ${
               activeTab === 'register'
                 ? 'bg-[#6C1E26] text-white shadow'
                 : 'text-white/60 hover:text-white'
@@ -147,7 +148,7 @@ export const AuthModal: React.FC = () => {
           <button
             type="button"
             onClick={() => handleTabSwitch('login')}
-            className={`py-2.5 rounded-xl font-medium transition-all ${
+            className={`py-2.5 rounded-lg font-medium transition-colors ${
               activeTab === 'login'
                 ? 'bg-[#6C1E26] text-white shadow'
                 : 'text-white/60 hover:text-white'
@@ -164,9 +165,9 @@ export const AuthModal: React.FC = () => {
         )}
 
         {isSuccess && (
-          <div className="mb-5 p-4 bg-emerald-950/70 border border-emerald-500/40 text-xs text-emerald-200 rounded-2xl text-center flex items-center justify-center gap-2 animate-fadeIn">
+          <div className="mb-5 p-4 bg-emerald-950/70 border border-emerald-500/40 text-xs text-emerald-200 rounded-xl text-center flex items-center justify-center gap-2 animate-fadeIn">
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-            <span className="font-serif text-sm text-white">Вы успешно зарегистрированы!</span>
+            <span className="text-sm text-white font-medium">Вы успешно зарегистрированы!</span>
           </div>
         )}
 
@@ -247,12 +248,11 @@ export const AuthModal: React.FC = () => {
             </>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Action */}
           <div className="pt-2">
             <button
-              type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#6C1E26] to-[#8C1B2F] hover:from-[#5A121A] hover:to-[#6C1E26] text-white font-sans text-xs uppercase tracking-[0.2em] font-medium border border-[#C5A880]/30 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-98 disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-sans text-xs uppercase tracking-[0.2em] font-medium border border-[#C5A880]/30 transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-98 disabled:opacity-50"
             >
               <span>
                 {isLoading
@@ -264,6 +264,19 @@ export const AuthModal: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Legal 152-FZ Consent Disclaimer */}
+          <p className="text-[10px] text-center text-white/50 font-light mt-3 leading-relaxed">
+            Нажимая кнопку, вы подтверждаете согласие с правилами клуба и обработкой персональных данных согласно{' '}
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('privacy')}
+              className="text-[#C5A880] hover:underline font-medium cursor-pointer"
+            >
+              152-ФЗ РФ
+            </button>
+            .
+          </p>
         </form>
       </div>
     </div>

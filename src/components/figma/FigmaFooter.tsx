@@ -7,12 +7,14 @@ interface FigmaFooterProps {
   onTabChange: (tab: FigmaTab) => void;
   onOpenCrm: () => void;
   onNavigate?: (path: string, options?: { tab?: FigmaTab }) => void;
+  onOpenLegal?: (tab: 'privacy'|'offer'|'refund'|'cookie') => void;
 }
 
 export const FigmaFooter: React.FC<FigmaFooterProps> = ({
   onTabChange,
   onOpenCrm,
   onNavigate,
+  onOpenLegal,
 }) => {
   const [isRequisitesOpen, setIsRequisitesOpen] = useState(false);
 
@@ -54,7 +56,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
 
           {/* Location & Schedule */}
           <div className="space-y-3">
-            <h4 className="font-serif text-lg text-white font-normal">Салон</h4>
+            <h4 className="text-base text-white font-medium">Салон</h4>
             <ul className="space-y-2 text-xs font-light text-white/70 list-none p-0">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5" />
@@ -77,10 +79,10 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                   href="https://yandex.ru/maps/org/sofiya/105599949171"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white/90 hover:text-white text-xs transition-colors border border-white/10"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white/90 hover:text-white text-xs transition-colors border border-white/10"
                   title="Открыть карточку салона на Яндекс Картах"
                 >
-                  <span className="w-4 h-4 rounded-full bg-[#FC3F1D] text-white text-[10px] font-bold flex items-center justify-center shrink-0">Я</span>
+                  <span className="w-4 h-4 rounded-md bg-[#FC3F1D] text-white text-[10px] font-bold flex items-center justify-center shrink-0">Я</span>
                   <span>Мы на Яндекс Картах</span>
                 </a>
               </li>
@@ -89,7 +91,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
 
           {/* Contacts */}
           <div className="space-y-3">
-            <h4 className="font-serif text-lg text-white font-normal">Связь & Заказы</h4>
+            <h4 className="text-base text-white font-medium">Связь & Заказы</h4>
             <div className="space-y-2 text-xs font-light">
               <a
                 href="tel:+79172563235"
@@ -113,7 +115,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
 
           {/* Navigation & Categories with Real URLs */}
           <div className="space-y-3">
-            <h4 className="font-serif text-lg text-white font-normal">Клиентам</h4>
+            <h4 className="text-base text-white font-medium">Клиентам</h4>
             <ul className="space-y-2 text-xs font-light text-white/70 list-none p-0">
               <li>
                 <a
@@ -194,21 +196,51 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
         </div>
 
         {/* Legal & Compliance Banner for Sberbank Acquiring */}
-        <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-white/50 font-light text-center md:text-left">
+        <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-white/50 font-light text-center md:text-left">
           <div>
-            <span>ИП Обручников Дмитрий Владимирович • ИНН 165115143005 • ОГРНИП 324169000033624</span>
+            <span>ИП Обручников Дмитрий Владимирович, ИНН 165115143005, ОГРНИП 324169000033624</span>
             <span className="block text-white/40 mt-0.5">
-              Расчётный счёт в ПАО Сбербанк • Оплата онлайн картами МИР, Visa, Mastercard и через СБП
+              Расчётный счёт в ПАО Сбербанк, Оплата картами МИР, Visa, Mastercard и через СБП
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsRequisitesOpen(true)}
-            className="text-[#C5A880] hover:underline cursor-pointer shrink-0"
-          >
-            Все реквизиты салона →
-          </button>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-4 gap-y-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('privacy')}
+              className="text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              Конфиденциальность 152-ФЗ
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('offer')}
+              className="text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              Публичная оферта
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('refund')}
+              className="text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              Правила возврата
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenLegal?.('cookie')}
+              className="text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              Файлы cookie
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsRequisitesOpen(true)}
+              className="text-[#C5A880] hover:underline cursor-pointer shrink-0"
+            >
+              Реквизиты ИП →
+            </button>
+          </div>
         </div>
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light">
