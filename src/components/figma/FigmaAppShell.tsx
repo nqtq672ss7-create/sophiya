@@ -262,7 +262,6 @@ export const FigmaAppShell: React.FC = () => {
               onRemoveItem={handleRemoveItem}
               onExploreCatalog={() => handleNavigate('/')}
               onClearCart={() => setCartItems([])}
-              onOpenLegal={(tab) => setLegalTab(tab)}
             />
           )}
 
@@ -271,7 +270,6 @@ export const FigmaAppShell: React.FC = () => {
               onOpenAuth={openAuthModal}
               onOpenCrm={() => setIsAdminCrmOpen(true)}
               onGoToCatalog={() => handleNavigate('/')}
-              onOpenLegal={(tab) => setLegalTab(tab)}
             />
           )}
         </div>
