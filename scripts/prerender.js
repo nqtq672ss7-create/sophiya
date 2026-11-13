@@ -823,13 +823,11 @@ function generatePreRenderedHtml(route) {
           <a href="/" class="flex items-center gap-3" title="Салон цветов «София» Нижнекамск">
             <img src="/logo.png" alt="Салон цветов София" width="160" height="60" class="h-14 sm:h-18 w-auto object-contain" />
           </a>
-          <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
             <a href="/" class="hover:text-[#6C1E26] text-[#3D2C31]">Каталог</a>
-            <a href="/rozy/" class="hover:text-[#6C1E26] text-[#3D2C31]">Розы</a>
-            <a href="/monobukety/" class="hover:text-[#6C1E26] text-[#3D2C31]">Монобукеты</a>
-            <a href="/avtorskie-bukety/" class="hover:text-[#6C1E26] text-[#3D2C31]">Авторские</a>
             <a href="/dostavka/" class="hover:text-[#6C1E26] text-[#3D2C31]">Доставка</a>
-            <a href="/kontakty/" class="hover:text-[#6C1E26] text-[#3D2C31]">Контакты</a>
+            <a href="/cart/" class="hover:text-[#6C1E26] text-[#3D2C31]">Корзина</a>
+            <a href="/profile/" class="hover:text-[#6C1E26] text-[#3D2C31]">Личный кабинет</a>
           </nav>
           <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#6C1E26] text-white text-xs font-semibold shadow hover:bg-[#5A121A]">
             <span></span>
@@ -842,7 +840,7 @@ function generatePreRenderedHtml(route) {
 
       <!-- 3. Primary Hero Section with SINGLE Visible H1 on ALL screens -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 w-full">
-        <div class="relative overflow-hidden rounded-xl bg-rose-texture-hero text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
+        <div class="relative overflow-hidden rounded-xl bg-[#380A10] text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div class="max-w-3xl space-y-4">
             <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
             <h1 class="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
@@ -887,34 +885,30 @@ function generatePreRenderedHtml(route) {
         </div>
       </main>
 
-      <!-- 7. Trust & Guarantees (4 Cards) -->
+      <!-- 7. Trust & Guarantees (4 Clean Cards) -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg"></div>
-            <h3 class="font-sans text-base font-bold text-white">Доставка от 30 минут</h3>
-            <p class="text-xs text-white/85 font-normal leading-relaxed">
+          <div class="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+            <h3 class="font-sans text-base font-semibold text-[#1C1215]">Доставка от 30 минут</h3>
+            <p class="text-xs text-[#5C454C] font-normal leading-relaxed">
               Оперативная доставка цветов по Нижнекамску курьером прямо в руки получателю.
             </p>
           </div>
-          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg"></div>
-            <h3 class="font-sans text-base font-bold text-white">Фото в WhatsApp перед выездом</h3>
-            <p class="text-xs text-white/85 font-normal leading-relaxed">
+          <div class="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+            <h3 class="font-sans text-base font-semibold text-[#1C1215]">Фото в WhatsApp перед выездом</h3>
+            <p class="text-xs text-[#5C454C] font-normal leading-relaxed">
               Вы всегда точно знаете, как выглядит букет. Флорист присылает детальные фотографии перед отправкой.
             </p>
           </div>
-          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg"></div>
-            <h3 class="font-sans text-base font-bold text-white">Дизайнерская упаковка</h3>
-            <p class="text-xs text-white/85 font-normal leading-relaxed">
+          <div class="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+            <h3 class="font-sans text-base font-semibold text-[#1C1215]">Дизайнерская упаковка</h3>
+            <p class="text-xs text-[#5C454C] font-normal leading-relaxed">
               Каждый букет оформляется в стильную дизайнерскую упаковку с атласными лентами для бережной доставки.
             </p>
           </div>
-          <div class="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-            <div class="text-amber-300 text-lg"></div>
-            <h3 class="font-sans text-base font-bold text-white">Стойкость от 10 до 14 дней</h3>
-            <p class="text-xs text-white/85 font-normal leading-relaxed">
+          <div class="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+            <h3 class="font-sans text-base font-semibold text-[#1C1215]">Стойкость от 10 до 14 дней</h3>
+            <p class="text-xs text-[#5C454C] font-normal leading-relaxed">
               Свежие поставки цветов и стойкость при правильном домашнем уходе.
             </p>
           </div>

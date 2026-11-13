@@ -31,52 +31,52 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-12 border-t border-[#E5DDD9] font-sans text-[#1C1215]">
-      {/* 1. Feature Highlights (4 Cards) */}
+      {/* 1. Feature Highlights (4 Clean Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
-        <div className="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
+        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
             <Truck className="w-4 h-4" />
           </div>
-          <h3 className="font-sans text-base text-white font-bold">
+          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
             Доставка от 30 минут
           </h3>
-          <p className="text-xs text-white/85 font-normal leading-relaxed">
+          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
             Срочная доставка по районам Нижнекамска в аквабоксах с водой. Букет приезжает свежим в любую погоду.
           </p>
         </div>
 
-        <div className="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
+        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
             <ShieldCheck className="w-4 h-4" />
           </div>
-          <h3 className="font-sans text-base text-white font-bold">
+          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
             Фото в WhatsApp до выезда
           </h3>
-          <p className="text-xs text-white/85 font-normal leading-relaxed">
+          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
             Флорист отправляет детальный снимок собранной композиции в WhatsApp заказчику перед передачей курьеру.
           </p>
         </div>
 
-        <div className="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
+        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
             <Heart className="w-4 h-4" />
           </div>
-          <h3 className="font-sans text-base text-white font-bold">
+          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
             Дизайнерская упаковка
           </h3>
-          <p className="text-xs text-white/85 font-normal leading-relaxed">
+          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
             Лаконичные матовые материалы, фактурная корейская плёнка и плотные атласные ленты в цвет бутона.
           </p>
         </div>
 
-        <div className="p-5 rounded-xl bg-rose-texture-card text-white border border-[#8C1B2F]/70 shadow-md space-y-2">
-          <div className="w-9 h-9 rounded-xl bg-white/10 text-amber-300 flex items-center justify-center">
+        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm space-y-2">
+          <div className="w-9 h-9 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] flex items-center justify-center">
             <Sparkles className="w-4 h-4" />
           </div>
-          <h3 className="font-sans text-base text-white font-bold">
+          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
             Стойкость от 10 до 14 дней
           </h3>
-          <p className="text-xs text-white/85 font-normal leading-relaxed">
+          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
             Прямые поставки отборной срезки каждые 2–3 дня. Пакетик подкормки Chrysal прилагается к каждому букету.
           </p>
         </div>

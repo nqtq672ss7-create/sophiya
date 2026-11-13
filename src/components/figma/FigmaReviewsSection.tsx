@@ -6,7 +6,7 @@ import { LeaveReviewModal } from '../reviews/LeaveReviewModal';
 export const FigmaReviewsSection: React.FC = () => {
   const { publishedReviews } = useReviews();
 
-  const [cardsPerView, setCardsPerView] = useState(4);
+  const [cardsPerView, setCardsPerView] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -21,7 +21,7 @@ export const FigmaReviewsSection: React.FC = () => {
       } else if (window.innerWidth < 1024) {
         setCardsPerView(2);
       } else {
-        setCardsPerView(4);
+        setCardsPerView(3);
       }
     };
 
@@ -37,6 +37,7 @@ export const FigmaReviewsSection: React.FC = () => {
     if (isPaused || total <= cardsPerView) return;
 
     const timer = setInterval(() => {
+      setIsTransitioning(true);
       setCurrentIndex((prev) => prev + 1);
     }, 4500);
 
@@ -78,12 +79,12 @@ export const FigmaReviewsSection: React.FC = () => {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#E5DDD9]">
         <div>
-          <span className="text-[11px] sm:text-xs tracking-[0.25em] uppercase text-[#6C1E26] font-medium block mb-2">
-            Отзывы клиентов • Салон «София»
+          <span className="text-[11px] sm:text-xs tracking-[0.25em] uppercase text-[#6C1E26] font-semibold block mb-2">
+            Отзывы клиентов, салон «София»
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl text-zinc-900 font-normal tracking-tight">
+          <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold tracking-tight">
             Истории заботы и моменты радости
           </h2>
         </div>
@@ -93,7 +94,7 @@ export const FigmaReviewsSection: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsReviewModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs font-medium transition-all shadow-sm shrink-0 active:scale-95 cursor-pointer hover:shadow-md"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs font-medium transition-colors shadow-sm shrink-0 active:scale-95 cursor-pointer"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Оставить отзыв</span>
@@ -117,19 +118,19 @@ export const FigmaReviewsSection: React.FC = () => {
               style={{ width: `${100 / cardsPerView}%` }}
               className="shrink-0 p-2 sm:p-3"
             >
-              <div className="h-full p-5 sm:p-6 bg-rose-texture-card text-white rounded-3xl border border-[#8C1B2F]/70 shadow-md hover:shadow-xl transition-all flex flex-col justify-between">
+              <div className="h-full p-5 sm:p-6 bg-white text-[#1C1215] rounded-xl border border-[#E5DDD9] shadow-sm hover:shadow-md transition-colors flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   {/* Rating Stars & Verified Badge */}
                   <div className="flex items-center justify-between">
-                    <div className="flex text-amber-300">
+                    <div className="flex text-amber-400">
                       {[...Array(rev.rating)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       ))}
                     </div>
 
                     {rev.isVerified && (
-                      <span className="text-[10px] text-white bg-white/15 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-medium border border-white/20">
-                        <CheckCircle className="w-3 h-3 text-emerald-300" />
+                      <span className="text-[10px] text-[#5C454C] bg-[#FAF7F5] px-2.5 py-0.5 rounded-md flex items-center gap-1 font-medium border border-[#E5DDD9]">
+                        <CheckCircle className="w-3 h-3 text-emerald-600" />
                         <span>Проверен</span>
                       </span>
                     )}
@@ -137,23 +138,23 @@ export const FigmaReviewsSection: React.FC = () => {
 
                   {/* Bouquet Title Reference */}
                   {rev.bouquetTitle && (
-                    <span className="text-xs text-amber-200 font-semibold block truncate">
+                    <span className="text-xs text-[#6C1E26] font-semibold block truncate">
                       {rev.bouquetTitle}
                     </span>
                   )}
 
                   {/* Comment */}
-                  <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed line-clamp-4">
+                  <p className="text-xs sm:text-sm text-[#5C454C] font-normal leading-relaxed line-clamp-4">
                     «{rev.comment}»
                   </p>
                 </div>
 
                 {/* Author & Date Footer */}
-                <div className="pt-4 mt-4 border-t border-white/15 flex items-center justify-between text-xs">
-                  <span className="font-sans text-sm sm:text-base text-white font-bold">
+                <div className="pt-3 border-t border-[#E5DDD9] flex items-center justify-between text-xs">
+                  <span className="font-sans text-sm text-[#1C1215] font-semibold">
                     {rev.author}
                   </span>
-                  <span className="text-white/60 text-[11px] font-medium">
+                  <span className="text-[#7C636B] text-[11px] font-medium">
                     {rev.date}
                   </span>
                 </div>
@@ -172,10 +173,10 @@ export const FigmaReviewsSection: React.FC = () => {
               setIsTransitioning(true);
               setCurrentIndex(dotIdx);
             }}
-            className={`h-1 rounded-full transition-all duration-500 ${
+            className={`h-1.5 rounded-sm transition-colors duration-300 ${
               dotIdx === activeDotIndex
                 ? 'w-6 bg-[#6C1E26]'
-                : 'w-1.5 bg-zinc-200 hover:bg-zinc-300'
+                : 'w-2 bg-[#E5DDD9] hover:bg-[#C5A880]'
             }`}
             title={`Отзыв ${dotIdx + 1}`}
             aria-label={`Отзыв ${dotIdx + 1}`}
