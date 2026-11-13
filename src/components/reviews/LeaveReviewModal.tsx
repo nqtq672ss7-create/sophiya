@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Star, CheckCircle, Sparkles, Send, Heart } from 'lucide-react';
+import { X, Star, Send } from 'lucide-react';
 import { useReviews } from '../../context/ReviewsContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useAuth } from '../../context/AuthContext';
@@ -10,12 +10,27 @@ interface LeaveReviewModalProps {
   defaultBouquetTitle?: string;
 }
 
+const RATING_DESCRIPTIONS: Record<number, string> = {
+  5: 'Превосходно, цветы свежие',
+  4: 'Очень хорошо',
+  3: 'Хорошо, в целом понравилось',
+  2: 'Есть замечания к букету или доставке',
+  1: 'Не понравилось качество',
+};
+
+const FOCUS_RING =
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]';
+
+const FIELD_BASE =
+  'w-full min-h-[44px] px-3.5 py-2.5 rounded-lg bg-[var(--surface)] border text-sm text-[var(--text)] placeholder:text-[var(--muted)] transition-colors ' +
+  FOCUS_RING;
+
 export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
   isOpen,
   onClose,
   defaultBouquetTitle,
 }) => {
-  const { addReview } = useReviews();
+  const { submitReview } = useReviews();
   const { bouquets } = useCatalog();
   const { customer } = useAuth();
 
@@ -25,7 +40,10 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
   const [bouquetTitle, setBouquetTitle] = useState(defaultBouquetTitle || '');
   const [comment, setComment] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  // Name of the field with the error, empty string when there is none.
+  const [errorField, setErrorField] = useState('');
 
   // Prefill author from logged-in customer if available
   useEffect(() => {
@@ -40,133 +58,126 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
     }
   }, [customer, defaultBouquetTitle]);
 
-  if (!isOpen) return null;
-
-  const ratingDescriptions: Record<number, string> = {
-    5: 'Превосходно — восторг и свежесть цветов',
-    4: 'Очень хорошо — красивый букет и приятный сервис',
-    3: 'Хорошо — в целом понравилось',
-    2: 'Есть замечания по букету или доставке',
-    1: 'Разочарован(а) качеством',
+  const handleClose = () => {
+    setIsSubmitted(false);
+    setComment('');
+    setError('');
+    setErrorField('');
+    onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const fail = (message: string, field = '') => {
+    setError(message);
+    setErrorField(field);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError('');
+    setErrorField('');
 
     const cleanAuthor = author.trim();
     const cleanComment = comment.trim();
 
     if (!cleanAuthor) {
-      setError('Пожалуйста, укажите ваше имя');
+      fail('Укажите имя, как подписать отзыв.', 'author');
       return;
     }
 
     if (cleanComment.length < 5) {
-      setError('Пожалуйста, напишите пару слов о вашем впечатлении (минимум 5 символов)');
+      fail('Напишите хотя бы пару слов об отзыве, от 5 символов.', 'comment');
       return;
     }
 
-    // Save review to cloud DB via context
-    addReview({
+    setIsSubmitting(true);
+    const result = await submitReview({
       author: cleanAuthor,
       rating,
-      date: 'Сегодня',
       bouquetTitle: bouquetTitle.trim() || undefined,
       comment: cleanComment,
-      isVerified: Boolean(customer), // Verified badge if user has registered
-      isPublished: true, // Visible immediately on site
     });
+    setIsSubmitting(false);
 
+    if (!result.ok) {
+      fail(result.error || 'Не удалось отправить отзыв. Попробуйте ещё раз.');
+      return;
+    }
     setIsSubmitted(true);
   };
 
-  const handleClose = () => {
-    setIsSubmitted(false);
-    setComment('');
-    setError('');
-    onClose();
-  };
+  const borderFor = (field: string) =>
+    errorField === field ? 'border-[var(--error)]' : 'border-[var(--line)]';
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-none font-sans animate-fadeIn"
+      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3 sm:p-4 font-sans"
       onClick={handleClose}
     >
       <div
-        className="relative w-full max-w-lg bg-[#FAF7F5] rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 p-6 sm:p-8"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="review-modal-title"
+        className="review-modal relative w-full max-w-lg max-h-[calc(100vh-1.5rem)] overflow-y-auto bg-[var(--bg)] text-[var(--text)] rounded-xl border border-[var(--line)] p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
+          type="button"
           onClick={handleClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-200/80 hover:bg-zinc-300 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition-colors"
+          className={`absolute top-3 right-3 w-11 h-11 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--line)] transition-colors ${FOCUS_RING}`}
           aria-label="Закрыть"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" aria-hidden="true" />
         </button>
 
         {isSubmitted ? (
-          /* SUCCESS SCREEN */
-          <div className="py-8 text-center space-y-5 animate-scaleUp">
-            <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
-              <CheckCircle className="w-9 h-9" />
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[11px] uppercase tracking-[0.25em] text-[#6C1E26] font-semibold block">
-                Салон цветов «София»
-              </span>
-              <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
-                Спасибо за ваш отзыв!
-              </h3>
-              <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed max-w-sm mx-auto">
-                Ваше мнение уже опубликовано в ленте отзывов салона и вдохновляет нашу команду флористов радовать вас каждый день.
-              </p>
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="w-full py-3 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-all shadow-md active:scale-98"
-              >
-                Вернуться к букетам
-              </button>
-            </div>
+          <div className="py-6 space-y-5" role="status">
+            <h2 id="review-modal-title" className="text-2xl sm:text-3xl font-semibold leading-tight tracking-tight text-balance pr-10">
+              Отзыв принят
+            </h2>
+            <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed max-w-md">
+              Мы проверим его и опубликуем в ленте, обычно в течение дня. Пока он виден только нам.
+            </p>
+            <button
+              type="button"
+              onClick={handleClose}
+              className={`w-full min-h-[48px] rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white text-sm font-medium transition-colors ${FOCUS_RING}`}
+            >
+              Вернуться в каталог
+            </button>
           </div>
         ) : (
-          /* REVIEW FORM */
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <div className="flex items-center gap-1.5 text-[#6C1E26] mb-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span className="text-[10px] uppercase tracking-[0.25em] font-semibold">
-                  Прямой отзыв на сайте
-                </span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
-                Поделитесь впечатлением
-              </h3>
-              <p className="text-xs text-zinc-500 font-light mt-1">
-                Без перехода в сторонние мессенджеры — ваш отзыв сразу появится на витрине салона.
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            <div className="pr-10">
+              <h2 id="review-modal-title" className="text-2xl sm:text-3xl font-semibold leading-tight tracking-tight text-balance">
+                Отзыв о букете
+              </h2>
+              <p className="text-sm text-[var(--muted)] mt-1.5">
+                После проверки салоном отзыв появится в ленте на сайте.
               </p>
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
+              <div role="alert" className="p-3 rounded-lg border border-[var(--error)] text-[var(--error)] text-sm">
                 {error}
               </div>
             )}
 
-            {/* Interactive Star Rating */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-700">
-                Ваша оценка <span className="text-red-500">*</span>
-              </label>
-
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
+            <fieldset className="space-y-1.5">
+              <legend className="text-sm font-medium">Оценка</legend>
+              <div className="flex flex-wrap items-center gap-x-3">
+                <div className="flex items-center" onMouseLeave={() => setHoverRating(0)}>
                   {[1, 2, 3, 4, 5].map((starVal) => {
                     const isFilled = (hoverRating || rating) >= starVal;
                     return (
@@ -175,99 +186,88 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
                         type="button"
                         onClick={() => setRating(starVal)}
                         onMouseEnter={() => setHoverRating(starVal)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        className="p-1 -m-1 focus:outline-none transition-transform hover:scale-125 active:scale-95 cursor-pointer"
+                        aria-pressed={rating === starVal}
+                        className={`w-11 h-11 flex items-center justify-center rounded-lg ${FOCUS_RING}`}
                         aria-label={`Оценка ${starVal} из 5`}
                       >
                         <Star
-                          className={`w-7 h-7 sm:w-8 sm:h-8 transition-colors ${
-                            isFilled
-                              ? 'text-amber-400 fill-amber-400 drop-shadow-sm'
-                              : 'text-zinc-300'
+                          aria-hidden="true"
+                          className={`w-7 h-7 transition-colors ${
+                            isFilled ? 'text-[var(--accent)] fill-[var(--accent)]' : 'text-[var(--line)]'
                           }`}
                         />
                       </button>
                     );
                   })}
                 </div>
-
-                <span className="text-xs text-zinc-500 font-light ml-2">
-                  {ratingDescriptions[hoverRating || rating]}
+                <span className="text-sm text-[var(--muted)]" aria-live="polite">
+                  {RATING_DESCRIPTIONS[hoverRating || rating]}
                 </span>
               </div>
-            </div>
+            </fieldset>
 
-            {/* Author Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-700">
-                Ваше имя <span className="text-red-500">*</span>
+              <label htmlFor="review-author" className="block text-sm font-medium">
+                Ваше имя
               </label>
               <input
+                id="review-author"
                 type="text"
-                required
+                autoComplete="name"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Как вас зовут (например: Екатерина М.)"
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#6C1E26] focus:ring-1 focus:ring-[#6C1E26] shadow-sm transition-all"
+                aria-invalid={errorField === 'author'}
+                placeholder="Екатерина М."
+                className={`${FIELD_BASE} ${borderFor('author')}`}
               />
             </div>
 
-            {/* Bouquet Reference (Dropdown or custom) */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-700">
-                Букет или повод <span className="text-zinc-400 font-normal">(необязательно)</span>
+              <label htmlFor="review-bouquet" className="block text-sm font-medium">
+                Букет или повод, если хотите указать
               </label>
-              <div className="relative">
-                <select
-                  value={bouquetTitle}
-                  onChange={(e) => setBouquetTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:border-[#6C1E26] focus:ring-1 focus:ring-[#6C1E26] shadow-sm transition-all appearance-none cursor-pointer"
-                >
-                  <option value="">Выберите букет из каталога или напишите свой</option>
-                  {bouquets.map((b) => (
-                    <option key={b.id} value={b.title}>
-                      {b.title} ({b.price.toLocaleString('ru-RU')} ₽)
-                    </option>
-                  ))}
-                  <option value="Индивидуальный заказ">Индивидуальный заказ флористу</option>
-                  <option value="Срочная доставка цветов">Срочная доставка цветов</option>
-                </select>
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400 text-xs">
-                  ▼
-                </div>
-              </div>
+              <select
+                id="review-bouquet"
+                value={bouquetTitle}
+                onChange={(e) => setBouquetTitle(e.target.value)}
+                className={`${FIELD_BASE} border-[var(--line)] cursor-pointer`}
+              >
+                <option value="">Не указывать</option>
+                {bouquets.map((b) => (
+                  <option key={b.id} value={b.title}>
+                    {b.title}, {b.price.toLocaleString('ru-RU')}&nbsp;₽
+                  </option>
+                ))}
+                <option value="Индивидуальный заказ">Индивидуальный заказ флористу</option>
+                <option value="Срочная доставка цветов">Срочная доставка цветов</option>
+              </select>
             </div>
 
-            {/* Review Comment */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-700">
-                Ваш отзыв <span className="text-red-500">*</span>
+              <label htmlFor="review-comment" className="block text-sm font-medium">
+                Что понравилось или не понравилось
               </label>
               <textarea
-                required
-                rows={3}
+                id="review-comment"
+                rows={4}
+                maxLength={2000}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Расскажите о свежести цветов, сборке композиции и впечатлениях получателя..."
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#6C1E26] focus:ring-1 focus:ring-[#6C1E26] shadow-sm transition-all resize-none leading-relaxed"
+                aria-invalid={errorField === 'comment'}
+                placeholder="Свежесть цветов, сборка, доставка, реакция получателя"
+                className={`${FIELD_BASE} ${borderFor('comment')} resize-y leading-relaxed`}
               />
             </div>
 
-            {/* Submit Action */}
-            <div className="pt-2">
-              <button
-                type="submit"
-                className="w-full py-3 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Опубликовать отзыв на сайте</span>
-              </button>
-            </div>
-
-            <p className="text-[11px] text-center text-zinc-400 font-light flex items-center justify-center gap-1">
-              <Heart className="w-3 h-3 text-[#6C1E26] fill-[#6C1E26]" />
-              <span>Спасибо, что помогаете салону «София» становиться лучше</span>
-            </p>
+            {/* A button inside a form submits it by default. */}
+            <button
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+              className={`w-full min-h-[48px] rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-strong)] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 ${FOCUS_RING}`}
+            >
+              <Send className="w-4 h-4" aria-hidden="true" />
+              <span>{isSubmitting ? 'Передаём салону…' : 'Передать отзыв салону'}</span>
+            </button>
           </form>
         )}
       </div>

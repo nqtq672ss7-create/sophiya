@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
@@ -19,7 +19,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 }) => {
   const { allCustomers, refreshCustomers } = useAuth();
   const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog, refreshCatalog } = useCatalog();
-  const { reviews, publishedReviews, addReview, deleteReview, togglePublished, resetToDefault: resetReviewsToDefault } = useReviews();
+  const { reviews, publishedReviews, pendingReviews, addReview, deleteReview, togglePublished, moderateReview, refreshReviews, refreshPending, resetToDefault: resetReviewsToDefault } = useReviews();
 
   // Security Gate Server Auth State
   const [pinInput, setPinInput] = useState('');
@@ -32,6 +32,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       return false;
     }
   });
+
+  useEffect(() => {
+    if (isUnlocked) {
+      refreshReviews();
+      refreshPending();
+    }
+  }, [isUnlocked, refreshReviews, refreshPending]);
 
   const [activeTab, setActiveTab] = useState<'catalog'|'reviews'|'clients'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,6 +97,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         setPinInput('');
         sessionStorage.setItem('sophiya_admin_token', data.token);
         refreshCustomers();
+        refreshReviews();
+        refreshPending();
       } else {
         setPinError(data.error || 'Неверный пароль доступа. Попробуйте снова.');
         setPinInput('');
@@ -976,6 +985,53 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 <span>Восстановить демо</span>
               </button>
             </div>
+
+            {/* Pending moderation queue */}
+            {pendingReviews.length > 0 && (
+              <div className="mb-5 space-y-3">
+                <span className="text-xs text-amber-300 block">
+                  Ждут проверки: {pendingReviews.length}
+                </span>
+                {pendingReviews.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs"
+                  >
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex text-amber-400">
+                          {[...Array(rev.rating)].map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                          ))}
+                        </div>
+                        <span className="font-sans font-medium text-lg text-white ml-1">{rev.author}</span>
+                        {rev.bouquetTitle && (
+                          <span className="px-2 py-0.5 bg-[#6C1E26]/40 border border-[#6C1E26] text-[#C5A880] text-[10px] rounded-lg">
+                            {rev.bouquetTitle}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-white/40 font-light ml-auto md:ml-2">{rev.date}</span>
+                      </div>
+                      <p className="text-white/80 font-light text-xs leading-relaxed">«{rev.comment}»</p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button
+                        onClick={() => moderateReview(rev.id, true)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/50 transition-colors"
+                      >
+                        Опубликовать
+                      </button>
+                      <button
+                        onClick={() => moderateReview(rev.id, false)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-white/70 border border-white/10 hover:text-red-300 hover:border-red-400/40 transition-colors"
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Reviews List */}
             <div className="space-y-3 pb-6">
