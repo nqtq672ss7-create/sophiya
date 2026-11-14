@@ -884,23 +884,50 @@ function generatePreRenderedHtml(route) {
 
       <!-- 3. Primary Hero Section with SINGLE Visible H1 on ALL screens -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 w-full">
-        <div class="relative overflow-hidden rounded-xl bg-[#922E3D] text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
-          <div class="max-w-3xl space-y-4">
-            <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
-            <h1 class="font-faberge text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal leading-tight tracking-normal text-white">
-              ${route.h1}
-            </h1>
+        <div class="relative overflow-hidden rounded-xl text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/15" style="background-color: #52131B;">
+          <!-- Macro Rose Petals Texture Background -->
+          <div class="absolute inset-0 pointer-events-none opacity-30 mix-blend-luminosity bg-cover bg-center" style="background-image: url('/rose-petals-dark.jpg');"></div>
+          <div class="absolute inset-0 pointer-events-none bg-[#350A10]/40"></div>
 
-            <div class="pt-2 flex flex-wrap items-center gap-2.5 text-xs font-light text-white/90">
-              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
-                <span> Доставка от 30 минут</span>
+          <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
+            <div class="max-w-2xl space-y-4">
+              <!-- Micro-tag pill: "ФЛОРИСТИЧЕСКИЙ САЛОН" -->
+              <div class="inline-flex items-center px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-[#FAD5DC] text-[11px] uppercase tracking-[0.25em] font-semibold"> <!-- pill -->
+                <span>Флористический салон</span>
+              </div>
+
+              <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
+              <h1 class="font-faberge text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal leading-tight tracking-normal text-white">
+                ${route.h1}
+              </h1>
+
+              <div class="pt-2 flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs text-white/95">
+                <span class="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 px-3.5 py-2 rounded-xl transition-colors">
+                  <span>Доставка от 30 мин</span>
+                </span>
+                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 px-3.5 py-2 rounded-xl transition-colors cursor-pointer" title="Салон «София» на Яндекс Картах">
+                  <span>пр. Шинников, 13В</span>
+                </a>
+                <span class="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 px-3.5 py-2 rounded-xl transition-colors">
+                  <span>Фото букета в WhatsApp</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Quick Contact & WhatsApp Card -->
+            <div class="w-full lg:w-80 bg-[#3A0A10]/90 border border-[#E5C398]/30 rounded-xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-xl">
+              <span class="text-[11px] uppercase tracking-[0.25em] text-[#E5C398] font-semibold block">
+                Связь с шеф-флористом
               </span>
-              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
-                <span> пр. Шинников, 13В</span>
-              </span>
-              <span class="flex items-center gap-1.5 bg-black/30 px-3 py-1.5 rounded-xl border border-white/10">
-                <span> Фото букета в WhatsApp</span>
-              </span>
+              <a href="tel:+79172563235" class="font-sans text-2xl text-white font-bold block hover:text-[#E5C398] transition-colors tracking-tight">
+                +7 (917) 256-32-35
+              </a>
+              <p class="text-xs text-[#FAF0F2]/80 font-light leading-relaxed">
+                Индивидуальная сборка или подбор сортов по фото в WhatsApp
+              </p>
+              <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md">
+                <span>Написать в WhatsApp</span>
+              </a>
             </div>
           </div>
         </div>
