@@ -133,20 +133,19 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       {/* 3. Primary Hero Banner: Single H1 Tag (Visible on ALL devices) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 w-full">
         <div
-          className="relative overflow-hidden rounded-xl text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/15"
-          style={{ backgroundColor: '#52131B' }}
+          className="relative overflow-hidden rounded-xl text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/20"
+          style={{ backgroundColor: '#8E2433' }}
         >
           {/* Macro Rose Petals Texture Background */}
           <div
-            className="absolute inset-0 pointer-events-none opacity-30 mix-blend-luminosity bg-cover bg-center"
+            className="absolute inset-0 pointer-events-none opacity-20 mix-blend-luminosity bg-cover bg-center"
             style={{ backgroundImage: "url('/rose-petals-dark.jpg')" }}
           />
-          <div className="absolute inset-0 pointer-events-none bg-[#350A10]/40" />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
             <div className="max-w-2xl space-y-4">
               {/* Micro-tag pill: "ФЛОРИСТИЧЕСКИЙ САЛОН" */}
-              <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-[#FAD5DC] text-[11px] uppercase tracking-[0.25em] font-semibold"> {/* pill */}
+              <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-white/15 border border-white/25 text-[#FFE3E8] text-[11px] uppercase tracking-[0.25em] font-semibold"> {/* pill */}
                 <span>Флористический салон</span>
               </div>
 
@@ -157,7 +156,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
               {/* Guarantees Pills */}
               <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs text-white/95">
-                <span className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 px-3.5 py-2 rounded-xl transition-colors">
+                <span className="flex items-center gap-2 bg-white/15 hover:bg-white/20 border border-white/25 px-3.5 py-2 rounded-xl transition-colors">
                   <Clock className="w-3.5 h-3.5 text-[#E5C398]" />
                   <span>Доставка от 30 мин</span>
                 </span>
@@ -165,13 +164,13 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   href="https://yandex.ru/maps/org/sofiya/105599949171"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
+                  className="flex items-center gap-2 bg-white/15 hover:bg-white/20 border border-white/25 px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
                   title="Салон «София» на Яндекс Картах"
                 >
                   <MapPin className="w-3.5 h-3.5 text-[#E5C398]" />
                   <span>пр. Шинников, 13В</span>
                 </a>
-                <span className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 px-3.5 py-2 rounded-xl transition-colors">
+                <span className="flex items-center gap-2 bg-white/15 hover:bg-white/20 border border-white/25 px-3.5 py-2 rounded-xl transition-colors">
                   <Sparkles className="w-3.5 h-3.5 text-[#E5C398]" />
                   <span>Фото букета в WhatsApp</span>
                 </span>
@@ -179,7 +178,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
 
             {/* Quick Contact & WhatsApp Card - Frosted Velvet Glass with Gold Accent */}
-            <div className="w-full lg:w-80 bg-[#3A0A10]/90 border border-[#E5C398]/30 rounded-xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-xl">
+            <div className="w-full lg:w-80 bg-[#5A1019]/90 border border-[#E5C398]/35 rounded-xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-xl">
               <span className="text-[11px] uppercase tracking-[0.25em] text-[#E5C398] font-semibold block">
                 Связь с шеф-флористом
               </span>
@@ -191,7 +190,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 +7 (917) 256-32-35
               </a>
 
-              <p className="text-xs text-[#FAF0F2]/80 font-light leading-relaxed">
+              <p className="text-xs text-[#FAF0F2]/85 font-light leading-relaxed">
                 Индивидуальная сборка или подбор сортов по фото в WhatsApp
               </p>
 
