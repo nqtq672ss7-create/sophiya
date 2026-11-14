@@ -163,20 +163,20 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               </div>
             </div>
 
-            {/* Quick Contact & WhatsApp Card (Desktop & Mobile accessible) */}
-            <div className="w-full lg:w-80 bg-[#1C1215]/80 border border-white/15 rounded-xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-xl">
-              <span className="text-[11px] uppercase tracking-[0.2em] text-[#C5A880] font-medium block">
+            {/* Quick Contact & WhatsApp Card (Desktop & Mobile accessible) - Variant 3: Silk Velvet Tone-on-Tone */}
+            <div className="w-full lg:w-80 bg-[#611720] border border-[#AB6472]/40 rounded-xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-2xl">
+              <span className="text-[11px] uppercase tracking-[0.25em] text-[#AB6472] font-semibold block">
                 Связь с шеф-флористом
               </span>
 
               <a
                 href="tel:+79172563235"
-                className="font-sans text-2xl text-white font-semibold block hover:text-[#C5A880] transition-colors"
+                className="font-sans text-2xl text-white font-bold block hover:text-[#AB6472] transition-colors tracking-tight"
               >
                 +7 (917) 256-32-35
               </a>
 
-              <p className="text-xs text-white/70 font-light">
+              <p className="text-xs text-[#FAF0F2]/80 font-light leading-relaxed">
                 Индивидуальная сборка или подбор сортов по фото в WhatsApp
               </p>
 

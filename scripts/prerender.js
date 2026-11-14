@@ -884,7 +884,7 @@ function generatePreRenderedHtml(route) {
 
       <!-- 3. Primary Hero Section with SINGLE Visible H1 on ALL screens -->
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 w-full">
-        <div class="relative overflow-hidden rounded-xl bg-[#380A10] text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
+        <div class="relative overflow-hidden rounded-xl bg-[#922E3D] text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div class="max-w-3xl space-y-4">
             <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
             <h1 class="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
