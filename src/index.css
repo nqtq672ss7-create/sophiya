@@ -75,8 +75,26 @@ body {
   --surface: #ffffff;
   --text: #1e0708;
   --muted: #5c494c;
-  --accent: #6c1e26;
+  --accent: #8B1A2B;
   --accent-strong: #4f141b;
   --line: #ddd3cd;
   --error: #a4262c;
+}
+
+/* Palette Overrides: Wine Red Identity (#8B1A2B) */
+.bg-\[\#6C1E26\],
+.bg-\[\#6c1e26\] {
+  background-color: #8B1A2B !important;
+}
+.hover\:bg-\[\#5A121A\]:hover,
+.hover\:bg-\[\#5a121a\]:hover {
+  background-color: #731221 !important;
+}
+.text-\[\#6C1E26\],
+.text-\[\#6c1e26\] {
+  color: #8B1A2B !important;
+}
+.border-\[\#6C1E26\],
+.border-\[\#6c1e26\] {
+  border-color: #8B1A2B !important;
 }
