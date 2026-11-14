@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Faberge'; /* sans-serif */
+  src: url('/fonts/Faberge-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-faberge {
+  font-family: 'Faberge', sans-serif;
+}
+
 :root {
   color-scheme: dark;
 }

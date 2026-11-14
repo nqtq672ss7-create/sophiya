@@ -113,9 +113,9 @@ const ROUTES = [
   {
     path: '/',
     slug: '',
-    title: 'Купить цветы в Нижнекамске с доставкой — салон «София»',
+    title: 'Цветы в Нижнекамске с доставкой — салон «София»',
     description: 'Купить свежие цветы и букеты в Нижнекамске с быстрой доставкой от 30 минут. Салон «София», пр. Шинников, 13В. Сортовые розы, авторские сеты. Фото букета в WhatsApp перед отправкой.',
-    h1: 'Купить цветы в Нижнекамске с доставкой — салон «София»',
+    h1: 'Цветы в Нижнекамске с доставкой — салон «София»',
     categoryFilter: 'Все',
     breadcrumbLabel: 'Главная',
     introHeading: 'Свежие цветы и авторские букеты с быстрой доставкой по Нижнекамску',
@@ -887,7 +887,7 @@ function generatePreRenderedHtml(route) {
         <div class="relative overflow-hidden rounded-xl bg-[#922E3D] text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div class="max-w-3xl space-y-4">
             <!-- THE SINGLE H1 TAG FOR THE ENTIRE PAGE -->
-            <h1 class="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
+            <h1 class="font-faberge text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal leading-tight tracking-normal text-white">
               ${route.h1}
             </h1>
 

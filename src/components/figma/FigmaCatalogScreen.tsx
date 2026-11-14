@@ -136,7 +136,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
             <div className="max-w-2xl space-y-4">
               {/* THE ONLY H1 ON THE ENTIRE PAGE - ALWAYS VISIBLE */}
-              <h1 className="font-sans text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
+              <h1 className="font-faberge text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal leading-tight tracking-normal text-white">
                 {currentRoute.h1}
               </h1>
 

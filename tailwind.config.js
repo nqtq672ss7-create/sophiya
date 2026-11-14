@@ -28,6 +28,7 @@ export default {
         }
       },
       fontFamily: {
+        faberge: ['Faberge', 'sans-serif'],
         serif: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
         display: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
