@@ -19,7 +19,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 }) => {
   const { allCustomers, refreshCustomers } = useAuth();
   const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog, refreshCatalog } = useCatalog();
-  const { reviews, publishedReviews, pendingReviews, addReview, deleteReview, togglePublished, moderateReview, refreshReviews, refreshPending, resetToDefault: resetReviewsToDefault } = useReviews();
+  const { reviews, publishedReviews, pendingReviews, addReview, deleteReview, togglePublished, moderateReview, refreshReviews, refreshPending } = useReviews();
 
   // Security Gate Server Auth State
   const [pinInput, setPinInput] = useState('');
@@ -971,19 +971,6 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
                 />
               </div>
-
-              <button
-                onClick={() => {
-                  if (true) {
-                    resetReviewsToDefault();
-                  }
-                }}
-                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-light transition-colors flex items-center gap-1.5 shrink-0"
-                title="Восстановить демо-отзывы"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Восстановить демо</span>
-              </button>
             </div>
 
             {/* Pending moderation queue */}
