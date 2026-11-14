@@ -3,9 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Страница не найдена (404) | Салон цветов «София» Нижнекамск</title>
+    <title>Страница не найдена (404) — Салон цветов «София» Нижнекамск</title>
     <meta name="robots" content="noindex, follow" />
     <link rel="icon" type="image/png" href="/logo.png" />
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        if (path && (path.indexOf('/cart') !== -1 || path.indexOf('/profile') !== -1 || path.indexOf('/admin') !== -1 || path.indexOf('/crm') !== -1)) {
+          sessionStorage.setItem('spa_redirect', path + search + hash);
+          window.location.replace('/' + (search || '') + (hash || ''));
+        }
+      })();
+    </script>
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -23,7 +34,7 @@
         max-width: 520px;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 24px;
+        border-radius: 12px;
         padding: 40px 32px;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
       }
@@ -35,7 +46,7 @@
       .badge {
         display: inline-block;
         padding: 4px 12px;
-        border-radius: 9999px;
+        border-radius: 6px;
         background: rgba(197, 168, 128, 0.15);
         color: #C5A880;
         font-size: 12px;
@@ -106,7 +117,7 @@
         <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="btn-secondary">Написать флористу в WhatsApp</a>
       </div>
       <div class="contacts">
-        Салон цветов «София» • г. Нижнекамск, пр. Шинников, 13В<br />
+        Салон цветов «София», г. Нижнекамск, пр. Шинников, 13В<br />
         Телефон: <a href="tel:+79172563235">+7 (917) 256-32-35</a> (08:00 – 21:00)
       </div>
     </div>

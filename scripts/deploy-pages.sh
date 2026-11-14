@@ -8,9 +8,11 @@ cd "$ROOT_DIR"
 echo "📦 1. Building production bundle..."
 pnpm build
 
-echo "📑 1.1 Generating SPA routing fallbacks for /admin and /crm..."
-mkdir -p "$ROOT_DIR/dist/admin" && cp "$ROOT_DIR/dist/index.html" "$ROOT_DIR/dist/admin/index.html"
-mkdir -p "$ROOT_DIR/dist/crm" && cp "$ROOT_DIR/dist/index.html" "$ROOT_DIR/dist/crm/index.html"
+echo "📑 1.1 Ensuring SPA routing fallbacks for /cart, /profile, /admin and /crm..."
+[ -f "$ROOT_DIR/dist/cart/index.html" ] || (mkdir -p "$ROOT_DIR/dist/cart" && cp "$ROOT_DIR/dist/index.html" "$ROOT_DIR/dist/cart/index.html")
+[ -f "$ROOT_DIR/dist/profile/index.html" ] || (mkdir -p "$ROOT_DIR/dist/profile" && cp "$ROOT_DIR/dist/index.html" "$ROOT_DIR/dist/profile/index.html")
+[ -f "$ROOT_DIR/dist/admin/index.html" ] || (mkdir -p "$ROOT_DIR/dist/admin" && cp "$ROOT_DIR/dist/index.html" "$ROOT_DIR/dist/admin/index.html")
+[ -f "$ROOT_DIR/dist/crm/index.html" ] || (mkdir -p "$ROOT_DIR/dist/crm" && cp "$ROOT_DIR/dist/index.html" "$ROOT_DIR/dist/crm/index.html")
 
 echo "🌿 2. Syncing dist build to gh-pages branch..."
 git worktree remove --force /tmp/sophiya-gh-pages 2>/dev/null || true

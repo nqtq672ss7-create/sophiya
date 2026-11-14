@@ -1305,7 +1305,26 @@ async function runPrerender() {
     process.stdout.write(`[SSG] [${generatedCount}/${ROUTES.length}] Pre-rendered: ${route.path} -> ${targetFile.replace(ROOT_DIR, '')}\n`);
   }
 
-  process.stdout.write(`\n[SSG] Successfully pre-rendered all ${generatedCount} landing pages with raw HTML, strict filtering, and Stage 3 Schema.org!\n`);
+  // 10. Generate SPA Fallback Routes for client-side pages: /cart, /profile, /admin, /crm
+  const SPA_ROUTES = [
+    { slug: 'cart', title: 'Корзина — Салон цветов «София» Нижнекамск' },
+    { slug: 'profile', title: 'Личный кабинет — Салон цветов «София» Нижнекамск' },
+    { slug: 'admin', title: 'Панель управления — Салон цветов «София»' },
+    { slug: 'crm', title: 'CRM система — Салон цветов «София»' },
+  ];
+
+  for (const spa of SPA_ROUTES) {
+    let spaHtml = baseHtml;
+    spaHtml = spaHtml.replace(/<title>.*?<\/title>/s, `<title>${spa.title}</title>`);
+    spaHtml = spaHtml.replace(/<meta name="title" content=".*?" \/>/s, `<meta name="title" content="${spa.title}" />`);
+    spaHtml = spaHtml.replace(/<meta name="robots" content=".*?" \/>/s, `<meta name="robots" content="noindex, follow" />`);
+    const spaDir = path.resolve(DIST_DIR, spa.slug);
+    fs.mkdirSync(spaDir, { recursive: true });
+    fs.writeFileSync(path.resolve(spaDir, 'index.html'), spaHtml, 'utf8');
+    process.stdout.write(`[SSG] SPA Fallback generated: /${spa.slug}/ -> /dist/${spa.slug}/index.html\n`);
+  }
+
+  process.stdout.write(`\n[SSG] Successfully pre-rendered all ${generatedCount} landing pages + 4 SPA routes with raw HTML, strict filtering, and Stage 3 Schema.org!\n`);
 }
 
 runPrerender().catch(err => {

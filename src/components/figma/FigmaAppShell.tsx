@@ -127,7 +127,13 @@ export const FigmaAppShell: React.FC = () => {
       }
 
       // Sync SEO metadata in DOM
-      document.title = targetRoute.title;
+      if (newPath.startsWith('/cart')) {
+        document.title = 'Корзина — Салон цветов «София» Нижнекамск';
+      } else if (newPath.startsWith('/profile')) {
+        document.title = 'Личный кабинет — Салон цветов «София» Нижнекамск';
+      } else {
+        document.title = targetRoute.title;
+      }
       const canonicalTag = document.querySelector('link[rel="canonical"]');
       if (canonicalTag) {
         canonicalTag.setAttribute('href', `https://xn----ctbjn3arftl7c8b.xn--p1ai${targetRoute.path}`);
@@ -160,7 +166,13 @@ export const FigmaAppShell: React.FC = () => {
         }
       }
 
-      document.title = route.title;
+      if (path.startsWith('/cart')) {
+        document.title = 'Корзина — Салон цветов «София» Нижнекамск';
+      } else if (path.startsWith('/profile')) {
+        document.title = 'Личный кабинет — Салон цветов «София» Нижнекамск';
+      } else {
+        document.title = route.title;
+      }
       const canonicalTag = document.querySelector('link[rel="canonical"]');
       if (canonicalTag) {
         canonicalTag.setAttribute('href', `https://xn----ctbjn3arftl7c8b.xn--p1ai${route.path}`);
@@ -173,6 +185,17 @@ export const FigmaAppShell: React.FC = () => {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // SPA route rehydration from 404 fallback or direct session recovery
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const redirectPath = sessionStorage.getItem('spa_redirect');
+      if (redirectPath) {
+        sessionStorage.removeItem('spa_redirect');
+        handleNavigate(redirectPath);
+      }
+    }
   }, []);
 
   // Secret access to CRM for owner: /admin, /crm, #admin, or #crm in URL
