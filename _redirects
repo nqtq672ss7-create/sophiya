@@ -1,0 +1,39 @@
+# Cloudflare / Netlify / Vercel redirects for https://цветы-софия.рф (https://xn----ctbjn3arftl7c8b.xn--p1ai)
+
+# 1. Force HTTPS
+http://*   https://:splat   301!
+
+# 2. Force non-www canonical Punycode & Cyrillic host
+https://www.цветы-софия.рф/*   https://цветы-софия.рф/:splat   301!
+https://www.xn----ctbjn3arftl7c8b.xn--p1ai/*   https://xn----ctbjn3arftl7c8b.xn--p1ai/:splat   301!
+
+# 3. Trailing slash normalization for landing categories
+/rozy   /rozy/   301!
+/monobukety   /monobukety/   301!
+/avtorskie-bukety   /avtorskie-bukety/   301!
+/cvety-v-korobke   /cvety-v-korobke/   301!
+/korziny-cvetov   /korziny-cvetov/   301!
+/svadebnye-bukety   /svadebnye-bukety/   301!
+/piony   /piony/   301!
+/hrizantemy   /hrizantemy/   301!
+/gorshechnye-rasteniya   /gorshechnye-rasteniya/   301!
+/traurnye-venki   /traurnye-venki/   301!
+/dostavka   /dostavka/   301!
+/o-salone   /o-salone/   301!
+/kontakty   /kontakty/   301!
+/otzyvy   /otzyvy/   301!
+/faq   /faq/   301!
+/blog   /blog/   301!
+/na-den-rozhdeniya   /na-den-rozhdeniya/   301!
+/na-svadbu   /na-svadbu/   301!
+/na-8-marta   /na-8-marta/   301!
+/na-14-fevralya   /na-14-fevralya/   301!
+/na-1-sentyabrya   /na-1-sentyabrya/   301!
+/na-yubiley   /na-yubiley/   301!
+
+# 4. Admin & CRM routing
+/admin   /admin/   301!
+/crm   /crm/   301!
+
+# 5. SPA Fallback
+/*   /404.html   404
