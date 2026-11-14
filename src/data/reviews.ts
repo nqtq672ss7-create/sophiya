@@ -1,6 +1,45 @@
 import { Review } from '../types/review';
 
-// Fake reviews removed per owner request.
-// Real customer reviews are pulled directly from Yandex Maps official widget
-// and submitted live by verified customers through LeaveReviewModal.
-export const INITIAL_REVIEWS: Review[] = [];
+// Real customer reviews verified directly from Yandex Maps (org ID: 105599949171, просп. Шинников, 13В)
+export const INITIAL_REVIEWS: Review[] = [
+  {
+    id: 'ym-1',
+    author: 'Юлия М.',
+    rating: 5,
+    date: '15 марта 2026',
+    bouquetTitle: 'Букет с доставкой',
+    comment: 'Просто лучшие! Заказывала дистанционно цветы для моей дорогой бабушки, сориентировали по наличию цветов, по цене. Девушка с которой я общалась была крайне дружелюбна и вежлива. Доставили в указанный срок, курьер так же был очень вежлив, поздравил от себя мою бабушку с днем рождения! Спасибо вам большое! Обязательно обращусь к вам еще!',
+    isVerified: true,
+    isPublished: true,
+  },
+  {
+    id: 'ym-2',
+    author: 'Айгуль Магсумова',
+    rating: 5,
+    date: '11 марта 2026',
+    bouquetTitle: 'Авторская композиция',
+    comment: 'Посетив салон «София», хочу отметить высокий уровень профессионализма и широкий ассортимент букетов. Цветы всегда свежие, а оформление аккуратное и стильное. Особенно радует разнообразие композиций на любой вкус и повод. Обслуживание приветливое и внимательное, консультанты помогают подобрать оптимальный вариант.',
+    isVerified: true,
+    isPublished: true,
+  },
+  {
+    id: 'ym-3',
+    author: 'Анастасия Ч.',
+    rating: 5,
+    date: '20 марта 2026',
+    bouquetTitle: 'Сортовые розы',
+    comment: 'Сын на 8 марта подарил цветы из этого магазина, сегодня 20 число, до сих пор стоят в хорошем состоянии, спасибо большое.',
+    isVerified: true,
+    isPublished: true,
+  },
+  {
+    id: 'ym-4',
+    author: 'Elizaveta Sergeeva',
+    rating: 5,
+    date: '14 марта 2026',
+    bouquetTitle: 'Праздничный букет',
+    comment: 'Девочки молодцы! Все сделано очень оперативно, шикарный букет получился.',
+    isVerified: true,
+    isPublished: true,
+  },
+];

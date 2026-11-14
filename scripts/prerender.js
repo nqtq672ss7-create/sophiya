@@ -780,16 +780,9 @@ function generatePreRenderedHtml(route) {
             class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             itemprop="image"
           />
-          <div class="absolute top-2.5 left-2.5 bg-[#8B1A2B] text-white text-[10px] font-medium px-2 py-0.5 rounded-md">
-            ${b.category}
-          </div>
         </div>
         <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-[#7C636B] font-light mb-1">
-              <span>${flowersCount}</span>
-              <span>${height}</span>
-            </div>
             <h3 class="font-sans text-base text-[#1C1215] font-semibold leading-snug mb-1.5 line-clamp-1" itemprop="name">
               ${b.title}
             </h3>
@@ -804,9 +797,6 @@ function generatePreRenderedHtml(route) {
               <meta itemprop="price" content="${b.price}" />
               <span class="font-sans text-xl font-bold text-[#8B1A2B]">
                 ${Number(b.price).toLocaleString('ru-RU')} ₽
-              </span>
-              <span class="text-[10px] ${b.inStock ? 'text-emerald-700 bg-emerald-50' : 'text-[#5C454C] bg-[#FAF7F5]'} px-2 py-0.5 rounded-md font-medium">
-                ${b.inStock ? 'В наличии' : 'Под заказ'}
               </span>
             </div>
             <a

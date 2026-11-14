@@ -60,7 +60,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-[#1C1215] font-sans">
       {/* 1. Mobile-only Top Brand Header */}
-      <div className="md:hidden bg-rose-texture-hero text-white pt-6 pb-4 px-5 sm:px-6 shadow-md border-b border-white/10">
+      <div className="md:hidden bg-[#8B1A2B] text-white pt-6 pb-4 px-5 sm:px-6 shadow-md border-b border-white/10">
         <div className="flex items-center justify-between gap-3">
           <div
             onClick={onOpenCrm}
@@ -132,7 +132,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
       {/* 3. Primary Hero Banner: Single H1 Tag (Visible on ALL devices) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 w-full">
-        <div className="relative overflow-hidden rounded-xl bg-rose-texture-hero text-white p-5 sm:p-8 lg:p-12 shadow-xl border border-white/10">
+        <div className="relative overflow-hidden rounded-xl bg-[#8B1A2B] text-white p-5 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
             <div className="max-w-2xl space-y-4">
               {/* THE ONLY H1 ON THE ENTIRE PAGE - ALWAYS VISIBLE */}

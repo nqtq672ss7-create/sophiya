@@ -19,10 +19,9 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
   const photos = (bouquet.images && bouquet.images.length > 0 ? bouquet.images : [bouquet.image]).slice(0, 3);
   const [activePhoto, setActivePhoto] = useState(0);
 
-  const discountedPrice =
-    userDiscount > 0
-      ? bouquet.price - Math.round((bouquet.price * userDiscount) / 100)
-      : bouquet.price;
+  const discountedPrice = userDiscount > 0
+    ? Math.round(bouquet.price * (1 - userDiscount / 100))
+    : bouquet.price;
 
   const handlePrevPhoto = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,24 +77,6 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
           </>
         )}
 
-        {/* Stock Badge */}
-        <div className="absolute top-2.5 left-2.5">
-          {bouquet.inStock ? (
-            <span className="bg-emerald-700 text-white text-[10px] font-medium px-2 py-0.5 rounded-md shadow-sm">
-              В наличии
-            </span>
-          ) : (
-            <span className="bg-[#1C1215]/80 text-white text-[10px] font-medium px-2 py-0.5 rounded-md shadow-sm">
-              Под заказ
-            </span>
-          )}
-        </div>
-
-        {/* Category Pill */}
-        <div className="absolute top-2.5 right-2.5 bg-white text-[#8B1A2B] text-[10px] font-semibold px-2 py-0.5 rounded-md shadow-sm border border-[#E5DDD9]">
-          {bouquet.category}
-        </div>
-
         {/* Dots Indicator */}
         {photos.length > 1 && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-md">
@@ -119,11 +100,6 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
       {/* Info Container */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between text-[11px] text-[#7C636B] font-light mb-1">
-            <span>{bouquet.characteristics.flowersCount}</span>
-            <span>{bouquet.characteristics.height}</span>
-          </div>
-
           <h3 className="font-sans text-base text-[#1C1215] font-semibold leading-snug group-hover:text-[#8B1A2B] transition-colors mb-1.5 line-clamp-1">
             {bouquet.title}
           </h3>
@@ -152,9 +128,6 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
                 </span>
               )}
             </div>
-            <span className="text-[10px] text-[#7C636B] font-light">
-              {bouquet.characteristics.durability}
-            </span>
           </div>
 
           {/* Action: Cart Button + WhatsApp Icon Button */}
