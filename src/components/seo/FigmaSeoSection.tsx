@@ -34,7 +34,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
       {/* 1. Feature Highlights (4 Clean Luxury Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
         <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] group-hover:bg-[#8B1A2B] group-hover:text-white transition-colors flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
             <Truck className="w-4 h-4" />
           </div>
           <h3 className="font-sans text-base text-[#1C1215] font-semibold">
@@ -46,7 +46,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
         </div>
 
         <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] group-hover:bg-[#8B1A2B] group-hover:text-white transition-colors flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <h3 className="font-sans text-base text-[#1C1215] font-semibold">
@@ -58,7 +58,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
         </div>
 
         <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] group-hover:bg-[#8B1A2B] group-hover:text-white transition-colors flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
             <Heart className="w-4 h-4" />
           </div>
           <h3 className="font-sans text-base text-[#1C1215] font-semibold">
@@ -70,7 +70,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
         </div>
 
         <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] group-hover:bg-[#8B1A2B] group-hover:text-white transition-colors flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
             <Sparkles className="w-4 h-4" />
           </div>
           <h3 className="font-sans text-base text-[#1C1215] font-semibold">
@@ -86,7 +86,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
       {isDeliveryPage && (
         <div className="space-y-8 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm mb-12">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
               <Truck className="w-3.5 h-3.5" />
               <span>Зоны и тарифы доставки в Нижнекамске</span>
             </div>
@@ -101,7 +101,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
             <div className="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9]/80 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 1: Центр</span>
+                <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 1: Центр</span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">30–60 мин</span>
               </div>
               <h3 className="text-lg font-bold text-[#1C1215]">300 ₽ <span className="text-xs font-normal text-[#7C636B]">(бесплатно от 4 500 ₽)</span></h3>
@@ -112,7 +112,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
 
             <div className="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9]/80 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 2: Пригород</span>
+                <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 2: Пригород</span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">45–75 мин</span>
               </div>
               <h3 className="text-lg font-bold text-[#1C1215]">450 ₽</h3>
@@ -123,7 +123,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
 
             <div className="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9]/80 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 3: Промзона</span>
+                <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 3: Промзона</span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
               </div>
               <h3 className="text-lg font-bold text-[#1C1215]">500 ₽</h3>
@@ -139,7 +139,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
       {isOccasionPage && currentRoute && (
         <div className="space-y-6 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm mb-12">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
               <Calendar className="w-3.5 h-3.5" />
               <span>Повод: {currentRoute.breadcrumbLabel}</span>
             </div>
@@ -160,7 +160,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
         <div className="space-y-10 mb-12">
           {/* Header block with salon NAP */}
           <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
               <Flower2 className="w-3.5 h-3.5" />
               <span>Салон цветов «София» в Нижнекамске</span>
             </div>
@@ -178,10 +178,10 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
             <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
                     <Truck className="w-5 h-5" />
                   </div>
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#8B1A2B] bg-[#8B1A2B]/10 px-3 py-1 rounded-md">
+                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#922E3D] bg-[#922E3D]/10 px-3 py-1 rounded-md">
                     08:00 – 21:00
                   </span>
                 </div>
@@ -201,7 +201,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                       <div className="text-xs font-bold text-[#1C1215]">Центр и жилые микрорайоны</div>
                       <div className="text-[11px] text-[#7C636B] leading-tight">Шинников, Мира, Строителей, Сююмбике, Химиков</div>
                     </div>
-                    <span className="text-xs font-bold text-[#8B1A2B] shrink-0">300 ₽</span>
+                    <span className="text-xs font-bold text-[#922E3D] shrink-0">300 ₽</span>
                   </div>
 
                   <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
@@ -209,7 +209,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                       <div className="text-xs font-bold text-[#1C1215]">Пригородные посёлки</div>
                       <div className="text-[11px] text-[#7C636B] leading-tight">Красный Ключ, Большое и Нижнее Афанасово</div>
                     </div>
-                    <span className="text-xs font-bold text-[#8B1A2B] shrink-0">450 ₽</span>
+                    <span className="text-xs font-bold text-[#922E3D] shrink-0">450 ₽</span>
                   </div>
 
                   <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
@@ -217,7 +217,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                       <div className="text-xs font-bold text-[#1C1215]">Промзона и предприятия</div>
                       <div className="text-[11px] text-[#7C636B] leading-tight">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
                     </div>
-                    <span className="text-xs font-bold text-[#8B1A2B] shrink-0">500 ₽</span>
+                    <span className="text-xs font-bold text-[#922E3D] shrink-0">500 ₽</span>
                   </div>
                 </div>
               </div>
@@ -232,10 +232,10 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
             <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
                     <Calendar className="w-5 h-5" />
                   </div>
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#8B1A2B] bg-[#8B1A2B]/10 px-3 py-1 rounded-md">
+                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#922E3D] bg-[#922E3D]/10 px-3 py-1 rounded-md">
                     Под любой повод
                   </span>
                 </div>
@@ -286,7 +286,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
             <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
                     <Droplets className="w-5 h-5" />
                   </div>
                   <span className="text-[11px] font-semibold tracking-wider uppercase text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md">
@@ -305,7 +305,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
 
                 <div className="space-y-2.5 pt-1">
                   <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                       1
                     </span>
                     <div className="space-y-0.5">
@@ -317,7 +317,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                   </div>
 
                   <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                       2
                     </span>
                     <div className="space-y-0.5">
@@ -329,7 +329,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                   </div>
 
                   <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                       3
                     </span>
                     <div className="space-y-0.5">
@@ -356,20 +356,20 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                 href="https://yandex.ru/maps/org/sofiya/105599949171"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-[#5C454C] hover:text-[#8B1A2B] transition-colors"
+                className="flex items-center gap-1.5 text-[#5C454C] hover:text-[#922E3D] transition-colors"
                 title="Салон «София» на Яндекс Картах"
               >
-                <MapPin className="w-4 h-4 text-[#8B1A2B]" />
+                <MapPin className="w-4 h-4 text-[#922E3D]" />
                 <span className="underline decoration-[#E5DDD9]">г. Нижнекамск, пр. Шинников, 13В на Яндекс Картах</span>
               </a>
               <div className="flex items-center gap-1.5 text-[#5C454C]">
-                <Clock className="w-4 h-4 text-[#8B1A2B]" />
+                <Clock className="w-4 h-4 text-[#922E3D]" />
                 <span>08:00 – 21:00 ежедневно</span>
               </div>
             </div>
             <a
               href="tel:+79172563235"
-              className="font-semibold text-[#8B1A2B] hover:underline"
+              className="font-semibold text-[#922E3D] hover:underline"
             >
               +7 (917) 256-32-35
             </a>

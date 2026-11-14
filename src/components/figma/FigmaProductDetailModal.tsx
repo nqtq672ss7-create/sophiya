@@ -125,7 +125,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
           <div>
             {/* Header / Subtitle */}
             <div className="flex items-center justify-between gap-2 mb-2">
-              <span className="text-xs uppercase tracking-[0.2em] text-[#8B1A2B] font-semibold">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#922E3D] font-semibold">
                 {bouquet.category}, салон «София»
               </span>
 
@@ -148,7 +148,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
                   {bouquet.price.toLocaleString('ru-RU')} ₽
                 </span>
               )}
-              <span className="font-sans text-3xl text-[#8B1A2B] font-bold">
+              <span className="font-sans text-3xl text-[#922E3D] font-bold">
                 {finalPrice.toLocaleString('ru-RU')} ₽
               </span>
             </div>
@@ -169,7 +169,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
                 onClick={() => setActiveTab('specs')}
                 className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors ${
                   activeTab === 'specs'
-                    ? 'bg-[#8B1A2B] text-white shadow-sm font-semibold'
+                    ? 'bg-[#922E3D] text-white shadow-sm font-semibold'
                     : 'text-[#5C454C] hover:text-[#1C1215]'
                 }`}
               >
@@ -183,7 +183,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
                 <p>{bouquet.description}</p>
 
                 <div className="p-4 rounded-xl bg-white border border-[#E5DDD9] shadow-sm space-y-2 text-xs text-[#1C1215]">
-                  <div className="flex items-center gap-2 text-[#8B1A2B] font-medium">
+                  <div className="flex items-center gap-2 text-[#922E3D] font-medium">
                     <Clock className="w-4 h-4 shrink-0" />
                     <span>Доставка по Нижнекамску от 30 минут</span>
                   </div>
@@ -191,7 +191,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
                     Бережная транспортировка в специальном аквабоксе с водой. Обязательное фото готового букета в WhatsApp перед выездом курьера.
                   </p>
 
-                  <div className="flex items-center gap-2 text-[#8B1A2B] font-medium pt-1">
+                  <div className="flex items-center gap-2 text-[#922E3D] font-medium pt-1">
                     <MapPin className="w-4 h-4 shrink-0" />
                     <span>Самовывоз: пр. Шинников, 13В</span>
                   </div>
@@ -229,7 +229,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
               className={`flex-1 py-3.5 px-4 rounded-xl font-medium text-xs sm:text-sm transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
                 isAdded
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-[#8B1A2B] hover:bg-[#731221] text-white active:scale-95'
+                  : 'bg-[#922E3D] hover:bg-[#611720] text-white active:scale-95'
               }`}
             >
               {isAdded ? (

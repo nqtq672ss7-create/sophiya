@@ -100,7 +100,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
       {/* Info Container */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-sans text-base text-[#1C1215] font-semibold leading-snug group-hover:text-[#8B1A2B] transition-colors mb-1.5 line-clamp-1">
+          <h3 className="font-sans text-base text-[#1C1215] font-semibold leading-snug group-hover:text-[#922E3D] transition-colors mb-1.5 line-clamp-1">
             {bouquet.title}
           </h3>
 
@@ -115,7 +115,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
             <div>
               {userDiscount > 0 ? (
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-sans text-xl font-bold text-[#8B1A2B]">
+                  <span className="font-sans text-xl font-bold text-[#922E3D]">
                     {discountedPrice.toLocaleString('ru-RU')} ₽
                   </span>
                   <span className="text-xs text-[#7C636B] line-through">
@@ -123,7 +123,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
                   </span>
                 </div>
               ) : (
-                <span className="font-sans text-xl font-bold text-[#8B1A2B]">
+                <span className="font-sans text-xl font-bold text-[#922E3D]">
                   {bouquet.price.toLocaleString('ru-RU')} ₽
                 </span>
               )}
@@ -135,7 +135,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
             <button
               type="button"
               onClick={(e) => onAddToCart(bouquet, e)}
-              className="flex-1 py-2 px-3 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-95 cursor-pointer"
+              className="flex-1 py-2 px-3 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-95 cursor-pointer"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
               <span>В корзину</span>

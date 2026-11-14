@@ -15,7 +15,7 @@ export const FigmaReviewsSection: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <YandexIcon className="w-5 h-5 shrink-0" />
-            <span className="text-[11px] sm:text-xs tracking-[0.2em] uppercase text-[#8B1A2B] font-semibold block">
+            <span className="text-[11px] sm:text-xs tracking-[0.2em] uppercase text-[#922E3D] font-semibold block">
               Рейтинг 5.0 на Яндекс Картах (101 оценка)
             </span>
           </div>
@@ -33,7 +33,7 @@ export const FigmaReviewsSection: React.FC = () => {
             href="https://yandex.ru/maps/org/sofiya/105599949171/reviews/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E5DDD9] hover:border-[#8B1A2B] text-[#5C454C] hover:text-[#8B1A2B] text-xs font-medium transition-colors shadow-sm active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E5DDD9] hover:border-[#922E3D] text-[#5C454C] hover:text-[#922E3D] text-xs font-medium transition-colors shadow-sm active:scale-95"
             title="Открыть все отзывы на Яндекс Картах"
           >
             <YandexIcon className="w-4 h-4 shrink-0" />
@@ -44,7 +44,7 @@ export const FigmaReviewsSection: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsReviewModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white text-xs font-medium transition-colors shadow-sm shrink-0 active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs font-medium transition-colors shadow-sm shrink-0 active:scale-95 cursor-pointer"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Оставить отзыв</span>
@@ -74,7 +74,7 @@ export const FigmaReviewsSection: React.FC = () => {
                 </div>
 
                 {rev.bouquetTitle && (
-                  <span className="text-xs text-[#8B1A2B] font-semibold block truncate">
+                  <span className="text-xs text-[#922E3D] font-semibold block truncate">
                     {rev.bouquetTitle}
                   </span>
                 )}

@@ -60,7 +60,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-[#1C1215] font-sans">
       {/* 1. Mobile-only Top Brand Header */}
-      <div className="md:hidden bg-[#8B1A2B] text-white pt-6 pb-4 px-5 sm:px-6 shadow-md border-b border-white/10">
+      <div className="md:hidden bg-[#922E3D] text-white pt-6 pb-4 px-5 sm:px-6 shadow-md border-b border-white/10">
         <div className="flex items-center justify-between gap-3">
           <div
             onClick={onOpenCrm}
@@ -77,11 +77,11 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <a
               href="tel:+79172563235"
-              className="w-10 h-10 rounded-xl bg-white text-[#8B1A2B] shadow-md flex items-center justify-center hover:bg-white/95 active:scale-95 transition-colors"
+              className="w-10 h-10 rounded-xl bg-white text-[#922E3D] shadow-md flex items-center justify-center hover:bg-white/95 active:scale-95 transition-colors"
               aria-label="Позвонить в салон"
               title="Позвонить: +7 (917) 256-32-35"
             >
-              <Phone className="w-4 h-4 fill-[#8B1A2B]" />
+              <Phone className="w-4 h-4 fill-[#922E3D]" />
             </a>
 
             <a
@@ -115,7 +115,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   onNavigate('/');
                 }}
                 itemProp="item"
-                className="hover:text-[#8B1A2B] text-[#5C454C] transition-colors"
+                className="hover:text-[#922E3D] text-[#5C454C] transition-colors"
               >
                 <span itemProp="name">Главная</span>
               </a>
@@ -132,7 +132,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
       {/* 3. Primary Hero Banner: Single H1 Tag (Visible on ALL devices) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 w-full">
-        <div className="relative overflow-hidden rounded-xl bg-[#8B1A2B] text-white p-5 sm:p-8 lg:p-12 shadow-xl border border-white/10">
+        <div className="relative overflow-hidden rounded-xl bg-[#922E3D] text-white p-5 sm:p-8 lg:p-12 shadow-xl border border-white/10">
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
             <div className="max-w-2xl space-y-4">
               {/* THE ONLY H1 ON THE ENTIRE PAGE - ALWAYS VISIBLE */}
@@ -214,8 +214,8 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   }}
                   className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap active:scale-95 ${
                     isActive
-                      ? 'bg-[#8B1A2B] text-white shadow-sm font-semibold'
-                      : 'bg-white hover:bg-[#FAF7F5] text-[#5C454C] hover:text-[#1C1215] border border-[#E5DDD9] hover:border-[#8B1A2B] shadow-sm'
+                      ? 'bg-[#922E3D] text-white shadow-sm font-semibold'
+                      : 'bg-white hover:bg-[#FAF7F5] text-[#5C454C] hover:text-[#1C1215] border border-[#E5DDD9] hover:border-[#922E3D] shadow-sm'
                   }`}
                 >
                   {item.label}
@@ -233,13 +233,13 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 placeholder="Поиск букета..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E5DDD9] text-xs sm:text-sm focus:outline-none focus:border-[#8B1A2B] transition-colors shadow-sm"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-[#E5DDD9] text-xs sm:text-sm focus:outline-none focus:border-[#922E3D] transition-colors shadow-sm"
               />
             </div>
 
             <button
               onClick={onOpenFilter}
-              className="px-4 py-2 rounded-xl bg-white border border-[#E5DDD9] text-[#5C454C] hover:text-[#8B1A2B] hover:border-[#8B1A2B] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-sm active:scale-95"
+              className="px-4 py-2 rounded-xl bg-white border border-[#E5DDD9] text-[#5C454C] hover:text-[#922E3D] hover:border-[#922E3D] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-sm active:scale-95"
               title="Открыть фильтры"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -262,8 +262,8 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
         {displayedBouquets.length === 0 ? (
           <div className="py-16 text-center bg-white rounded-xl border border-[#E5DDD9] p-8 shadow-sm">
-            <div className="w-12 h-12 mx-auto rounded-xl bg-[#8B1A2B]/10 flex items-center justify-center text-[#8B1A2B] mb-4">
-              <Sparkles className="w-6 h-6 text-[#8B1A2B]" />
+            <div className="w-12 h-12 mx-auto rounded-xl bg-[#922E3D]/10 flex items-center justify-center text-[#922E3D] mb-4">
+              <Sparkles className="w-6 h-6 text-[#922E3D]" />
             </div>
             <h3 className="font-sans text-xl sm:text-2xl text-[#1C1215] font-semibold mb-2">
               Позиции в категории «{currentRoute.breadcrumbLabel}» собираются под заказ

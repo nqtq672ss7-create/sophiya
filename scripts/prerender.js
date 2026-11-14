@@ -523,7 +523,7 @@ function generateSeoSectionHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 font-sans text-[#1C1215]">
         <div class="space-y-8 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm">
           <div class="space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
               <span>Зоны и тарифы доставки в Нижнекамске</span>
             </div>
             <h2 class="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
@@ -537,7 +537,7 @@ function generateSeoSectionHtml(route) {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
             <div class="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 1: Центр</span>
+                <span class="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 1: Центр</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">30–60 мин</span>
               </div>
               <h3 class="text-lg font-bold text-[#1C1215]">300 ₽ <span class="text-xs font-normal text-[#7C636B]">(бесплатно от 4 500 ₽)</span></h3>
@@ -548,7 +548,7 @@ function generateSeoSectionHtml(route) {
 
             <div class="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 2: Пригород</span>
+                <span class="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 2: Пригород</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">45–75 мин</span>
               </div>
               <h3 class="text-lg font-bold text-[#1C1215]">450 ₽</h3>
@@ -559,7 +559,7 @@ function generateSeoSectionHtml(route) {
 
             <div class="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 3: Промзона</span>
+                <span class="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 3: Промзона</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
               </div>
               <h3 class="text-lg font-bold text-[#1C1215]">500 ₽</h3>
@@ -579,7 +579,7 @@ function generateSeoSectionHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 font-sans text-[#1C1215]">
         <div class="space-y-6 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm">
           <div class="space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
               <span>${route.breadcrumbLabel}</span>
             </div>
             <h2 class="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
@@ -600,7 +600,7 @@ function generateSeoSectionHtml(route) {
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 font-sans text-[#1C1215]">
       <div class="space-y-10">
         <div class="max-w-3xl space-y-3">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
             <span>Салон цветов «София» в Нижнекамске</span>
           </div>
           <h2 class="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
@@ -618,7 +618,7 @@ function generateSeoSectionHtml(route) {
                 <h3 class="text-lg font-bold text-[#1C1215] leading-snug">
                   Доставка цветов по районам города
                 </h3>
-                <span class="text-[11px] font-semibold tracking-wider uppercase text-[#8B1A2B] bg-[#8B1A2B]/10 px-3 py-1 rounded-md">
+                <span class="text-[11px] font-semibold tracking-wider uppercase text-[#922E3D] bg-[#922E3D]/10 px-3 py-1 rounded-md">
                   08:00 – 21:00
                 </span>
               </div>
@@ -631,21 +631,21 @@ function generateSeoSectionHtml(route) {
                     <div class="text-xs font-bold text-[#1C1215]">Центр и жилые микрорайоны</div>
                     <div class="text-[11px] text-[#7C636B] leading-tight">Шинников, Мира, Строителей, Сююмбике, Химиков</div>
                   </div>
-                  <span class="text-xs font-bold text-[#8B1A2B] shrink-0">300 ₽</span>
+                  <span class="text-xs font-bold text-[#922E3D] shrink-0">300 ₽</span>
                 </div>
                 <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
                   <div class="space-y-0.5">
                     <div class="text-xs font-bold text-[#1C1215]">Пригородные посёлки</div>
                     <div class="text-[11px] text-[#7C636B] leading-tight">Красный Ключ, Большое и Нижнее Афанасово</div>
                   </div>
-                  <span class="text-xs font-bold text-[#8B1A2B] shrink-0">450 ₽</span>
+                  <span class="text-xs font-bold text-[#922E3D] shrink-0">450 ₽</span>
                 </div>
                 <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
                   <div class="space-y-0.5">
                     <div class="text-xs font-bold text-[#1C1215]">Промзона и предприятия</div>
                     <div class="text-[11px] text-[#7C636B] leading-tight">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
                   </div>
-                  <span class="text-xs font-bold text-[#8B1A2B] shrink-0">500 ₽</span>
+                  <span class="text-xs font-bold text-[#922E3D] shrink-0">500 ₽</span>
                 </div>
               </div>
             </div>
@@ -660,7 +660,7 @@ function generateSeoSectionHtml(route) {
                 <h3 class="text-lg font-bold text-[#1C1215] leading-snug">
                   Букеты под любые поводы и события
                 </h3>
-                <span class="text-[11px] font-semibold tracking-wider uppercase text-[#8B1A2B] bg-[#8B1A2B]/10 px-3 py-1 rounded-md">
+                <span class="text-[11px] font-semibold tracking-wider uppercase text-[#922E3D] bg-[#922E3D]/10 px-3 py-1 rounded-md">
                   Под любой повод
                 </span>
               </div>
@@ -708,21 +708,21 @@ function generateSeoSectionHtml(route) {
               </p>
               <div class="space-y-2.5 pt-1">
                 <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                  <span class="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <span class="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
                   <div class="space-y-0.5">
                     <div class="text-xs font-bold text-[#1C1215]">Косой срез под 45°</div>
                     <p class="text-[11px] text-[#7C636B] leading-tight">Срежьте стебли на 1,5–2 см острым ножом перед постановкой в воду.</p>
                   </div>
                 </div>
                 <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                  <span class="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <span class="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
                   <div class="space-y-0.5">
                     <div class="text-xs font-bold text-[#1C1215]">Чистая вода и Chrysal</div>
                     <p class="text-[11px] text-[#7C636B] leading-tight">Используйте прохладную воду и пакетик Chrysal, прилагаемый в подарок.</p>
                   </div>
                 </div>
                 <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                  <span class="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                  <span class="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
                   <div class="space-y-0.5">
                     <div class="text-xs font-bold text-[#1C1215]">Снятие нижних листьев</div>
                     <p class="text-[11px] text-[#7C636B] leading-tight">Удалите листву в воде, чтобы вода не зацветала и оставалась прозрачной.</p>
@@ -747,7 +747,7 @@ function generatePreRenderedHtml(route) {
     <nav aria-label="Хлебные крошки" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-xs text-[#7C636B] font-sans" itemscope itemtype="https://schema.org/BreadcrumbList">
       <ol class="flex items-center gap-2 list-none p-0 m-0">
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="flex items-center gap-2">
-          <a href="/" itemprop="item" class="hover:text-[#8B1A2B] text-[#5C454C] transition-colors">
+          <a href="/" itemprop="item" class="hover:text-[#922E3D] text-[#5C454C] transition-colors">
             <span itemprop="name">Главная</span>
           </a>
           <meta itemprop="position" content="1" />
@@ -795,7 +795,7 @@ function generatePreRenderedHtml(route) {
               <link itemprop="availability" href="${b.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}" />
               <meta itemprop="priceCurrency" content="RUB" />
               <meta itemprop="price" content="${b.price}" />
-              <span class="font-sans text-xl font-bold text-[#8B1A2B]">
+              <span class="font-sans text-xl font-bold text-[#922E3D]">
                 ${Number(b.price).toLocaleString('ru-RU')} ₽
               </span>
             </div>
@@ -803,7 +803,7 @@ function generatePreRenderedHtml(route) {
               href="https://wa.me/79172563235?text=${encodeURIComponent(`Здравствуйте! Хочу заказать букет «${b.title}» (${b.price} ₽) с доставкой в Нижнекамске.`)}"
               target="_blank"
               rel="noopener noreferrer"
-              class="w-full py-2.5 px-4 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white font-medium text-xs text-center block transition-colors shadow-sm active:scale-95"
+              class="w-full py-2.5 px-4 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs text-center block transition-colors shadow-sm active:scale-95"
             >
               Заказать в WhatsApp
             </a>
@@ -825,7 +825,7 @@ function generatePreRenderedHtml(route) {
             href="https://wa.me/79172563235?text=${encodeURIComponent(`Здравствуйте! Хочу уточнить наличие цветов в категории «${route.breadcrumbLabel}» в Нижнекамске.`)}"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block py-3 px-6 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white font-medium text-xs sm:text-sm transition-colors shadow-md active:scale-95"
+            class="inline-block py-3 px-6 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs sm:text-sm transition-colors shadow-md active:scale-95"
           >
             Написать флористу в WhatsApp
           </a>
@@ -851,7 +851,7 @@ function generatePreRenderedHtml(route) {
   const categoryChipsHtml = navCategories.map(c => `
     <a
       href="${c.href}"
-      class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#8B1A2B] text-white shadow-sm font-semibold' : 'bg-white/90 text-[#3D2C31] hover:bg-white border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
+      class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#922E3D] text-white shadow-sm font-semibold' : 'bg-white/90 text-[#3D2C31] hover:bg-white border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
     >
       ${c.label}
     </a>
@@ -860,7 +860,7 @@ function generatePreRenderedHtml(route) {
   const catalogTitle = route.path === '/' ? 'Каталог букетов' : `Каталог: ${route.breadcrumbLabel}`;
 
   return `
-    <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#8B1A2B] selection:text-white font-sans">
+    <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#922E3D] selection:text-white font-sans">
       <!-- 2. Header -->
       <header class="w-full bg-[#FAF7F5]/95  border-b border-white/10 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
@@ -868,12 +868,12 @@ function generatePreRenderedHtml(route) {
             <img src="/logo.png" alt="Салон цветов София" width="160" height="60" class="h-14 sm:h-18 w-auto object-contain" />
           </a>
           <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
-            <a href="/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Каталог</a>
-            <a href="/dostavka/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Доставка</a>
-            <a href="/cart/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Корзина</a>
-            <a href="/profile/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Личный кабинет</a>
+            <a href="/" class="hover:text-[#922E3D] text-[#3D2C31]">Каталог</a>
+            <a href="/dostavka/" class="hover:text-[#922E3D] text-[#3D2C31]">Доставка</a>
+            <a href="/cart/" class="hover:text-[#922E3D] text-[#3D2C31]">Корзина</a>
+            <a href="/profile/" class="hover:text-[#922E3D] text-[#3D2C31]">Личный кабинет</a>
           </nav>
-          <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#8B1A2B] text-white text-xs font-semibold shadow hover:bg-[#731221]">
+          <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#922E3D] text-white text-xs font-semibold shadow hover:bg-[#611720]">
             <span></span>
             <span>+7 (917) 256-32-35</span>
           </a>
@@ -967,7 +967,7 @@ function generatePreRenderedHtml(route) {
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
               <div class="space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
                   <span> Салон в Нижнекамске</span>
                 </div>
                 <h2 class="font-sans font-medium text-2xl sm:text-3xl text-[#1C1215] font-normal leading-tight">
@@ -987,12 +987,12 @@ function generatePreRenderedHtml(route) {
                   </div>
                   <div>
                     <span class="font-medium text-[#1C1215] block">Телефон:</span>
-                    <a href="tel:+79172563235" class="text-[#8B1A2B] font-medium">+7 (917) 256-32-35</a>
+                    <a href="tel:+79172563235" class="text-[#922E3D] font-medium">+7 (917) 256-32-35</a>
                   </div>
                 </div>
               </div>
               <div class="pt-4 border-t border-white/5 flex flex-wrap gap-3">
-                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#8B1A2B] text-white font-medium text-xs sm:text-sm text-center inline-block">
+                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#922E3D] text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Построить маршрут
                 </a>
                 <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">

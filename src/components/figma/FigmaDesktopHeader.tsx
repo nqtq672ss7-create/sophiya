@@ -72,20 +72,20 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             onClick={(e) => handleLinkClick(e, '/', 'catalog')}
             className={`transition-colors relative py-1 ${
               activeTab === 'catalog'
-                ? 'text-[#8B1A2B] font-semibold'
-                : 'text-[#5C454C] hover:text-[#8B1A2B]'
+                ? 'text-[#922E3D] font-semibold'
+                : 'text-[#5C454C] hover:text-[#922E3D]'
             }`}
           >
             Каталог
             {activeTab === 'catalog' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B1A2B] rounded-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
             )}
           </a>
 
           <a
             href="/dostavka/"
             onClick={(e) => handleLinkClick(e, '/dostavka/')}
-            className="transition-colors relative py-1 text-[#5C454C] hover:text-[#8B1A2B]"
+            className="transition-colors relative py-1 text-[#5C454C] hover:text-[#922E3D]"
           >
             Доставка
           </a>
@@ -95,18 +95,18 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             onClick={(e) => handleLinkClick(e, '/cart/', 'cart')}
             className={`transition-colors relative py-1 flex items-center gap-1.5 ${
               activeTab === 'cart'
-                ? 'text-[#8B1A2B] font-semibold'
-                : 'text-[#5C454C] hover:text-[#8B1A2B]'
+                ? 'text-[#922E3D] font-semibold'
+                : 'text-[#5C454C] hover:text-[#922E3D]'
             }`}
           >
             <span>Корзина</span>
             {cartCount > 0 && (
-              <span className="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[11px] font-semibold flex items-center justify-center">
+              <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[11px] font-semibold flex items-center justify-center">
                 {cartCount}
               </span>
             )}
             {activeTab === 'cart' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B1A2B] rounded-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
             )}
           </a>
 
@@ -115,8 +115,8 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             onClick={(e) => handleLinkClick(e, '/profile/', 'profile')}
             className={`transition-colors relative py-1 flex items-center gap-1.5 ${
               activeTab === 'profile'
-                ? 'text-[#8B1A2B] font-semibold'
-                : 'text-[#5C454C] hover:text-[#8B1A2B]'
+                ? 'text-[#922E3D] font-semibold'
+                : 'text-[#5C454C] hover:text-[#922E3D]'
             }`}
           >
             <span>Личный кабинет</span>
@@ -126,7 +126,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
               </span>
             )}
             {activeTab === 'profile' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B1A2B] rounded-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
             )}
           </a>
         </nav>
@@ -136,11 +136,11 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
           <div className="flex items-center gap-2">
             <a
               href="tel:+79172563235"
-              className="w-10 h-10 rounded-xl bg-[#8B1A2B]/10 hover:bg-[#8B1A2B]/20 text-[#8B1A2B] transition-colors flex items-center justify-center active:scale-95 shadow-sm"
+              className="w-10 h-10 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] transition-colors flex items-center justify-center active:scale-95 shadow-sm"
               title="Позвонить в салон: +7 (917) 256-32-35"
               aria-label="Позвонить в салон"
             >
-              <Phone className="w-4 h-4 fill-[#8B1A2B]" />
+              <Phone className="w-4 h-4 fill-[#922E3D]" />
             </a>
 
             <a
@@ -159,7 +159,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
           <a
             href="/cart/"
             onClick={(e) => handleLinkClick(e, '/cart/', 'cart')}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm active:scale-95 cursor-pointer"
             title="Открыть корзину"
           >
             <div className="relative">

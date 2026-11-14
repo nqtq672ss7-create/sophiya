@@ -60,7 +60,7 @@ body {
 
   .bg-rose-texture-hero {
     position: relative;
-    background-color: #8B1A2B;
+    background-color: #922E3D;
   }
 }
 
@@ -75,26 +75,34 @@ body {
   --surface: #ffffff;
   --text: #1e0708;
   --muted: #5c494c;
-  --accent: #8B1A2B;
-  --accent-strong: #4f141b;
+  --accent: #922E3D;
+  --accent-strong: #611720;
   --line: #ddd3cd;
   --error: #a4262c;
 }
 
-/* Palette Overrides: Wine Red Identity (#8B1A2B) */
+/* Palette Overrides: Official Logo Brand Identity (#922E3D / #611720 / #AB6472) */
 .bg-\[\#6C1E26\],
-.bg-\[\#6c1e26\] {
-  background-color: #8B1A2B !important;
+.bg-\[\#6c1e26\],
+.bg-\[\#8B1A2B\],
+.bg-\[\#8b1a2b\] {
+  background-color: #922E3D !important;
 }
 .hover\:bg-\[\#5A121A\]:hover,
-.hover\:bg-\[\#5a121a\]:hover {
-  background-color: #731221 !important;
+.hover\:bg-\[\#5a121a\]:hover,
+.hover\:bg-\[\#731221\]:hover,
+.hover\:bg-\[\#731221\]:hover {
+  background-color: #611720 !important;
 }
 .text-\[\#6C1E26\],
-.text-\[\#6c1e26\] {
-  color: #8B1A2B !important;
+.text-\[\#6c1e26\],
+.text-\[\#8B1A2B\],
+.text-\[\#8b1a2b\] {
+  color: #922E3D !important;
 }
 .border-\[\#6C1E26\],
-.border-\[\#6c1e26\] {
-  border-color: #8B1A2B !important;
+.border-\[\#6c1e26\],
+.border-\[\#8B1A2B\],
+.border-\[\#8b1a2b\] {
+  border-color: #922E3D !important;
 }
