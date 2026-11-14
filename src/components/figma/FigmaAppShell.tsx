@@ -12,6 +12,7 @@ import { AuthModal } from '../auth/AuthModal';
 import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
 import { LegalModal, LegalDocTab } from '../legal/LegalModal';
 import { CookieConsentBanner } from '../legal/CookieConsentBanner';
+import { CartToast } from '../common/CartToast';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
@@ -34,6 +35,8 @@ export const FigmaAppShell: React.FC = () => {
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet|null>(null);
+  const [toastBouquet, setToastBouquet] = useState<Bouquet|null>(null);
+  const [isToastOpen, setIsToastOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAdminCrmOpen, setIsAdminCrmOpen] = useState(false);
   const [legalTab, setLegalTab] = useState<LegalDocTab|null>(null);
@@ -79,6 +82,9 @@ export const FigmaAppShell: React.FC = () => {
       }
       return [...prev, { bouquet, quantity: 1 }];
     });
+
+    setToastBouquet(bouquet);
+    setIsToastOpen(true);
   };
 
   const handleUpdateQuantity = (bouquetId: string, delta: number) => {
@@ -298,6 +304,14 @@ export const FigmaAppShell: React.FC = () => {
       </main>
 
       {/* 3. Modals & Overlays */}
+      {/* Floating Cart Toast Notification */}
+      <CartToast
+        bouquet={toastBouquet}
+        isOpen={isToastOpen}
+        onClose={() => setIsToastOpen(false)}
+        onNavigateToCart={() => handleNavigate('/cart/')}
+      />
+
       {/* Product Detail Modal */}
       <FigmaProductDetailModal
         bouquet={selectedBouquet}
