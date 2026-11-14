@@ -1,5 +1,5 @@
-export type BouquetCategory = 'Монобукеты' | 'Авторские' | 'Коробки' | 'Корзины' | (string & {});
-export type BouquetColor = 'Розовый' | 'Красный' | 'Белый' | 'Бордовый' | 'Персиковый' | (string & {});
+export type BouquetCategory = 'Монобукеты'|'Авторские'|'Коробки'|'Корзины'|(string & {});
+export type BouquetColor = 'Розовый'|'Красный'|'Белый'|'Бордовый'|'Персиковый'|(string & {});
 
 export interface Bouquet {
   id: string;
@@ -9,6 +9,7 @@ export interface Bouquet {
   color: BouquetColor;
   inStock: boolean;
   image: string;
+  images?: string[];
   hasRealPhoto?: boolean;
   tags?: string[];
   flowerTypes?: string[];

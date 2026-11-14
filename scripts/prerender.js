@@ -523,8 +523,8 @@ function generateSeoSectionHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 font-sans text-[#1C1215]">
         <div class="space-y-8 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm">
           <div class="space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
-              <span>Зоны и условия доставки в Нижнекамске</span>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
+              <span>Зоны и тарифы доставки в Нижнекамске</span>
             </div>
             <h2 class="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
               Курьерская доставка цветов по районам Нижнекамска
@@ -535,27 +535,36 @@ function generateSeoSectionHtml(route) {
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            <div class="p-5 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
-              <div class="text-xs font-bold text-[#6C1E26] uppercase tracking-wider">Зона 1: Центр и микрорайоны</div>
-              <h3 class="text-base font-semibold text-[#1C1215]">30–60 минут — 300 ₽</h3>
+            <div class="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 1: Центр</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">30–60 мин</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1C1215]">300 ₽ <span class="text-xs font-normal text-[#7C636B]">(бесплатно от 4 500 ₽)</span></h3>
               <p class="text-xs text-[#5C454C] leading-relaxed">
-                Пр. Шинников, пр. Мира, пр. Строителей, пр. Сююмбике, пр. Химиков, ул. Баки Урманче, ул. Чулман, ул. Табеева. При заказе от 4 500 ₽ доставка бесплатная.
+                Пр. Шинников, пр. Мира, пр. Строителей, пр. Сююмбике, пр. Химиков, ул. Баки Урманче, ул. Чулман, ул. Табеева.
               </p>
             </div>
 
-            <div class="p-5 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
-              <div class="text-xs font-bold text-[#6C1E26] uppercase tracking-wider">Зона 2: Пригородные посёлки</div>
-              <h3 class="text-base font-semibold text-[#1C1215]">45–75 минут — 450 ₽</h3>
+            <div class="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 2: Пригород</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">45–75 мин</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1C1215]">450 ₽</h3>
               <p class="text-xs text-[#5C454C] leading-relaxed">
-                Посёлок Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка. Курьер вручает букет лично в руки получателю.
+                Посёлок Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка. Вручение букета лично в руки.
               </p>
             </div>
 
-            <div class="p-5 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
-              <div class="text-xs font-bold text-[#6C1E26] uppercase tracking-wider">Зона 3: Предприятия и БСИ</div>
-              <h3 class="text-base font-semibold text-[#1C1215]">К точному часу — 500 ₽</h3>
+            <div class="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#8B1A2B] uppercase tracking-wider">Зона 3: Промзона</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1C1215]">500 ₽</h3>
               <p class="text-xs text-[#5C454C] leading-relaxed">
-                Промзона, БСИ, проходные заводов ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК. Пунктуальная подача к окончанию рабочей смены или корпоративу.
+                БСИ, проходные заводов ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК точно к окончанию смены или мероприятию.
               </p>
             </div>
           </div>
@@ -570,7 +579,7 @@ function generateSeoSectionHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 font-sans text-[#1C1215]">
         <div class="space-y-6 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm">
           <div class="space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
               <span>${route.breadcrumbLabel}</span>
             </div>
             <h2 class="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
@@ -589,9 +598,9 @@ function generateSeoSectionHtml(route) {
   return `
     <!-- Homepage 3-Column SEO Text: Delivery, Occasions, Flower Care (~400 words) -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-8 font-sans text-[#1C1215]">
-      <div class="space-y-12">
+      <div class="space-y-10">
         <div class="max-w-3xl space-y-3">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
             <span>Салон цветов «София» в Нижнекамске</span>
           </div>
           <h2 class="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
@@ -602,83 +611,128 @@ function generateSeoSectionHtml(route) {
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          <div class="bg-white rounded-xl border border-[#E5DDD9] p-6 shadow-sm space-y-4">
-            <h3 class="text-lg font-semibold text-[#1C1215] leading-snug">
-              Доставка цветов по районам города
-            </h3>
-            <p class="text-xs sm:text-sm text-[#5C454C] leading-relaxed">
-              Курьеры салона доставляют букеты ежедневно с 08:00 до 21:00. Средний интервал доставки составляет от 30 до 60 минут с момента сборки.
-            </p>
-            <ul class="space-y-2 text-xs text-[#5C454C] leading-relaxed list-none p-0">
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">Центр и жилые кварталы (300 ₽)</strong>
-                Пр. Шинников, Мира, Строителей, Сююмбике, Химиков, ул. Баки Урманче, Чулман, Табеева. При сумме заказа от 4 500 ₽ доставка бесплатна.
-              </li>
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">Пригородные посёлки (450 ₽)</strong>
-                Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка (45–75 минут).
-              </li>
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">Промзона и предприятия (500 ₽)</strong>
-                БСИ, проходные и корпуса ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК точно к назначенному времени.
-              </li>
-            </ul>
-            <p class="text-xs text-[#7C636B] leading-relaxed pt-1">
-              Цветы перевозятся в вертикальных аквабоксах с водой. Перед отправкой флорист отправляет контрольное фото букета в WhatsApp.
-            </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+          <div class="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-[#1C1215] leading-snug">
+                  Доставка цветов по районам города
+                </h3>
+                <span class="text-[11px] font-semibold tracking-wider uppercase text-[#8B1A2B] bg-[#8B1A2B]/10 px-3 py-1 rounded-md">
+                  08:00 – 21:00
+                </span>
+              </div>
+              <p class="text-xs text-[#5C454C] leading-relaxed">
+                Курьеры салона доставляют букеты ежедневно с интервалом от 30 до 60 минут с момента сборки.
+              </p>
+              <div class="space-y-2.5 pt-1">
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-bold text-[#1C1215]">Центр и жилые микрорайоны</div>
+                    <div class="text-[11px] text-[#7C636B] leading-tight">Шинников, Мира, Строителей, Сююмбике, Химиков</div>
+                  </div>
+                  <span class="text-xs font-bold text-[#8B1A2B] shrink-0">300 ₽</span>
+                </div>
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-bold text-[#1C1215]">Пригородные посёлки</div>
+                    <div class="text-[11px] text-[#7C636B] leading-tight">Красный Ключ, Большое и Нижнее Афанасово</div>
+                  </div>
+                  <span class="text-xs font-bold text-[#8B1A2B] shrink-0">450 ₽</span>
+                </div>
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-bold text-[#1C1215]">Промзона и предприятия</div>
+                    <div class="text-[11px] text-[#7C636B] leading-tight">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
+                  </div>
+                  <span class="text-xs font-bold text-[#8B1A2B] shrink-0">500 ₽</span>
+                </div>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-[#E5DDD9] text-[11px] text-[#7C636B]">
+              Бесплатная доставка при заказе от 4 500 ₽
+            </div>
           </div>
 
-          <div class="bg-white rounded-xl border border-[#E5DDD9] p-6 shadow-sm space-y-4">
-            <h3 class="text-lg font-semibold text-[#1C1215] leading-snug">
-              Букеты под любые поводы и события
-            </h3>
-            <p class="text-xs sm:text-sm text-[#5C454C] leading-relaxed">
-              Флористы салона «София» подбирают состав букета, цветовую палитру и упаковку под специфику вашего повода:
-            </p>
-            <ul class="space-y-2 text-xs text-[#5C454C] leading-relaxed list-none p-0">
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">День рождения и юбилей</strong>
-                Пышные сборные сеты с французскими розами, гортензиями, эустомой, а также монобукеты из 25, 51 или 101 розы.
-              </li>
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">Свадьба и поздравление молодоженов</strong>
-                Букеты невесты, бутоньерки жениха и подарочные композиции в шляпных коробках в светлой пастельной гамме.
-              </li>
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">8 Марта и 14 Февраля</strong>
-                Сортовые тюльпаны, весенняя мимоза, алые эквадорские розы сортов Explorer и Red Naomi с открыткой-признанием.
-              </li>
-            </ul>
-            <p class="text-xs text-[#7C636B] leading-relaxed pt-1">
-              Также собираем компактные букеты ко Дню знаний (1 Сентября), Дню матери, Дню учителя и лаконичные комплименты без повода.
-            </p>
+          <div class="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-[#1C1215] leading-snug">
+                  Букеты под любые поводы и события
+                </h3>
+                <span class="text-[11px] font-semibold tracking-wider uppercase text-[#8B1A2B] bg-[#8B1A2B]/10 px-3 py-1 rounded-md">
+                  Под любой повод
+                </span>
+              </div>
+              <p class="text-xs text-[#5C454C] leading-relaxed">
+                Шеф-флористы «Софии» подбирают сортовой состав, гамму и упаковку под атмосферу события:
+              </p>
+              <div class="space-y-2.5 pt-1">
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] space-y-1">
+                  <div class="text-xs font-bold text-[#1C1215]">День рождения & Юбилей</div>
+                  <p class="text-[11px] text-[#7C636B] leading-tight">
+                    Пышные сеты с французскими розами, гортензиями, а также монобукеты из 25, 51 или 101 розы.
+                  </p>
+                </div>
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] space-y-1">
+                  <div class="text-xs font-bold text-[#1C1215]">Свадьба & Поздравление</div>
+                  <p class="text-[11px] text-[#7C636B] leading-tight">
+                    Букеты невесты, бутоньерки жениха и подарочные шляпные коробки в светлой пастельной гамме.
+                  </p>
+                </div>
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] space-y-1">
+                  <div class="text-xs font-bold text-[#1C1215]">8 Марта & 14 Февраля</div>
+                  <p class="text-[11px] text-[#7C636B] leading-tight">
+                    Сортовые тюльпаны, мимоза, алые эквадорские розы Explorer и Red Naomi с фирменной открыткой.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-[#E5DDD9] text-[11px] text-[#7C636B]">
+              Фото собранной композиции в WhatsApp до выезда
+            </div>
           </div>
 
-          <div class="bg-white rounded-xl border border-[#E5DDD9] p-6 shadow-sm space-y-4">
-            <h3 class="text-lg font-semibold text-[#1C1215] leading-snug">
-              Памятка по уходу за срезанными цветами
-            </h3>
-            <p class="text-xs sm:text-sm text-[#5C454C] leading-relaxed">
-              Соблюдение пяти базовых правил позволяет продлить стойкость цветов в домашней вазе от 10 до 14 дней:
-            </p>
-            <ul class="space-y-2 text-xs text-[#5C454C] leading-relaxed list-none p-0">
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">1. Косой срез под 45°</strong>
-                Перед погружением в воду срежьте стебли на 1,5–2 см чистым острым ножом или секатором. Ножницы пережимают капилляры.
-              </li>
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">2. Чистая вода и Chrysal</strong>
-                Используйте прохладную воду. Растворите пакетик подкормки Chrysal, который прилагается в подарок к заказу.
-              </li>
-              <li class="p-2.5 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9]">
-                <strong class="text-[#1C1215] block mb-0.5">3. Удаление нижних листьев</strong>
-                Снимите со стебля все листья, соприкасающиеся с водой, чтобы предотвратить гниение и размножение бактерий.
-              </li>
-            </ul>
-            <p class="text-xs text-[#7C636B] leading-relaxed pt-1">
-              Не ставьте вазу рядом с батареями отопления, на сквозняках и около спелых фруктов. Меняйте воду каждые 24–48 часов.
-            </p>
+          <div class="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-[#1C1215] leading-snug">
+                  Памятка по уходу за срезанными цветами
+                </h3>
+                <span class="text-[11px] font-semibold tracking-wider uppercase text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md">
+                  10–14 дней
+                </span>
+              </div>
+              <p class="text-xs text-[#5C454C] leading-relaxed">
+                Соблюдение четырёх простых правил продлит радость от цветов в вазе до двух недель:
+              </p>
+              <div class="space-y-2.5 pt-1">
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
+                  <span class="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-bold text-[#1C1215]">Косой срез под 45°</div>
+                    <p class="text-[11px] text-[#7C636B] leading-tight">Срежьте стебли на 1,5–2 см острым ножом перед постановкой в воду.</p>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
+                  <span class="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-bold text-[#1C1215]">Чистая вода и Chrysal</div>
+                    <p class="text-[11px] text-[#7C636B] leading-tight">Используйте прохладную воду и пакетик Chrysal, прилагаемый в подарок.</p>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
+                  <span class="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                  <div class="space-y-0.5">
+                    <div class="text-xs font-bold text-[#1C1215]">Снятие нижних листьев</div>
+                    <p class="text-[11px] text-[#7C636B] leading-tight">Удалите листву в воде, чтобы вода не зацветала и оставалась прозрачной.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-[#E5DDD9] text-[11px] text-[#7C636B]">
+              Подкормка Chrysal бесплатно к каждому букету
+            </div>
           </div>
         </div>
       </div>
@@ -693,7 +747,7 @@ function generatePreRenderedHtml(route) {
     <nav aria-label="Хлебные крошки" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2 text-xs text-[#7C636B] font-sans" itemscope itemtype="https://schema.org/BreadcrumbList">
       <ol class="flex items-center gap-2 list-none p-0 m-0">
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="flex items-center gap-2">
-          <a href="/" itemprop="item" class="hover:text-[#6C1E26] text-[#5C454C] transition-colors">
+          <a href="/" itemprop="item" class="hover:text-[#8B1A2B] text-[#5C454C] transition-colors">
             <span itemprop="name">Главная</span>
           </a>
           <meta itemprop="position" content="1" />
@@ -715,43 +769,43 @@ function generatePreRenderedHtml(route) {
       const imageSrc = b.image || '/bouquet-placeholder.svg';
       const hasReal = b.hasRealPhoto ?? (imageSrc && !imageSrc.includes('placeholder'));
       return `
-      <article class="bg-white rounded-xl border border-white/10 overflow-hidden shadow-sm hover:shadow-xl transition-colors duration-300 flex flex-col justify-between" itemscope itemtype="https://schema.org/Product" id="product-${b.id}">
-        <div class="relative overflow-hidden aspect-auto bg-white/5">
+      <article class="bg-white rounded-xl border border-[#E5DDD9] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between" itemscope itemtype="https://schema.org/Product" id="product-${b.id}">
+        <div class="relative overflow-hidden aspect-square bg-[#FAF7F5]">
           <img
             src="${imageSrc}"
             alt="${b.title} в Нижнекамске — салон цветов София"
             width="400"
-            height="500"
+            height="400"
             loading="lazy"
             class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             itemprop="image"
           />
-          <div class="absolute top-3 left-3 bg-[#6C1E26]/90  text-white text-[11px] font-medium px-2.5 py-1 rounded-xl">
+          <div class="absolute top-2.5 left-2.5 bg-[#8B1A2B] text-white text-[10px] font-medium px-2 py-0.5 rounded-md">
             ${b.category}
           </div>
         </div>
-        <div class="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+        <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs text-[#9C828B] font-light mb-1">
+            <div class="flex items-center justify-between text-xs text-[#7C636B] font-light mb-1">
               <span>${flowersCount}</span>
               <span>${height}</span>
             </div>
-            <h3 class="font-sans font-medium text-lg sm:text-xl text-[#1C1215] font-medium leading-snug mb-2" itemprop="name">
+            <h3 class="font-sans text-base text-[#1C1215] font-semibold leading-snug mb-1.5 line-clamp-1" itemprop="name">
               ${b.title}
             </h3>
-            <p class="text-xs text-[#5C454C] font-light line-clamp-2 mb-4" itemprop="description">
+            <p class="text-xs text-[#5C454C] font-light line-clamp-2 mb-3" itemprop="description">
               ${b.description || 'Авторский букет из свежих цветов салона «София».'}
             </p>
           </div>
           <div>
-            <div class="flex items-baseline justify-between pt-3 border-t border-white/5 mb-4" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <div class="flex items-baseline justify-between pt-2.5 border-t border-[#E5DDD9] mb-3" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
               <link itemprop="availability" href="${b.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'}" />
               <meta itemprop="priceCurrency" content="RUB" />
               <meta itemprop="price" content="${b.price}" />
-              <span class="font-sans font-medium text-2xl font-bold text-[#6C1E26]">
+              <span class="font-sans text-xl font-bold text-[#8B1A2B]">
                 ${Number(b.price).toLocaleString('ru-RU')} ₽
               </span>
-              <span class="text-[11px] ${b.inStock ? 'text-emerald-700 bg-emerald-50' : 'text-[#5C454C] bg-white/5'} px-2 py-0.5 rounded-xl font-medium">
+              <span class="text-[10px] ${b.inStock ? 'text-emerald-700 bg-emerald-50' : 'text-[#5C454C] bg-[#FAF7F5]'} px-2 py-0.5 rounded-md font-medium">
                 ${b.inStock ? 'В наличии' : 'Под заказ'}
               </span>
             </div>
@@ -759,9 +813,9 @@ function generatePreRenderedHtml(route) {
               href="https://wa.me/79172563235?text=${encodeURIComponent(`Здравствуйте! Хочу заказать букет «${b.title}» (${b.price} ₽) с доставкой в Нижнекамске.`)}"
               target="_blank"
               rel="noopener noreferrer"
-              class="w-full py-3 px-4 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs sm:text-sm text-center block transition-colors shadow-md active:scale-95"
+              class="w-full py-2.5 px-4 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white font-medium text-xs text-center block transition-colors shadow-sm active:scale-95"
             >
-              Заказать с доставкой
+              Заказать в WhatsApp
             </a>
           </div>
         </div>
@@ -781,7 +835,7 @@ function generatePreRenderedHtml(route) {
             href="https://wa.me/79172563235?text=${encodeURIComponent(`Здравствуйте! Хочу уточнить наличие цветов в категории «${route.breadcrumbLabel}» в Нижнекамске.`)}"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-block py-3 px-6 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-xs sm:text-sm transition-colors shadow-md active:scale-95"
+            class="inline-block py-3 px-6 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white font-medium text-xs sm:text-sm transition-colors shadow-md active:scale-95"
           >
             Написать флористу в WhatsApp
           </a>
@@ -807,7 +861,7 @@ function generatePreRenderedHtml(route) {
   const categoryChipsHtml = navCategories.map(c => `
     <a
       href="${c.href}"
-      class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#6C1E26] text-white shadow-sm font-semibold' : 'bg-white/90 text-[#3D2C31] hover:bg-white border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
+      class="px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 whitespace-nowrap ${route.path === c.href ? 'bg-[#8B1A2B] text-white shadow-sm font-semibold' : 'bg-white/90 text-[#3D2C31] hover:bg-white border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]'}"
     >
       ${c.label}
     </a>
@@ -816,7 +870,7 @@ function generatePreRenderedHtml(route) {
   const catalogTitle = route.path === '/' ? 'Каталог букетов' : `Каталог: ${route.breadcrumbLabel}`;
 
   return `
-    <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#6C1E26] selection:text-white font-sans">
+    <div class="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#8B1A2B] selection:text-white font-sans">
       <!-- 2. Header -->
       <header class="w-full bg-[#FAF7F5]/95  border-b border-white/10 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
@@ -824,12 +878,12 @@ function generatePreRenderedHtml(route) {
             <img src="/logo.png" alt="Салон цветов София" width="160" height="60" class="h-14 sm:h-18 w-auto object-contain" />
           </a>
           <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
-            <a href="/" class="hover:text-[#6C1E26] text-[#3D2C31]">Каталог</a>
-            <a href="/dostavka/" class="hover:text-[#6C1E26] text-[#3D2C31]">Доставка</a>
-            <a href="/cart/" class="hover:text-[#6C1E26] text-[#3D2C31]">Корзина</a>
-            <a href="/profile/" class="hover:text-[#6C1E26] text-[#3D2C31]">Личный кабинет</a>
+            <a href="/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Каталог</a>
+            <a href="/dostavka/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Доставка</a>
+            <a href="/cart/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Корзина</a>
+            <a href="/profile/" class="hover:text-[#8B1A2B] text-[#3D2C31]">Личный кабинет</a>
           </nav>
-          <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#6C1E26] text-white text-xs font-semibold shadow hover:bg-[#5A121A]">
+          <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#8B1A2B] text-white text-xs font-semibold shadow hover:bg-[#731221]">
             <span></span>
             <span>+7 (917) 256-32-35</span>
           </a>
@@ -880,7 +934,7 @@ function generatePreRenderedHtml(route) {
           </span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           ${bouquetsCardsHtml}
         </div>
       </main>
@@ -923,7 +977,7 @@ function generatePreRenderedHtml(route) {
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
               <div class="space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#6C1E26]/10 text-[#6C1E26] text-xs font-semibold">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#8B1A2B]/10 text-[#8B1A2B] text-xs font-semibold">
                   <span> Салон в Нижнекамске</span>
                 </div>
                 <h2 class="font-sans font-medium text-2xl sm:text-3xl text-[#1C1215] font-normal leading-tight">
@@ -943,12 +997,12 @@ function generatePreRenderedHtml(route) {
                   </div>
                   <div>
                     <span class="font-medium text-[#1C1215] block">Телефон:</span>
-                    <a href="tel:+79172563235" class="text-[#6C1E26] font-medium">+7 (917) 256-32-35</a>
+                    <a href="tel:+79172563235" class="text-[#8B1A2B] font-medium">+7 (917) 256-32-35</a>
                   </div>
                 </div>
               </div>
               <div class="pt-4 border-t border-white/5 flex flex-wrap gap-3">
-                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#6C1E26] text-white font-medium text-xs sm:text-sm text-center inline-block">
+                <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#8B1A2B] text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Построить маршрут
                 </a>
                 <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">

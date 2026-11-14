@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShoppingBag, Phone } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { useAuth } from '../../context/AuthContext';
+import { WhatsAppIcon } from '../common/WhatsAppIcon';
 
 interface FigmaDesktopHeaderProps {
   activeTab: FigmaTab;
@@ -71,20 +72,20 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             onClick={(e) => handleLinkClick(e, '/', 'catalog')}
             className={`transition-colors relative py-1 ${
               activeTab === 'catalog'
-                ? 'text-[#6C1E26] font-semibold'
-                : 'text-[#5C454C] hover:text-[#6C1E26]'
+                ? 'text-[#8B1A2B] font-semibold'
+                : 'text-[#5C454C] hover:text-[#8B1A2B]'
             }`}
           >
             Каталог
             {activeTab === 'catalog' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6C1E26] rounded-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B1A2B] rounded-sm" />
             )}
           </a>
 
           <a
             href="/dostavka/"
             onClick={(e) => handleLinkClick(e, '/dostavka/')}
-            className="transition-colors relative py-1 text-[#5C454C] hover:text-[#6C1E26]"
+            className="transition-colors relative py-1 text-[#5C454C] hover:text-[#8B1A2B]"
           >
             Доставка
           </a>
@@ -94,18 +95,18 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             onClick={(e) => handleLinkClick(e, '/cart/', 'cart')}
             className={`transition-colors relative py-1 flex items-center gap-1.5 ${
               activeTab === 'cart'
-                ? 'text-[#6C1E26] font-semibold'
-                : 'text-[#5C454C] hover:text-[#6C1E26]'
+                ? 'text-[#8B1A2B] font-semibold'
+                : 'text-[#5C454C] hover:text-[#8B1A2B]'
             }`}
           >
             <span>Корзина</span>
             {cartCount > 0 && (
-              <span className="w-5 h-5 rounded-md bg-[#6C1E26] text-white text-[11px] font-semibold flex items-center justify-center">
+              <span className="w-5 h-5 rounded-md bg-[#8B1A2B] text-white text-[11px] font-semibold flex items-center justify-center">
                 {cartCount}
               </span>
             )}
             {activeTab === 'cart' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6C1E26] rounded-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B1A2B] rounded-sm" />
             )}
           </a>
 
@@ -114,8 +115,8 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             onClick={(e) => handleLinkClick(e, '/profile/', 'profile')}
             className={`transition-colors relative py-1 flex items-center gap-1.5 ${
               activeTab === 'profile'
-                ? 'text-[#6C1E26] font-semibold'
-                : 'text-[#5C454C] hover:text-[#6C1E26]'
+                ? 'text-[#8B1A2B] font-semibold'
+                : 'text-[#5C454C] hover:text-[#8B1A2B]'
             }`}
           >
             <span>Личный кабинет</span>
@@ -125,39 +126,40 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
               </span>
             )}
             {activeTab === 'profile' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6C1E26] rounded-sm" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#8B1A2B] rounded-sm" />
             )}
           </a>
         </nav>
 
-        {/* 3. Right: Clean Contacts & Actions */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden sm:flex items-center gap-3">
+        {/* 3. Right: Clean Contacts & Actions (Phone & WhatsApp as Icons) */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2">
             <a
               href="tel:+79172563235"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#6C1E26]/10 hover:bg-[#6C1E26]/15 text-[#6C1E26] transition-colors text-xs sm:text-sm font-semibold active:scale-95 shadow-sm"
-              title="Позвонить в салон цветов"
+              className="w-10 h-10 rounded-xl bg-[#8B1A2B]/10 hover:bg-[#8B1A2B]/20 text-[#8B1A2B] transition-colors flex items-center justify-center active:scale-95 shadow-sm"
+              title="Позвонить в салон: +7 (917) 256-32-35"
+              aria-label="Позвонить в салон"
             >
-              <Phone className="w-3.5 h-3.5 fill-[#6C1E26]" />
-              <span>Позвоните нам</span>
+              <Phone className="w-4 h-4 fill-[#8B1A2B]" />
             </a>
 
             <a
               href="https://wa.me/79172563235"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 py-2 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-700 transition-colors text-xs sm:text-sm font-semibold active:scale-95"
+              className="w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center active:scale-95 shadow-sm"
               title="Написать в WhatsApp"
+              aria-label="Написать в WhatsApp"
             >
-              WhatsApp
+              <WhatsAppIcon className="w-5 h-5 fill-current" />
             </a>
           </div>
 
-          {/* Quick Cart Button */}
+          {/* Quick Cart Button (Remains as is) */}
           <a
             href="/cart/"
             onClick={(e) => handleLinkClick(e, '/cart/', 'cart')}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#8B1A2B] hover:bg-[#731221] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm active:scale-95 cursor-pointer"
             title="Открыть корзину"
           >
             <div className="relative">
