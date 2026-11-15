@@ -831,7 +831,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 className="p-3.5 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Добавить букет</span>
+                <span>Добавить букет</span>
               </button>
             </div>
 
@@ -1219,32 +1219,6 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 <Download className="w-3.5 h-3.5 text-[#C5A880]" />
                 <span className="hidden sm:inline">Бэкап</span>
               </button>
-
-              {bouquets.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (true) {
-                      clearAllBouquets();
-                    }
-                  }}
-                  className="px-3.5 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 text-red-200 text-xs transition-colors shrink-0 flex items-center gap-1.5"
-                  title="Очистить все демо-букеты"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Очистить демо</span>
-                </button>
-              )}
-
-              {bouquets.length === 0 && (
-                <button
-                  type="button"
-                  onClick={resetToDefault}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#2A181C] hover:bg-white/10 border border-white/20 text-white/70 text-xs transition-colors shrink-0"
-                >
-                  Восстановить демо
-                </button>
-              )}
             </div>
 
             {/* Bouquets Table / Cards */}
