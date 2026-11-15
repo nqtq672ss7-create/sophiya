@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, AlertCircle, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, AlertCircle, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw, Pencil } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
@@ -18,7 +18,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   onClose,
 }) => {
   const { allCustomers, refreshCustomers } = useAuth();
-  const { bouquets, addBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog, refreshCatalog } = useCatalog();
+  const { bouquets, addBouquet, updateBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog, refreshCatalog } = useCatalog();
   const { reviews, publishedReviews, pendingReviews, addReview, deleteReview, togglePublished, moderateReview, refreshReviews, refreshPending } = useReviews();
 
   // Security Gate Server Auth State
@@ -107,6 +107,37 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [newImage, setNewImage] = useState('/bouquet-1.jpg');
   const [imageCompressionNotice, setImageCompressionNotice] = useState<string>('');
   const [isSavingBouquet, setIsSavingBouquet] = useState(false);
+
+  // Edit Bouquet Form State
+  const [editingBouquet, setEditingBouquet] = useState<Bouquet|null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editPrice, setEditPrice] = useState<number|''>('');
+  const [editCategory, setEditCategory] = useState<'Монобукеты'|'Авторские'|'Коробки'|'Корзины'>('Авторские');
+  const [editColor, setEditColor] = useState('Розовый');
+  const [editHeight, setEditHeight] = useState('50 см');
+  const [editComposition, setEditComposition] = useState('');
+  const [editDurability, setEditDurability] = useState('10-14 дней');
+  const [editPackaging, setEditPackaging] = useState('Фирменная дизайнерская упаковка «София»');
+  const [editDescription, setEditDescription] = useState('');
+  const [editImage, setEditImage] = useState('/bouquet-1.jpg');
+  const [editCompressionNotice, setEditCompressionNotice] = useState<string>('');
+  const [isUpdatingBouquet, setIsUpdatingBouquet] = useState(false);
+
+  const handleStartEdit = (b: Bouquet) => {
+    setEditingBouquet(b);
+    setEditTitle(b.title);
+    setEditPrice(b.price);
+    setEditCategory((b.category as any) || 'Авторские');
+    setEditColor((b.color as any) || 'Розовый');
+    setEditHeight(b.characteristics?.height || '50 см');
+    setEditComposition(b.characteristics?.flowersCount || '');
+    setEditDurability(b.characteristics?.durability || '10-14 дней');
+    setEditPackaging(b.characteristics?.packaging || 'Фирменная дизайнерская упаковка «София»');
+    setEditDescription(b.description || '');
+    setEditImage(b.image || '/bouquet-1.jpg');
+    setEditCompressionNotice('');
+    setIsAddBouquetOpen(false);
+  };
 
   // New Review Form State
   const [reviewAuthor, setReviewAuthor] = useState('');
@@ -297,6 +328,97 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       triggerError('Не удалось сохранить в облако. Проверьте интернет или повторите попытку.');
     } finally {
       setIsSavingBouquet(false);
+    }
+  };
+
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditCompressionNotice('Оптимизация изображения...');
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          const rawResult = reader.result;
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              const maxDim = 900;
+              let width = img.width;
+              let height = img.height;
+              if (width > height) {
+                if (width > maxDim) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                }
+              } else {
+                if (height > maxDim) {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, width, height);
+                let compressed = canvas.toDataURL('image/webp', 0.80);
+                if (!compressed.startsWith('data:image/webp')) {
+                  compressed = canvas.toDataURL('image/jpeg', 0.78);
+                }
+                if (compressed.length > 400000) {
+                  compressed = canvas.toDataURL('image/jpeg', 0.65);
+                }
+                const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
+                setEditCompressionNotice(`✓ Новое фото готово (~${approxKb} КБ)`);
+                setEditImage(compressed);
+              } else {
+                setEditImage(rawResult);
+                setEditCompressionNotice('');
+              }
+            } catch {
+              setEditImage(rawResult);
+              setEditCompressionNotice('');
+            }
+          };
+          img.onerror = () => {
+            setEditImage(rawResult);
+            setEditCompressionNotice('');
+          };
+          img.src = rawResult;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveBouquetEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBouquet || !editTitle.trim() || !editPrice || isUpdatingBouquet) return;
+
+    setIsUpdatingBouquet(true);
+    try {
+      await updateBouquet(editingBouquet.id, {
+        title: editTitle.trim(),
+        price: Number(editPrice),
+        category: editCategory,
+        color: editColor,
+        image: editImage,
+        description: editDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
+        characteristics: {
+          height: editHeight.trim() || '50 см',
+          flowersCount: editComposition.trim() || 'Отборные сортовые цветы',
+          durability: editDurability.trim() || '10-14 дней',
+          packaging: editPackaging.trim() || 'Фирменная дизайнерская упаковка «София»',
+        },
+      });
+
+      triggerSuccess(`Букет «${editTitle.trim()}» успешно обновлен на сайте!`);
+      setEditingBouquet(null);
+    } catch {
+      triggerError('Не удалось обновить букет в облачной базе. Попробуйте еще раз.');
+    } finally {
+      setIsUpdatingBouquet(false);
     }
   };
 
@@ -693,6 +815,170 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               </form>
             )}
 
+            {/* Edit Bouquet Form (Collapsible / Focused) */}
+            {editingBouquet && (
+              <form onSubmit={handleSaveBouquetEdit} className="mb-6 p-5 rounded-xl bg-[#201014] border-2 border-[#C5A880]/80 shadow-2xl space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between pb-3 border-b border-[#C5A880]/30">
+                  <div className="flex items-center gap-2">
+                    <Pencil className="w-4 h-4 text-[#C5A880]" />
+                    <h4 className="font-sans font-medium text-lg text-[#FAF7F5]">
+                      Редактирование: <span className="text-[#C5A880]">«{editingBouquet.title}»</span>
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingBouquet(null)}
+                    className="text-xs text-white/60 hover:text-white px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Название букета *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Например: Букет 11 красных роз"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-[#C5A880] mb-1 font-semibold">Стоимость (₽) *</label>
+                    <input
+                      type="number"
+                      required
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(Number(e.target.value) || '')}
+                      placeholder="9500"
+                      className="w-full px-3 py-2 bg-white/15 border border-[#C5A880]/60 rounded-xl text-sm font-semibold text-[#FAF7F5] focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Категория</label>
+                    <select
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value as any)}
+                      className="w-full px-3 py-2 bg-[#2C1F22] border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                    >
+                      <option value="Монобукеты">Монобукеты</option>
+                      <option value="Авторские">Авторские</option>
+                      <option value="Коробки">Коробки</option>
+                      <option value="Корзины">Корзины</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Состав и количество цветов *</label>
+                    <input
+                      type="text"
+                      value={editComposition}
+                      onChange={(e) => setEditComposition(e.target.value)}
+                      placeholder="Например: 11 красных роз Red Naomi + эвкалипт"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                    />
+                    <span className="block text-[10px] text-white/40 mt-0.5">Меняйте количество при смене объема букета</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Высота / Размер</label>
+                    <input
+                      type="text"
+                      value={editHeight}
+                      onChange={(e) => setEditHeight(e.target.value)}
+                      placeholder="50 см"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Стойкость цветов</label>
+                    <input
+                      type="text"
+                      value={editDurability}
+                      onChange={(e) => setEditDurability(e.target.value)}
+                      placeholder="10-14 дней"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+                </div>
+
+                {/* Photo Replace & Preview */}
+                <div className="p-3 rounded-xl bg-black/30 border border-white/10">
+                  <label className="block text-[11px] text-white/70 mb-2 font-medium">Фотография букета</label>
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={editImage}
+                      alt="Превью букета"
+                      className="w-20 h-20 rounded-xl object-cover border-2 border-[#C5A880]/50 bg-[#2A181C] shrink-0 shadow-md"
+                    />
+
+                    <div className="flex-1">
+                      <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-xs text-white inline-flex items-center gap-2 transition-colors">
+                        <ImageIcon className="w-4 h-4 text-[#C5A880]" />
+                        <span className="font-medium">Заменить фото букета (JPG / PNG)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleEditImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                      {editCompressionNotice ? (
+                        <span className="block text-[11px] text-emerald-400 font-medium mt-1.5">
+                          {editCompressionNotice}
+                        </span>
+                      ) : (
+                        <span className="block text-[10px] text-white/40 mt-1">
+                          Загрузите новое фото: оно автоматически оптимизируется для сайта
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-white/70 mb-1 font-medium">Описание для покупателя</label>
+                  <textarea
+                    rows={2}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="Расскажите о сорте, аромате или поводе для подарка..."
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                  <span className="text-[11px] text-white/50">
+                    ID позиции: <code className="text-[#C5A880]">{editingBouquet.id}</code>
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setEditingBouquet(null)}
+                      className="px-4 py-2 rounded-xl text-xs text-white/60 hover:text-white cursor-pointer"
+                    >
+                      Отмена
+                    </button>
+                    <button
+                      disabled={isUpdatingBouquet}
+                      className="px-6 py-2.5 rounded-xl bg-[#8E2433] hover:bg-[#A32B3C] text-white text-xs font-semibold shadow-lg disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>{isUpdatingBouquet ? 'Сохранение в облако...' : 'Сохранить изменения'}</span>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
             {/* Search Input & Bulk Actions */}
             <div className="flex items-center gap-3 mb-4">
               <div className="relative flex-1">
@@ -793,7 +1079,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               {filteredBouquets.map((b) => (
                 <div
                   key={b.id}
-                  className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors"
+                  className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors ${
+                    editingBouquet?.id === b.id
+                      ? 'bg-[#2A1218] border-[#C5A880] shadow-lg'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -815,10 +1105,24 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
                     <span className="font-sans font-medium text-lg text-[#C5A880] font-semibold">
                       {b.price.toLocaleString('ru-RU')} ₽
                     </span>
+
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => handleStartEdit(b)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                        editingBouquet?.id === b.id
+                          ? 'bg-[#C5A880] text-[#1C1215] font-semibold shadow'
+                          : 'bg-white/10 hover:bg-white/20 border border-white/15 text-white/90 hover:text-white hover:border-[#C5A880]/50'
+                      }`}
+                      title="Редактировать букет (цена, фото, состав, объем)"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-[#C5A880]" />
+                      <span>Изменить</span>
+                    </button>
 
                     {/* Stock Status Toggle */}
                     <button
@@ -836,12 +1140,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     {/* Delete */}
                     <button
                       onClick={async () => {
-                        if (true) {
-                          await deleteBouquet(b.id);
-                          setSuccessNotice(`Букет «${b.title}» удален со всех устройств`);
-                          setIsSuccessMessage(true);
-                          setTimeout(() => setIsSuccessMessage(false), 2500);
-                        }
+                        await deleteBouquet(b.id);
+                        triggerSuccess(`Букет «${b.title}» удален со всех устройств`);
                       }}
                       className="p-2 text-white/40 hover:text-red-400 transition-colors cursor-pointer"
                       title="Удалить позицию"
