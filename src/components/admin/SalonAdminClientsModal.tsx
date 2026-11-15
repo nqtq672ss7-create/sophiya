@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, AlertCircle, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
@@ -25,13 +25,44 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  const isTokenExpired = (token: string|null): boolean => {
+    if (!token) return true;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 2) return true;
+      const base64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+      if (payload.exp && Date.now() > payload.exp) {
+        return true;
+      }
+      return false;
+    } catch {
+      return true;
+    }
+  };
+
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
     try {
-      return Boolean(sessionStorage.getItem('sophiya_admin_token'));
+      const token = sessionStorage.getItem('sophiya_admin_token');
+      if (!token || isTokenExpired(token)) {
+        sessionStorage.removeItem('sophiya_admin_token');
+        return false;
+      }
+      return true;
     } catch {
       return false;
     }
   });
+
+  useEffect(() => {
+    const handleExpired = () => {
+      setIsUnlocked(false);
+      setPinError('Время сессии истекло. Пожалуйста, введите пароль снова.');
+    };
+    window.addEventListener('sophiya_admin_session_expired', handleExpired);
+    return () => window.removeEventListener('sophiya_admin_session_expired', handleExpired);
+  }, []);
 
   useEffect(() => {
     if (isUnlocked) {
@@ -44,6 +75,24 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddBouquetOpen, setIsAddBouquetOpen] = useState(false);
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+
+  // Notifications State
+  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
+  const [successNotice, setSuccessNotice] = useState('');
+  const [isErrorMessage, setIsErrorMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const triggerSuccess = (msg: string) => {
+    setSuccessNotice(msg);
+    setIsSuccessMessage(true);
+    setTimeout(() => setIsSuccessMessage(false), 4000);
+  };
+
+  const triggerError = (msg: string) => {
+    setErrorMessage(msg);
+    setIsErrorMessage(true);
+    setTimeout(() => setIsErrorMessage(false), 6000);
+  };
 
   // New Bouquet Form State
   const [newTitle, setNewTitle] = useState('');
@@ -67,9 +116,6 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [reviewComment, setReviewComment] = useState('');
   const [reviewIsVerified, setReviewIsVerified] = useState(true);
   const [reviewIsPublished, setReviewIsPublished] = useState(true);
-
-  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
-  const [successNotice, setSuccessNotice] = useState('');
 
   const handleUnlock = async (e?: React.FormEvent, bypassPin?: string) => {
     if (e) e.preventDefault();
@@ -246,13 +292,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       setNewComposition('');
       setNewDescription('');
       setIsAddBouquetOpen(false);
-      setSuccessNotice('Новый букет успешно добавлен и синхронизирован со всеми устройствами!');
-      setIsSuccessMessage(true);
-      setTimeout(() => setIsSuccessMessage(false), 3000);
+      triggerSuccess('Новый букет успешно добавлен и синхронизирован со всеми устройствами!');
     } catch {
-      setSuccessNotice('Ошибка при сохранении в облако. Попробуйте еще раз.');
-      setIsSuccessMessage(true);
-      setTimeout(() => setIsSuccessMessage(false), 4000);
+      triggerError('Не удалось сохранить в облако. Проверьте интернет или повторите попытку.');
     } finally {
       setIsSavingBouquet(false);
     }
@@ -456,9 +498,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         </div>
 
         {isSuccessMessage && (
-          <div className="mt-3 p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="mt-3 p-3 bg-emerald-950/70 border border-emerald-500/50 text-emerald-200 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{successNotice || 'Действие успешно выполнено!'}</span>
+          </div>
+        )}
+
+        {isErrorMessage && (
+          <div className="mt-3 p-3 bg-[#3A0A10]/80 border border-[#8E2433] text-rose-200 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{errorMessage || 'Произошла ошибка при выполнении операции.'}</span>
           </div>
         )}
 

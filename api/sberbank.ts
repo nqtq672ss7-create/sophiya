@@ -1,21 +1,34 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const ALLOWED_ORIGINS = [
-  'https://xn----ctbjn3arftl7c8b.xn--p1ai',
-  'https://цветы-софия.рф',
-  'https://sitesophiya.vercel.app',
-];
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  let decoded = origin;
+  try {
+    decoded = decodeURI(origin);
+  } catch {}
+
+  const clean = decoded.toLowerCase().trim().replace(/\/+$/, '');
+  const raw = origin.toLowerCase().trim().replace(/\/+$/, '');
+
+  const allowedPatterns = [
+    /^https?:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai(:[0-9]+)?$/,
+    /^https?:\/\/(www\.)?цветы-софия\.рф(:[0-9]+)?$/,
+    /^https?:\/\/sitesophiya\.vercel\.app(:[0-9]+)?$/,
+    /^https?:\/\/localhost(:[0-9]+)?$/,
+    /^https?:\/\/127\.0\.0\.1(:[0-9]+)?$/,
+  ];
+
+  return allowedPatterns.some((pattern) => pattern.test(clean) || pattern.test(raw));
+}
 
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin as string;
-  if (origin) {
-    if (ALLOWED_ORIGINS.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      res.setHeader('Access-Control-Allow-Origin', 'null');
-    }
-  } else {
+  if (origin && isAllowedOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
     res.setHeader('Access-Control-Allow-Origin', '*');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'null');
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');

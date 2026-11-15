@@ -73,6 +73,12 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         headers,
         body: JSON.stringify(items),
       });
+
+      if (res.status === 401 && typeof window !== 'undefined') {
+        sessionStorage.removeItem('sophiya_admin_token');
+        window.dispatchEvent(new CustomEvent('sophiya_admin_session_expired'));
+      }
+
       return res.ok;
     } catch (e) {
       console.error('Failed to sync catalog to cloud:', e);

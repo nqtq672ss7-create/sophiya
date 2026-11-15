@@ -56,9 +56,18 @@ test('foreign *.vercel.app origins are not reflected in CORS', async () => {
 
 test('legitimate site origin is reflected in CORS', async () => {
   const login = await loginHandlerFor({ ADMIN_PASSWORD: 'x'.repeat(12), AUTH_SECRET: 's'.repeat(40) });
-  const res = makeRes();
-  await login(makeReq({ method: 'OPTIONS', headers: { origin: 'https://sitesophiya.vercel.app' } }), res);
-  assert.equal(res.headers['access-control-allow-origin'], 'https://sitesophiya.vercel.app');
+  const validOrigins = [
+    'https://sitesophiya.vercel.app',
+    'https://xn----ctbjn3arftl7c8b.xn--p1ai',
+    'https://цветы-софия.рф',
+    'https://%D1%86%D0%B2%D0%B5%D1%82%D1%8B-%D1%81%D0%BE%D1%84%D0%B8%D1%8F.%D1%80%D1%84',
+    'https://www.xn----ctbjn3arftl7c8b.xn--p1ai',
+  ];
+  for (const origin of validOrigins) {
+    const res = makeRes();
+    await login(makeReq({ method: 'OPTIONS', headers: { origin } }), res);
+    assert.equal(res.headers['access-control-allow-origin'], origin);
+  }
 });
 
 function loginHandlerFor(env) { return loadLogin(env); }
