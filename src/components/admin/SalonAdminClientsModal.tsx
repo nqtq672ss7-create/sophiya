@@ -233,6 +233,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [newPackaging, setNewPackaging] = useState('Фирменная дизайнерская упаковка «София»');
   const [newDescription, setNewDescription] = useState('');
   const [newImage, setNewImage] = useState('/bouquet-1.jpg');
+  const [newImages, setNewImages] = useState<string[]>(['/bouquet-1.jpg']);
   const [imageCompressionNotice, setImageCompressionNotice] = useState<string>('');
   const [isSavingBouquet, setIsSavingBouquet] = useState(false);
 
@@ -248,8 +249,114 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [editPackaging, setEditPackaging] = useState('Фирменная дизайнерская упаковка «София»');
   const [editDescription, setEditDescription] = useState('');
   const [editImage, setEditImage] = useState('/bouquet-1.jpg');
+  const [editImages, setEditImages] = useState<string[]>([]);
   const [editCompressionNotice, setEditCompressionNotice] = useState<string>('');
   const [isUpdatingBouquet, setIsUpdatingBouquet] = useState(false);
+
+  const compressImageFile = (file: File): Promise<{ dataUrl: string; kb: number }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result !== 'string') {
+          return reject(new Error('Не удалось прочитать файл'));
+        }
+        const rawResult = reader.result;
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const maxDim = 720;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              let compressed = canvas.toDataURL('image/webp', 0.75);
+              if (!compressed.startsWith('data:image/webp')) {
+                compressed = canvas.toDataURL('image/jpeg', 0.72);
+              }
+              if (compressed.length > 180000) {
+                compressed = canvas.toDataURL('image/jpeg', 0.64);
+              }
+              const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
+              resolve({ dataUrl: compressed, kb: approxKb });
+            } else {
+              resolve({ dataUrl: rawResult, kb: Math.round((rawResult.length * 3) / 4 / 1024) });
+            }
+          } catch {
+            resolve({ dataUrl: rawResult, kb: Math.round((rawResult.length * 3) / 4 / 1024) });
+          }
+        };
+        img.onerror = () => reject(new Error('Ошибка загрузки изображения'));
+        img.src = rawResult;
+      };
+      reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSlotPhotoUpload = async (index: number, mode: 'create'|'edit', file: File) => {
+    try {
+      if (mode === 'create') {
+        setImageCompressionNotice(`Сжатие фото #${index + 1}...`);
+        const { dataUrl, kb } = await compressImageFile(file);
+        setNewImages((prev) => {
+          const next = [...prev];
+          next[index] = dataUrl;
+          return next;
+        });
+        if (index === 0) setNewImage(dataUrl);
+        setImageCompressionNotice(`✓ Ракурс ${index + 1} добавлен (~${kb} КБ)`);
+      } else {
+        setEditCompressionNotice(`Сжатие фото #${index + 1}...`);
+        const { dataUrl, kb } = await compressImageFile(file);
+        setEditImages((prev) => {
+          const next = [...prev];
+          next[index] = dataUrl;
+          return next;
+        });
+        if (index === 0) setEditImage(dataUrl);
+        setEditCompressionNotice(`✓ Ракурс ${index + 1} обновлен (~${kb} КБ)`);
+      }
+    } catch {
+      triggerError('Не удалось обработать изображение. Попробуйте другой файл (JPG или PNG).');
+    }
+  };
+
+  const handleRemovePhotoSlot = (index: number, mode: 'create'|'edit') => {
+    if (mode === 'create') {
+      setNewImages((prev) => {
+        const next = [...prev];
+        next.splice(index, 1);
+        return next;
+      });
+      if (index === 0) {
+        setNewImage(newImages[1] || '/bouquet-1.jpg');
+      }
+    } else {
+      setEditImages((prev) => {
+        const next = [...prev];
+        next.splice(index, 1);
+        return next;
+      });
+      if (index === 0) {
+        setEditImage(editImages[1] || '/bouquet-1.jpg');
+      }
+    }
+  };
 
   const handleStartEdit = (b: Bouquet) => {
     setEditingBouquet(b);
@@ -262,7 +369,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setEditDurability(b.characteristics?.durability || '10-14 дней');
     setEditPackaging(b.characteristics?.packaging || 'Фирменная дизайнерская упаковка «София»');
     setEditDescription(b.description || '');
-    setEditImage(b.image || '/bouquet-1.jpg');
+    const currentPhotos = (b.images && b.images.length > 0 ? b.images : [b.image]).filter(Boolean);
+    setEditImages(currentPhotos);
+    setEditImage(currentPhotos[0] || b.image || '/bouquet-1.jpg');
     setEditCompressionNotice('');
     setIsAddBouquetOpen(false);
   };
@@ -426,13 +535,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
     setIsSavingBouquet(true);
     try {
+      const allImages = newImages.filter(Boolean);
+      const mainImg = allImages[0] || newImage || '/bouquet-1.jpg';
       await addBouquet({
         title: newTitle.trim(),
         price: Number(newPrice),
         category: newCategory,
         color: newColor,
         inStock: true,
-        image: newImage,
+        image: mainImg,
+        images: allImages.length > 0 ? allImages : [mainImg],
         hasRealPhoto: true,
         description: newDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
         characteristics: {
@@ -448,6 +560,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       setNewPrice('');
       setNewComposition('');
       setNewDescription('');
+      setNewImages(['/bouquet-1.jpg']);
+      setNewImage('/bouquet-1.jpg');
+      setImageCompressionNotice('');
       setIsAddBouquetOpen(false);
       triggerSuccess('Новый букет успешно добавлен и синхронизирован со всеми устройствами!');
     } catch (err) {
@@ -525,12 +640,15 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
     setIsUpdatingBouquet(true);
     try {
+      const allImages = editImages.filter(Boolean);
+      const mainImg = allImages[0] || editImage || editingBouquet.image;
       await updateBouquet(editingBouquet.id, {
         title: editTitle.trim(),
         price: Number(editPrice),
         category: editCategory,
         color: editColor,
-        image: editImage,
+        image: mainImg,
+        images: allImages.length > 0 ? allImages : [mainImg],
         description: editDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
         characteristics: {
           height: editHeight.trim() || '50 см',
@@ -924,37 +1042,77 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </div>
                 </div>
 
-                {/* Photo Upload & Preview */}
-                <div>
-                  <label className="block text-[11px] text-white/70 mb-1">Фотография букета</label>
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={newImage}
-                      alt="Превью"
-                      className="w-16 h-16 rounded-xl object-cover border border-white/20 bg-[#2A181C] shrink-0"
-                    />
-
-                    <div className="flex-1">
-                      <label className="cursor-pointer px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs text-white inline-flex items-center gap-2 transition-colors">
-                        <ImageIcon className="w-4 h-4 text-[#C5A880]" />
-                        <span>Выбрать фото с устройства (JPG / PNG)</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                      {imageCompressionNotice ? (
-                        <span className="block text-[11px] text-emerald-400 font-medium mt-1">
-                          {imageCompressionNotice}
-                        </span>
-                      ) : (
-                        <span className="block text-[10px] text-white/40 mt-1">
-                          Фото автоматически сжимается до ~100–250 КБ для быстрой работы
-                        </span>
-                      )}
+                {/* 3 Photos Gallery Upload */}
+                <div className="p-3.5 rounded-xl bg-black/30 border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block text-[11px] text-white/80 font-medium">Фотографии букета (до 3 ракурсов)</label>
+                      <span className="text-[10px] text-white/40 block">Основное фото + дополнительные ракурсы (бутоны крупно, упаковка)</span>
                     </div>
+                    {imageCompressionNotice && (
+                      <span className="text-[11px] text-emerald-400 font-medium">
+                        {imageCompressionNotice}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 pt-1">
+                    {[0, 1, 2].map((slotIndex) => {
+                      const photoUrl = newImages[slotIndex];
+                      const slotLabel = slotIndex === 0 ? 'Главное (обложка)' : slotIndex === 1 ? 'Ракурс 2 (бутоны)' : 'Ракурс 3 (сверху)';
+                      return (
+                        <div key={slotIndex} className="relative flex flex-col items-center">
+                          {photoUrl ? (
+                            <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-[#C5A880]/60 bg-[#2A181C] group">
+                              <img
+                                src={photoUrl}
+                                alt={`Ракурс ${slotIndex + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
+                                <label className="cursor-pointer p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors" title="Заменить фото">
+                                  <ImageIcon className="w-4 h-4 text-[#C5A880]" />
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleSlotPhotoUpload(slotIndex, 'create', file);
+                                    }}
+                                    className="hidden"
+                                  />
+                                </label>
+                                {slotIndex > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePhotoSlot(slotIndex, 'create')}
+                                    className="p-1.5 rounded-lg bg-red-600/70 hover:bg-red-600 text-white transition-colors"
+                                    title="Удалить ракурс"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="cursor-pointer w-full aspect-square rounded-xl border-2 border-dashed border-white/20 hover:border-[#C5A880]/60 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center p-2 text-center">
+                              <Plus className="w-5 h-5 text-[#C5A880] mb-1" />
+                              <span className="text-[10px] text-white/70 leading-tight">+ Фото {slotIndex + 1}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleSlotPhotoUpload(slotIndex, 'create', file);
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                          <span className="text-[10px] text-white/50 mt-1 text-center font-light">{slotLabel}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1083,37 +1241,77 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </div>
                 </div>
 
-                {/* Photo Replace & Preview */}
-                <div className="p-3 rounded-xl bg-black/30 border border-white/10">
-                  <label className="block text-[11px] text-white/70 mb-2 font-medium">Фотография букета</label>
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={editImage}
-                      alt="Превью букета"
-                      className="w-20 h-20 rounded-xl object-cover border-2 border-[#C5A880]/50 bg-[#2A181C] shrink-0 shadow-md"
-                    />
-
-                    <div className="flex-1">
-                      <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-xs text-white inline-flex items-center gap-2 transition-colors">
-                        <ImageIcon className="w-4 h-4 text-[#C5A880]" />
-                        <span className="font-medium">Заменить фото букета (JPG / PNG)</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleEditImageUpload}
-                          className="hidden"
-                        />
-                      </label>
-                      {editCompressionNotice ? (
-                        <span className="block text-[11px] text-emerald-400 font-medium mt-1.5">
-                          {editCompressionNotice}
-                        </span>
-                      ) : (
-                        <span className="block text-[10px] text-white/40 mt-1">
-                          Загрузите новое фото: оно автоматически оптимизируется для сайта
-                        </span>
-                      )}
+                {/* 3 Photos Gallery Upload / Edit */}
+                <div className="p-3.5 rounded-xl bg-black/40 border-2 border-[#C5A880]/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block text-[11px] text-white font-medium">Фотографии букета (до 3 ракурсов)</label>
+                      <span className="text-[10px] text-white/50 block">Нажмите на любой слот, чтобы загрузить или заменить ракурс</span>
                     </div>
+                    {editCompressionNotice && (
+                      <span className="text-[11px] text-emerald-400 font-medium">
+                        {editCompressionNotice}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 pt-1">
+                    {[0, 1, 2].map((slotIndex) => {
+                      const photoUrl = editImages[slotIndex];
+                      const slotLabel = slotIndex === 0 ? 'Главное (обложка)' : slotIndex === 1 ? 'Ракурс 2 (бутоны)' : 'Ракурс 3 (сверху)';
+                      return (
+                        <div key={slotIndex} className="relative flex flex-col items-center">
+                          {photoUrl ? (
+                            <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-[#C5A880] bg-[#2A181C] group shadow-md">
+                              <img
+                                src={photoUrl}
+                                alt={`Ракурс ${slotIndex + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
+                                <label className="cursor-pointer p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors" title="Заменить фото">
+                                  <ImageIcon className="w-4 h-4 text-[#C5A880]" />
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleSlotPhotoUpload(slotIndex, 'edit', file);
+                                    }}
+                                    className="hidden"
+                                  />
+                                </label>
+                                {slotIndex > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemovePhotoSlot(slotIndex, 'edit')}
+                                    className="p-1.5 rounded-lg bg-red-600/70 hover:bg-red-600 text-white transition-colors"
+                                    title="Удалить ракурс"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="cursor-pointer w-full aspect-square rounded-xl border-2 border-dashed border-white/20 hover:border-[#C5A880]/60 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center p-2 text-center">
+                              <Plus className="w-5 h-5 text-[#C5A880] mb-1" />
+                              <span className="text-[10px] text-white/70 leading-tight">+ Фото {slotIndex + 1}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleSlotPhotoUpload(slotIndex, 'edit', file);
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+                          <span className="text-[10px] text-white/50 mt-1 text-center font-light">{slotLabel}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
