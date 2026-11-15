@@ -61,29 +61,84 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const syncToCloud = async (items: Bouquet[]): Promise<boolean> => {
-    try {
-      const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch(getApiUrl('/api/catalog'), {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(items),
-      });
-
-      if (res.status === 401 && typeof window !== 'undefined') {
-        sessionStorage.removeItem('sophiya_admin_token');
-        window.dispatchEvent(new CustomEvent('sophiya_admin_session_expired'));
-      }
-
-      return res.ok;
-    } catch (e) {
-      console.error('Failed to sync catalog to cloud:', e);
-      return false;
+  const syncToCloud = async (items: Bouquet[]): Promise<{ ok: boolean; status?: number; error?: string }> => {
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
+    const bodyStr = JSON.stringify(items);
+
+    const maxAttempts = 3;
+    let lastErrorMsg = 'Не удалось синхронизировать каталог с облаком.';
+    let lastStatus = 0;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), 12000) : null;
+
+        const res = await fetch(getApiUrl('/api/catalog'), {
+          method: 'POST',
+          headers,
+          body: bodyStr,
+          signal: controller?.signal,
+        });
+
+        if (timer) clearTimeout(timer);
+
+        if (res.ok) {
+          return { ok: true, status: res.status };
+        }
+
+        lastStatus = res.status;
+        let serverError = '';
+        try {
+          const data = await res.json();
+          if (data && typeof data.error === 'string') {
+            serverError = data.error;
+          }
+        } catch {}
+
+        if (res.status === 401) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('sophiya_admin_token');
+            window.dispatchEvent(new CustomEvent('sophiya_admin_session_expired'));
+          }
+          return {
+            ok: false,
+            status: 401,
+            error: serverError || 'Время сессии истекло. Пожалуйста, введите пароль снова.',
+          };
+        }
+
+        if (res.status === 413) {
+          return {
+            ok: false,
+            status: 413,
+            error: 'Слишком большой объем данных каталога. Рекомендуется сжать фото.',
+          };
+        }
+
+        lastErrorMsg = serverError || `Ошибка сервера (${res.status}).`;
+
+        if (res.status >= 400 && res.status < 500) {
+          return { ok: false, status: res.status, error: lastErrorMsg };
+        }
+      } catch (err: any) {
+        const isAbort = err?.name === 'AbortError';
+        lastErrorMsg = isAbort
+          ? 'Таймаут соединения с облачной базой. Проверьте скорость интернета.'
+          : 'Сбой интернет-соединения при отправке данных в облако.';
+        console.warn(`[CatalogSync] Попытка ${attempt}/${maxAttempts} не удалась:`, err);
+      }
+
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+      }
+    }
+
+    return { ok: false, status: lastStatus, error: lastErrorMsg };
   };
 
   // Fetch the definitive catalog from cloud
@@ -151,9 +206,9 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } catch {}
 
       const updated = [newBouquet, ...currentItems];
-      const ok = await syncToCloud(updated);
-      if (!ok) {
-        throw new Error('Не удалось сохранить букет в облачную базу');
+      const result = await syncToCloud(updated);
+      if (!result.ok) {
+        throw new Error(result.error || 'Не удалось сохранить букет в облачную базу');
       }
 
       setBouquets(updated);
@@ -178,8 +233,8 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } catch {}
 
       const updated = currentItems.map((b) => (b.id === id ? { ...b, ...updates } : b));
-      const ok = await syncToCloud(updated);
-      if (!ok) throw new Error('Не удалось обновить букет в облачной базе');
+      const result = await syncToCloud(updated);
+      if (!result.ok) throw new Error(result.error || 'Не удалось обновить букет в облачной базе');
 
       setBouquets(updated);
       saveToStorage(updated);
@@ -202,8 +257,8 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } catch {}
 
       const updated = currentItems.filter((b) => b.id !== id);
-      const ok = await syncToCloud(updated);
-      if (!ok) throw new Error('Не удалось удалить букет из облачной базы');
+      const result = await syncToCloud(updated);
+      if (!result.ok) throw new Error(result.error || 'Не удалось удалить букет из облачной базы');
 
       setBouquets(updated);
       saveToStorage(updated);
@@ -227,13 +282,13 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } catch {}
 
       const updated = currentItems.map((b) => (b.id === id ? { ...b, inStock: !b.inStock } : b));
-      const ok = await syncToCloud(updated);
-      if (ok) {
+      const result = await syncToCloud(updated);
+      if (result.ok) {
         setBouquets(updated);
         saveToStorage(updated);
         setLastSyncedAt(new Date());
       }
-      return ok;
+      return result.ok;
     } finally {
       setIsSyncing(false);
     }
@@ -242,8 +297,8 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const clearAllBouquets = async (): Promise<void> => {
     setIsSyncing(true);
     try {
-      const ok = await syncToCloud([]);
-      if (ok) {
+      const result = await syncToCloud([]);
+      if (result.ok) {
         setBouquets([]);
         saveToStorage([]);
         setLastSyncedAt(new Date());
@@ -256,8 +311,8 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const resetToDefault = async (): Promise<void> => {
     setIsSyncing(true);
     try {
-      const ok = await syncToCloud(BOUQUETS_CATALOG);
-      if (ok) {
+      const result = await syncToCloud(BOUQUETS_CATALOG);
+      if (result.ok) {
         setBouquets(BOUQUETS_CATALOG);
         saveToStorage(BOUQUETS_CATALOG);
         setLastSyncedAt(new Date());
@@ -270,11 +325,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const syncCatalog = async (): Promise<boolean> => {
     setIsSyncing(true);
     try {
-      const ok = await syncToCloud(bouquets);
-      if (ok) {
+      const result = await syncToCloud(bouquets);
+      if (result.ok) {
         setLastSyncedAt(new Date());
       }
-      return ok;
+      return result.ok;
     } finally {
       setIsSyncing(false);
     }

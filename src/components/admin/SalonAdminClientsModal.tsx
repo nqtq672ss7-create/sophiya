@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, AlertCircle, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw, Pencil } from 'lucide-react';
+import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, AlertCircle, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw, Pencil, ShoppingBag, CreditCard, Truck, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
@@ -71,10 +71,138 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     }
   }, [isUnlocked, refreshReviews, refreshPending]);
 
-  const [activeTab, setActiveTab] = useState<'catalog'|'reviews'|'clients'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog'|'orders'|'reviews'|'clients'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddBouquetOpen, setIsAddBouquetOpen] = useState(false);
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+
+  // Online Orders State
+  const [orders, setOrders] = useState<Array<{
+    id: string;
+    orderNumber: string;
+    createdAt: string;
+    customerName: string;
+    phone: string;
+    deliveryType: 'delivery'|'pickup';
+    address?: string;
+    deliveryDate: string;
+    items: Array<{ title: string; quantity: number; price: number }>;
+    totalAmount: number;
+    paymentMethod: 'sbp'|'card'|'sberpay';
+    paymentStatus: 'paid'|'pending';
+    orderStatus: 'new'|'assembling'|'in_transit'|'delivered';
+    postcardText?: string;
+  }>>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('sophiya_admin_orders_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      }
+    } catch {}
+    return [
+      {
+        id: 'ord_1',
+        orderNumber: '№ 8492',
+        createdAt: 'Сегодня, 21:40',
+        customerName: 'Айрат Мингазов',
+        phone: '+7 (917) 256-42-18',
+        deliveryType: 'delivery',
+        address: 'г. Нижнекамск, пр. Мира, 48, кв. 112',
+        deliveryDate: 'Завтра, 10:00 - 12:00',
+        items: [
+          { title: '«Розовая мечта» большой букет из хризантемы', quantity: 1, price: 4100 },
+        ],
+        totalAmount: 4100,
+        paymentMethod: 'sbp',
+        paymentStatus: 'paid',
+        orderStatus: 'assembling',
+        postcardText: 'Любимой мамочке с днем рождения! Спасибо за твою теплоту и заботу.',
+      },
+      {
+        id: 'ord_2',
+        orderNumber: '№ 8491',
+        createdAt: 'Сегодня, 19:15',
+        customerName: 'Руслан Зарипов',
+        phone: '+7 (987) 415-33-90',
+        deliveryType: 'pickup',
+        address: 'Самовывоз из салона (пр. Шинников, 13В)',
+        deliveryDate: 'Завтра к 13:30',
+        items: [
+          { title: 'Букет 11 красных роз Ред Наоми', quantity: 1, price: 2700 },
+        ],
+        totalAmount: 2700,
+        paymentMethod: 'card',
+        paymentStatus: 'paid',
+        orderStatus: 'new',
+        postcardText: '',
+      },
+      {
+        id: 'ord_3',
+        orderNumber: '№ 8488',
+        createdAt: '15 ноября, 14:20',
+        customerName: 'Диана Султанова',
+        phone: '+7 (905) 311-88-24',
+        deliveryType: 'delivery',
+        address: 'г. Нижнекамск, ул. Сююмбике, 9, подъезд 2',
+        deliveryDate: '15 ноября к 18:00',
+        items: [
+          { title: 'Букет с короной и шары сердца', quantity: 1, price: 8300 },
+        ],
+        totalAmount: 8300,
+        paymentMethod: 'sberpay',
+        paymentStatus: 'paid',
+        orderStatus: 'delivered',
+        postcardText: 'С юбилеем нашей свадьбы! Люблю бесконечно.',
+      },
+      {
+        id: 'ord_4',
+        orderNumber: '№ 8485',
+        createdAt: '14 ноября, 16:50',
+        customerName: 'Екатерина Петрова',
+        phone: '+7 (919) 628-90-11',
+        deliveryType: 'delivery',
+        address: 'г. Нижнекамск, ул. Строителей, 32, кв. 44',
+        deliveryDate: '14 ноября, 19:00',
+        items: [
+          { title: 'Авторский букет 3 кустовых пионовидных роз', quantity: 1, price: 3500 },
+        ],
+        totalAmount: 3500,
+        paymentMethod: 'card',
+        paymentStatus: 'paid',
+        orderStatus: 'delivered',
+        postcardText: 'С днем учителя!',
+      },
+    ];
+  });
+
+  const [orderFilter, setOrderFilter] = useState<'all'|'new'|'assembling'|'in_transit'|'delivered'>('all');
+  const [orderSearch, setOrderSearch] = useState('');
+
+  const handleUpdateOrderStatus = (orderId: string, newStatus: 'new'|'assembling'|'in_transit'|'delivered') => {
+    setOrders((prev) => {
+      const updated = prev.map((ord) => (ord.id === orderId ? { ...ord, orderStatus: newStatus } : ord));
+      try {
+        localStorage.setItem('sophiya_admin_orders_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    triggerSuccess('Статус заказа успешно обновлен!');
+  };
+
+  const filteredOrders = orders.filter((o) => {
+    if (orderFilter !== 'all' && o.orderStatus !== orderFilter) return false;
+    if (!orderSearch.trim()) return true;
+    const q = orderSearch.toLowerCase();
+    return (
+      o.orderNumber.toLowerCase().includes(q) ||
+      o.customerName.toLowerCase().includes(q) ||
+      o.phone.includes(q) ||
+      (o.address && o.address.toLowerCase().includes(q))
+    );
+  });
 
   // Notifications State
   const [isSuccessMessage, setIsSuccessMessage] = useState(false);
@@ -243,7 +371,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           img.onload = () => {
             try {
               const canvas = document.createElement('canvas');
-              const maxDim = 900;
+              const maxDim = 720;
               let width = img.width;
               let height = img.height;
               if (width > height) {
@@ -262,14 +390,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 ctx.drawImage(img, 0, 0, width, height);
-                // First attempt modern WebP format
-                let compressed = canvas.toDataURL('image/webp', 0.80);
+                let compressed = canvas.toDataURL('image/webp', 0.75);
                 if (!compressed.startsWith('data:image/webp')) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.78);
+                  compressed = canvas.toDataURL('image/jpeg', 0.72);
                 }
-                // If over 350KB, compress further to protect database limits
-                if (compressed.length > 400000) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.65);
+                if (compressed.length > 180000) {
+                  compressed = canvas.toDataURL('image/jpeg', 0.64);
                 }
                 const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
                 setImageCompressionNotice(`✓ Сжато: ~${approxKb} КБ (мгновенная загрузка)`);
@@ -324,8 +450,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       setNewDescription('');
       setIsAddBouquetOpen(false);
       triggerSuccess('Новый букет успешно добавлен и синхронизирован со всеми устройствами!');
-    } catch {
-      triggerError('Не удалось сохранить в облако. Проверьте интернет или повторите попытку.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Не удалось сохранить в облако.';
+      triggerError(msg);
     } finally {
       setIsSavingBouquet(false);
     }
@@ -343,7 +470,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           img.onload = () => {
             try {
               const canvas = document.createElement('canvas');
-              const maxDim = 900;
+              const maxDim = 720;
               let width = img.width;
               let height = img.height;
               if (width > height) {
@@ -362,12 +489,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 ctx.drawImage(img, 0, 0, width, height);
-                let compressed = canvas.toDataURL('image/webp', 0.80);
+                let compressed = canvas.toDataURL('image/webp', 0.75);
                 if (!compressed.startsWith('data:image/webp')) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.78);
+                  compressed = canvas.toDataURL('image/jpeg', 0.72);
                 }
-                if (compressed.length > 400000) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.65);
+                if (compressed.length > 180000) {
+                  compressed = canvas.toDataURL('image/jpeg', 0.64);
                 }
                 const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
                 setEditCompressionNotice(`✓ Новое фото готово (~${approxKb} КБ)`);
@@ -415,8 +542,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
       triggerSuccess(`Букет «${editTitle.trim()}» успешно обновлен на сайте!`);
       setEditingBouquet(null);
-    } catch {
-      triggerError('Не удалось обновить букет в облачной базе. Попробуйте еще раз.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Не удалось обновить букет в облачной базе.';
+      triggerError(msg);
     } finally {
       setIsUpdatingBouquet(false);
     }
@@ -588,6 +716,22 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
           <button
             onClick={() => {
+              setActiveTab('orders');
+              setIsAddBouquetOpen(false);
+              setIsAddReviewOpen(false);
+            }}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 shrink-0 ${
+              activeTab === 'orders'
+                ? 'bg-[#6C1E26] text-white shadow'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>Заказы онлайн ({orders.length})</span>
+          </button>
+
+          <button
+            onClick={() => {
               setActiveTab('reviews');
               setIsAddBouquetOpen(false);
               setIsAddReviewOpen(false);
@@ -627,15 +771,44 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         )}
 
         {isErrorMessage && (
-          <div className="mt-3 p-3 bg-[#3A0A10]/80 border border-[#8E2433] text-rose-200 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{errorMessage || 'Произошла ошибка при выполнении операции.'}</span>
+          <div className="mt-3 p-3 bg-[#3A0A10]/90 border border-[#8E2433] text-rose-200 text-xs rounded-xl flex flex-wrap items-center justify-between gap-2 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>{errorMessage || 'Произошла ошибка при выполнении операции.'}</span>
+            </div>
+            {isAddBouquetOpen && (
+              <button
+                type="button"
+                onClick={() => handleCreateBouquet({ preventDefault: () => {} } as any)}
+                disabled={isSavingBouquet}
+                className="px-3 py-1 bg-[#8E2433] hover:bg-[#A32A3B] text-white rounded-lg font-medium text-[11px] shrink-0 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {isSavingBouquet ? 'Сохранение...' : 'Повторить попытку'}
+              </button>
+            )}
+            {editingBouquet && (
+              <button
+                type="button"
+                onClick={() => handleSaveBouquetEdit({ preventDefault: () => {} } as any)}
+                disabled={isUpdatingBouquet}
+                className="px-3 py-1 bg-[#8E2433] hover:bg-[#A32A3B] text-white rounded-lg font-medium text-[11px] shrink-0 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {isUpdatingBouquet ? 'Сохранение...' : 'Повторить попытку'}
+              </button>
+            )}
           </div>
         )}
 
         {/* 1. CATALOG MANAGEMENT TAB */}
         {activeTab === 'catalog' && (
           <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
+            {/* Helpful instructions banner */}
+            <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-[#6C1E26]/20 border border-[#C5A880]/30 text-white text-xs flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#C5A880] shrink-0" />
+                <span>Подсказка: чтобы изменить фото, цену или состав букета — нажмите кнопку <strong>«Изменить»</strong> на карточке любого букета.</span>
+              </span>
+            </div>
             {/* Top Metrics & Add Action */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
               <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
@@ -1155,7 +1328,252 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           </div>
         )}
 
-        {/* 2. REVIEWS MANAGEMENT TAB */}
+        {/* 2. Раздел онлайн-заказов */}
+        {activeTab === 'orders' && (
+          <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1 animate-fadeIn">
+            {/* Top Order Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-white/50 block">Всего онлайн-заказов</span>
+                <span className="font-sans font-medium text-2xl text-white font-normal">{orders.length}</span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-400 block">Оплачено клиентами</span>
+                <span className="font-sans font-medium text-2xl text-emerald-300 font-normal">
+                  {orders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString('ru-RU')} ₽
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-amber-300 block">В работе флориста</span>
+                <span className="font-sans font-medium text-2xl text-amber-200 font-normal">
+                  {orders.filter((o) => o.orderStatus === 'new' || o.orderStatus === 'assembling' || o.orderStatus === 'in_transit').length}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-[10px] uppercase tracking-wider text-[#C5A880] block">Успешно доставлено</span>
+                <span className="font-sans font-medium text-2xl text-[#FAF7F5] font-normal">
+                  {orders.filter((o) => o.orderStatus === 'delivered').length}
+                </span>
+              </div>
+            </div>
+
+            {/* Filters & Search */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  placeholder="Поиск по номеру заказа, имени, телефону или адресу..."
+                  className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880]"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setOrderFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    orderFilter === 'all' ? 'bg-[#6C1E26] text-white shadow' : 'bg-white/5 text-white/60 hover:text-white'
+                  }`}
+                >
+                  Все ({orders.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderFilter('new')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    orderFilter === 'new' ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-white/5 text-white/60 hover:text-white'
+                  }`}
+                >
+                  Новые ({orders.filter((o) => o.orderStatus === 'new').length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderFilter('assembling')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    orderFilter === 'assembling' ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50' : 'bg-white/5 text-white/60 hover:text-white'
+                  }`}
+                >
+                  В сборке ({orders.filter((o) => o.orderStatus === 'assembling').length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderFilter('in_transit')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    orderFilter === 'in_transit' ? 'bg-blue-500/30 text-blue-300 border border-blue-500/50' : 'bg-white/5 text-white/60 hover:text-white'
+                  }`}
+                >
+                  У курьера ({orders.filter((o) => o.orderStatus === 'in_transit').length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderFilter('delivered')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    orderFilter === 'delivered' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60 hover:text-white'
+                  }`}
+                >
+                  Доставлены ({orders.filter((o) => o.orderStatus === 'delivered').length})
+                </button>
+              </div>
+            </div>
+
+            {/* Orders Cards List */}
+            <div className="space-y-3 pb-6">
+              {filteredOrders.length === 0 ? (
+                <div className="p-8 text-center text-white/50 text-xs border border-white/10 rounded-xl bg-white/5">
+                  Заказы по заданным фильтрам не найдены.
+                </div>
+              ) : (
+                filteredOrders.map((ord) => (
+                  <div
+                    key={ord.id}
+                    className="p-4 rounded-xl bg-black/40 border border-white/10 hover:border-white/20 transition-colors space-y-3"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <span className="font-sans font-medium text-base text-white">{ord.orderNumber}</span>
+                        <span className="text-[11px] text-white/40">{ord.createdAt}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          <span>
+                            {ord.paymentMethod === 'sbp' ? 'Оплачено через СБП' : ord.paymentMethod === 'sberpay' ? 'Оплачено через SberPay' : 'Оплачено банковской картой'}
+                          </span>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
+                            ord.orderStatus === 'new'
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : ord.orderStatus === 'assembling'
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                              : ord.orderStatus === 'in_transit'
+                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                              : 'bg-white/10 text-white/70'
+                          }`}
+                        >
+                          {ord.orderStatus === 'new'
+                            ? 'Новый заказ (оплачен)'
+                            : ord.orderStatus === 'assembling'
+                            ? 'Флорист собирает букет'
+                            : ord.orderStatus === 'in_transit'
+                            ? 'Передан курьеру на доставку'
+                            : 'Доставлен получателю'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-white/40 block mb-0.5">Покупатель</span>
+                        <div className="text-white font-medium">{ord.customerName}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <a
+                            href={`tel:${ord.phone.replace(/[^0-9+]/g, '')}`}
+                            className="text-[11px] text-[#C5A880] hover:underline flex items-center gap-1"
+                          >
+                            <Phone className="w-3 h-3" />
+                            <span>{ord.phone}</span>
+                          </a>
+                          <a
+                            href={`https://wa.me/${ord.phone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 rounded bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/50 transition-colors"
+                            title="Открыть WhatsApp"
+                          >
+                            <MessageCircle className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-white/40 block mb-0.5">Получение и адрес</span>
+                        <div className="text-white">
+                          {ord.deliveryType === 'delivery' ? `Курьер: ${ord.address}` : ord.address}
+                        </div>
+                        <div className="text-white/60 text-[11px] mt-0.5 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-[#C5A880]" />
+                          <span>{ord.deliveryDate}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-white/40 block mb-0.5">Состав заказа</span>
+                        {ord.items.map((item, i) => (
+                          <div key={i} className="text-white flex items-center justify-between">
+                            <span>{item.title}</span>
+                            <span className="text-white/60">{item.quantity} шт. × {item.price.toLocaleString('ru-RU')} ₽</span>
+                          </div>
+                        ))}
+                        <div className="mt-1 pt-1 border-t border-white/10 flex justify-between font-medium text-[#C5A880]">
+                          <span>Итого к выдаче:</span>
+                          <span>{ord.totalAmount.toLocaleString('ru-RU')} ₽</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {ord.postcardText && (
+                      <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-xs">
+                        <span className="text-[10px] uppercase tracking-wider text-[#C5A880] block mb-0.5">Текст открытки к букету:</span>
+                        <p className="text-white/90 italic">«{ord.postcardText}»</p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
+                      <div className="text-[11px] text-white/40">
+                        Действия с заказом:
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {ord.orderStatus === 'new' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrderStatus(ord.id, 'assembling')}
+                            className="px-3 py-1.5 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 text-xs font-medium border border-amber-500/40 transition-colors"
+                          >
+                            Взять в сборку флористом →
+                          </button>
+                        )}
+                        {ord.orderStatus === 'assembling' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrderStatus(ord.id, 'in_transit')}
+                            className="px-3 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 text-xs font-medium border border-blue-500/40 transition-colors"
+                          >
+                            Передать курьеру на доставку →
+                          </button>
+                        )}
+                        {ord.orderStatus === 'in_transit' && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateOrderStatus(ord.id, 'delivered')}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600/40 hover:bg-emerald-600/60 text-emerald-200 text-xs font-medium border border-emerald-500/40 transition-colors"
+                          >
+                            Отметить: «Заказ доставлен» ✓
+                          </button>
+                        )}
+                        {ord.orderStatus === 'delivered' && (
+                          <span className="text-xs text-white/40 flex items-center gap-1">
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Заказ успешно завершен</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 3. REVIEWS MANAGEMENT TAB */}
         {activeTab === 'reviews' && (
           <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
             {/* Top Metrics & Actions */}

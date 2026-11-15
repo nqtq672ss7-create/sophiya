@@ -23,7 +23,7 @@ function getKVClient() {
   return kv;
 }
 
-function isAllowedOrigin(origin: string | undefined): boolean {
+function isAllowedOrigin(origin: string|undefined): boolean {
   if (!origin) return true;
   let decoded = origin;
   try {
@@ -84,18 +84,15 @@ function verifyToken(token: string|null|undefined): boolean {
   }
 }
 
-async function createKvBackup(client: any, key: string): Promise<boolean> {
+async function saveKvBackup(client: any, key: string, data: any): Promise<void> {
   try {
-    const data = await client.get(key);
-    if (data !== undefined && data !== null) {
-      const backupKey = `${key}_pre_write_${Date.now()}`;
-      await client.set(backupKey, data, { ex: 30 * 24 * 60 * 60 });
-      return true;
-    }
+    const backupKey = `${key}_last_backup`;
+    await client.set(backupKey, data, { ex: 30 * 24 * 60 * 60 });
   } catch (err) {
-    console.warn(`[Backup] Warning: could not snapshot key "${key}":`, err);
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn(`[Backup] Warning: could not snapshot key "${key}":`, err);
+    }
   }
-  return false;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -151,19 +148,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Ожидается массив букетов' });
       }
 
-      for (const item of items) {
-        if (!item || typeof item !== 'object' || !item.id || !item.title) {
-          return res.status(400).json({ error: 'Некорректная структура элементов букета' });
+      const sanitizedItems = items.map((item, idx) => {
+        if (!item || typeof item !== 'object') {
+          throw new Error(`Элемент #${idx + 1} имеет неверный формат`);
         }
-      }
+        const title = typeof item.title === 'string' ? item.title.trim() : '';
+        if (!title) {
+          throw new Error(`У букета #${idx + 1} отсутствует название`);
+        }
+        const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : `custom_${Date.now()}_${idx}`;
+        const rawPrice = typeof item.price === 'string' ? item.price.replace(/\s+/g, '') : item.price;
+        const price = Number(rawPrice) || 0;
 
-      await createKvBackup(client, 'catalog_bouquets');
-      await client.set('catalog_bouquets', items);
+        return {
+          ...item,
+          id,
+          title,
+          price,
+        };
+      });
 
-      return res.status(200).json({ success: true, count: items.length });
+      // 1. Save directly to primary key (fast, reliable)
+      await client.set('catalog_bouquets', sanitizedItems);
+
+      // 2. Save rolling backup asynchronously without blocking response
+      saveKvBackup(client, 'catalog_bouquets', sanitizedItems).catch(() => {});
+
+      return res.status(200).json({ success: true, count: sanitizedItems.length });
     } catch (e) {
       console.error('Error saving catalog to KV:', e);
-      return res.status(500).json({ error: 'Ошибка сохранения каталога' });
+      const message = e instanceof Error ? e.message : 'Ошибка сохранения каталога';
+      return res.status(400).json({ error: message });
     }
   }
 
