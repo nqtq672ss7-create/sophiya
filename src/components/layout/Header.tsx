@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Working Phone & MAX */}
           <div className="hidden xl:flex items-center gap-4 text-xs font-sans">
             <a
-              href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
+              href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-sofiya-petal/80 hover:text-white transition-colors tracking-wide py-1 border-b border-transparent hover:border-sofiya-viola"
@@ -200,7 +200,7 @@ export const Header: React.FC<HeaderProps> = ({
             </a>
 
             <a
-              href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
+              href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sofiya-viola flex items-center gap-2"

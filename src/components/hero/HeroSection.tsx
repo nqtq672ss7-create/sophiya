@@ -79,7 +79,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Secondary CTA: MAX Direct with Real Number */}
           <a
-            href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
+            href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto px-8 py-4 bg-sofiya-black-purple/60 hover:bg-sofiya-black-purple/90 text-sofiya-petal font-sans text-xs uppercase tracking-[0.2em] font-light border border-sofiya-viola/30 hover:border-sofiya-viola transition-colors duration-300 flex items-center justify-center gap-2.5"

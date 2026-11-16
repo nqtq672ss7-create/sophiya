@@ -802,7 +802,7 @@ function generatePreRenderedHtml(route) {
               </span>
             </div>
             <a
-              href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
+              href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c"
               target="_blank"
               rel="noopener noreferrer"
               class="w-full py-2.5 px-4 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs text-center block transition-colors shadow-sm active:scale-95"
@@ -824,7 +824,7 @@ function generatePreRenderedHtml(route) {
         </p>
         <div class="pt-2">
           <a
-            href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
+            href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c"
             target="_blank"
             rel="noopener noreferrer"
             class="inline-block py-3 px-6 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs sm:text-sm transition-colors shadow-md active:scale-95"
@@ -926,7 +926,7 @@ function generatePreRenderedHtml(route) {
               <p class="text-xs text-[#FAF0F2]/85 font-light leading-relaxed">
                 Индивидуальная сборка или подбор сортов по фото в MAX
               </p>
-              <a href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md">
+              <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md">
                 <span>Написать в MAX</span>
               </a>
             </div>
@@ -1023,7 +1023,7 @@ function generatePreRenderedHtml(route) {
                 <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#922E3D] text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Построить маршрут
                 </a>
-                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">
+                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Чат в MAX
                 </a>
               </div>
@@ -1066,7 +1066,7 @@ function generatePreRenderedHtml(route) {
               <h4 class="font-sans font-medium text-lg text-white font-normal">Контакты</h4>
               <div class="space-y-2 text-xs font-light">
                 <a href="tel:+79172563235" class="block text-white hover:text-[#C5A880]"> +7 (917) 256-32-35</a>
-                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="block text-emerald-400 hover:text-emerald-300"> MAX: +7 (917) 256-32-35</a>
+                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="block text-emerald-400 hover:text-emerald-300"> MAX: +7 (917) 256-32-35</a>
               </div>
             </div>
             <div class="space-y-3">
@@ -1157,7 +1157,7 @@ function generateJsonLd(route) {
     "hasMap": "https://yandex.ru/maps/org/sofiya/105599949171",
     "sameAs": [
       "https://yandex.ru/maps/org/sofiya/105599949171",
-      "https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
+      "https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c"
     ]
   };
 
