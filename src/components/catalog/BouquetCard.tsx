@@ -111,9 +111,11 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
             {bouquet.title}
           </h3>
 
-          <p className="hidden sm:block text-xs text-[#5C454C] font-light line-clamp-2 leading-relaxed mb-3">
-            {bouquet.description}
-          </p>
+          <div className="hidden sm:block mb-3">
+            <p className="text-xs text-[#5C454C] font-light line-clamp-2 leading-relaxed">
+              {bouquet.description}
+            </p>
+          </div>
         </div>
 
         {/* Price & Action Row */}
