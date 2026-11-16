@@ -268,7 +268,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       </div>
 
       {/* 6. Bouquets Catalog Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-8">
         <div className="flex items-baseline justify-between mb-6 pb-2 border-b border-[#E5DDD9]">
           <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold tracking-tight">
             {currentRoute.path === '/' ? 'Каталог букетов' : `Каталог: ${currentRoute.breadcrumbLabel}`}
@@ -314,7 +314,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 md:grid-cols-3 lg:grid-cols-6">
             {displayedBouquets.map((bouquet) => (
               <BouquetCard
                 key={bouquet.id}

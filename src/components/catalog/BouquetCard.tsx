@@ -105,14 +105,14 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
       </div>
 
       {/* Info Container */}
-      <div className="p-2.5 sm:p-5 flex-1 flex flex-col justify-between">
+      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-sans text-xs sm:text-base text-[#1C1215] font-semibold leading-snug group-hover:text-[#922E3D] transition-colors mb-1 line-clamp-2 sm:line-clamp-1">
+          <h3 className="font-sans text-xs sm:text-sm text-[#1C1215] font-semibold leading-snug group-hover:text-[#922E3D] transition-colors mb-1 line-clamp-2">
             {bouquet.title}
           </h3>
 
-          <div className="hidden sm:block mb-3">
-            <p className="text-xs text-[#5C454C] font-light line-clamp-2 leading-relaxed">
+          <div className="hidden sm:block mb-2.5">
+            <p className="text-[11px] text-[#5C454C] font-light line-clamp-2 leading-relaxed">
               {bouquet.description}
             </p>
           </div>
@@ -120,11 +120,11 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
 
         {/* Price & Action Row */}
         <div>
-          <div className="flex items-baseline justify-between pt-1.5 sm:pt-2.5 border-t border-[#E5DDD9] mb-2 sm:mb-3">
+          <div className="flex items-baseline justify-between pt-1.5 sm:pt-2 border-t border-[#E5DDD9] mb-2 sm:mb-2.5">
             <div>
               {userDiscount > 0 ? (
                 <div className="flex items-baseline gap-1 sm:gap-1.5">
-                  <span className="font-sans text-sm sm:text-xl font-bold text-[#922E3D]">
+                  <span className="font-sans text-sm sm:text-base lg:text-lg font-bold text-[#922E3D]">
                     {discountedPrice.toLocaleString('ru-RU')} ₽
                   </span>
                   <span className="text-[10px] sm:text-xs text-[#7C636B] line-through">
@@ -132,7 +132,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
                   </span>
                 </div>
               ) : (
-                <span className="font-sans text-sm sm:text-xl font-bold text-[#922E3D]">
+                <span className="font-sans text-sm sm:text-base lg:text-lg font-bold text-[#922E3D]">
                   {bouquet.price.toLocaleString('ru-RU')} ₽
                 </span>
               )}
@@ -140,13 +140,13 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
           </div>
 
           {/* Action: Cart Button + WhatsApp Icon Button */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={(e) => onAddToCart(bouquet, e)}
-              className="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 transition-colors shadow-sm active:scale-95 cursor-pointer"
+              className="flex-1 py-1.5 sm:py-2 px-2 sm:px-2.5 rounded-lg sm:rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-colors shadow-sm active:scale-95 cursor-pointer"
             >
-              <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
               <span className="truncate">В корзину</span>
             </button>
 
@@ -157,11 +157,11 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
               title="Заказать через WhatsApp"
               aria-label="Заказать через WhatsApp"
             >
-              <WhatsAppIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
+              <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
             </a>
           </div>
         </div>
