@@ -29,57 +29,81 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
   const isDeliveryPage = currentRoute?.slug === 'dostavka';
   const isOccasionPage = currentRoute?.pageType === 'occasion';
 
+  const featureHighlights = [
+    {
+      metric: '30',
+      unit: 'мин',
+      badge: 'Аквабокс с водой',
+      title: 'Доставка от 30 минут',
+      description:
+        'Срочная доставка по районам Нижнекамска в аквабоксах с водой. Букет приезжает свежим в любую погоду.',
+      Icon: Truck,
+    },
+    {
+      metric: '100%',
+      unit: 'фото',
+      badge: 'Контроль качества',
+      title: 'Фото в WhatsApp до выезда',
+      description:
+        'Флорист отправляет детальный снимок собранной композиции в WhatsApp заказчику перед передачей курьеру.',
+      Icon: ShieldCheck,
+    },
+    {
+      metric: 'Премиум',
+      unit: 'декор',
+      badge: 'Корейская плёнка',
+      title: 'Дизайнерская упаковка',
+      description:
+        'Лаконичные матовые материалы, фактурная корейская плёнка и плотные атласные ленты в цвет бутона.',
+      Icon: Heart,
+    },
+    {
+      metric: '10–14',
+      unit: 'дней',
+      badge: 'Chrysal в подарок',
+      title: 'Стойкость букетов',
+      description:
+        'Прямые поставки отборной срезки каждые 2–3 дня. Пакетик подкормки Chrysal прилагается к каждому букету.',
+      Icon: Sparkles,
+    },
+  ];
+
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-12 border-t border-[#E5DDD9] font-sans text-[#1C1215]">
-      {/* 1. Feature Highlights (4 Clean Luxury Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
-        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
-            <Truck className="w-4 h-4" />
-          </div>
-          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
-            Доставка от 30 минут
-          </h3>
-          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
-            Срочная доставка по районам Нижнекамска в аквабоксах с водой. Букет приезжает свежим в любую погоду.
-          </p>
-        </div>
+    <section className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 mt-14 pt-10 border-t border-[#E5DDD9] font-sans text-[#1C1215]">
+      {/* 1. Feature Highlights (Hybrid: Swiss Typographic Panel + Split Badges) */}
+      <div className="bg-white rounded-xl border border-[#E5DDD9] shadow-sm overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-x divide-[#EFE7E3] mb-14">
+        {featureHighlights.map(({ metric, unit, badge, title, description, Icon }) => (
+          <div
+            key={title}
+            className="p-5 sm:p-6 flex flex-col justify-between gap-4 hover:bg-[#FAF7F5]/60 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-[#922E3D] bg-[#FDF2F4] px-2 py-0.5 rounded-md mb-2">
+                  {badge}
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#922E3D] leading-none">
+                    {metric}
+                  </span>
+                  <span className="text-xs font-semibold text-[#C5A880]">{unit}</span>
+                </div>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-[#FDF2F4] text-[#922E3D] flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4" />
+              </div>
+            </div>
 
-        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
-            <ShieldCheck className="w-4 h-4" />
+            <div>
+              <h3 className="font-sans text-sm sm:text-base text-[#1C1215] font-semibold mb-1">
+                {title}
+              </h3>
+              <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
+                {description}
+              </p>
+            </div>
           </div>
-          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
-            Фото в WhatsApp до выезда
-          </h3>
-          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
-            Флорист отправляет детальный снимок собранной композиции в WhatsApp заказчику перед передачей курьеру.
-          </p>
-        </div>
-
-        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
-            <Heart className="w-4 h-4" />
-          </div>
-          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
-            Дизайнерская упаковка
-          </h3>
-          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
-            Лаконичные матовые материалы, фактурная корейская плёнка и плотные атласные ленты в цвет бутона.
-          </p>
-        </div>
-
-        <div className="p-5 rounded-xl bg-white text-[#1C1215] border border-[#E5DDD9] shadow-sm hover:shadow-md transition-shadow space-y-2 group">
-          <div className="w-10 h-10 rounded-xl bg-[#922E3D]/10 text-[#922E3D] group-hover:bg-[#922E3D] group-hover:text-white transition-colors flex items-center justify-center">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <h3 className="font-sans text-base text-[#1C1215] font-semibold">
-            Стойкость от 10 до 14 дней
-          </h3>
-          <p className="text-xs text-[#5C454C] font-normal leading-relaxed">
-            Прямые поставки отборной срезки каждые 2–3 дня. Пакетик подкормки Chrysal прилагается к каждому букету.
-          </p>
-        </div>
+        ))}
       </div>
 
       {/* 2. Main Narrative: Delivery Page Context */}
