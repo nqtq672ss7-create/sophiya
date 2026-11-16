@@ -213,17 +213,19 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       </section>
 
       {/* 4. Filter & Category Bar with Real Canonical Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-4 border-b border-[#E5DDD9]">
           {/* Category Tabs (PillNav Style) */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 px-1 scroll-smooth">
             {CATEGORY_ITEMS.map((item) => {
               const isActive =
-                currentRoute.path === item.path ||
-                (currentRoute.path === '/' && item.category === activeCategory);
+                currentRoute.path === '/'
+                  ? item.category === activeCategory
+                  : item.path === currentRoute.path ||
+                    (activeCategory !== 'Все' && item.category === activeCategory);
               return (
                 <a
-                  key={item.path}
+                  key={item.category}
                   href={item.path}
                   onClick={(e) => {
                     e.preventDefault();
