@@ -5,7 +5,6 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  CheckCircle2,
 } from 'lucide-react';
 import { useReviews } from '../../context/ReviewsContext';
 import { LeaveReviewModal } from '../reviews/LeaveReviewModal';
@@ -183,15 +182,9 @@ export const FigmaReviewsSection: React.FC = () => {
                   </div>
 
                   <div className="pt-3 border-t border-[#F1EAE6] flex items-center justify-between gap-2 text-xs">
-                    <div className="min-w-0">
-                      <span className="font-sans text-xs text-[#1C1215] font-semibold block truncate">
-                        {rev.author}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-medium mt-0.5">
-                        <CheckCircle2 className="w-3 h-3 shrink-0" />
-                        <span>Заказ подтверждён</span>
-                      </span>
-                    </div>
+                    <span className="font-sans text-xs text-[#1C1215] font-semibold block truncate min-w-0">
+                      {rev.author}
+                    </span>
                     <YandexIcon className="w-4 h-4 shrink-0" />
                   </div>
                 </article>

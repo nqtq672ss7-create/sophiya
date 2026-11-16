@@ -35,17 +35,32 @@ interface ReviewsContextType {
 
 const ReviewsContext = createContext<ReviewsContextType|undefined>(undefined);
 
-const STORAGE_KEY = 'sophiya_salon_reviews_v3';
-const BACKUP_STORAGE_KEY = 'sophiya_salon_reviews_v2';
+const STORAGE_KEY = 'sophiya_salon_reviews_v4';
+const LEGACY_KEYS = ['sophiya_salon_reviews_v3', 'sophiya_salon_reviews_v2'];
+
+const LEGACY_DEMO_IDS = new Set(['1', '2', '3', '4']);
+
+function mergeWithYandexReviews(remoteItems: Review[]): Review[] {
+  const realRemote = remoteItems.filter((r) => !LEGACY_DEMO_IDS.has(r.id));
+  const seenIds = new Set(realRemote.map((r) => r.id));
+  const seenAuthors = new Set(realRemote.map((r) => r.author.trim().toLowerCase()));
+  const yandexAddons = INITIAL_REVIEWS.filter(
+    (r) => !seenIds.has(r.id) && !seenAuthors.has(r.author.trim().toLowerCase())
+  );
+  return [...realRemote, ...yandexAddons];
+}
 
 export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [reviews, setReviews] = useState<Review[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(BACKUP_STORAGE_KEY);
-      if (saved !== null) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+      if (typeof window !== 'undefined') {
+        LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved !== null) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
         }
       }
     } catch (e) {
@@ -83,8 +98,9 @@ export const ReviewsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (res.ok) {
         const remote = await res.json();
         if (Array.isArray(remote)) {
-          setReviews(remote);
-          saveToStorage(remote);
+          const merged = mergeWithYandexReviews(remote);
+          setReviews(merged);
+          saveToStorage(merged);
         }
       }
     } catch (err) {
