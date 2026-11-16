@@ -34,9 +34,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </video>
       </div>
 
-      {/* 2. Pure Editorial Vignette: Soft gradient framing without muddy overlays */}
-      <div className="absolute inset-0 z-1 pointer-events-none bg-gradient-to-t from-sofiya-black-purple via-sofiya-black-purple/40 to-sofiya-black-purple/70" />
-      <div className="absolute inset-0 z-1 pointer-events-none bg-radial from-transparent via-transparent to-sofiya-black-purple/60" />
+      {/* 2. Pure Editorial Vignette */}
+      <div className="absolute inset-0 z-1 pointer-events-none bg-sofiya-black-purple/60" />
 
       {/* 3. Center Luxury Presentation (Zero AI Plaques, Zero Bubbly Pills) */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center my-auto flex flex-col items-center">
@@ -45,26 +44,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <img
             src="/logo-light.png"
             alt="Салон цветов София Нижнекамск"
-            className="h-28 sm:h-36 md:h-44 w-auto object-contain mx-auto filter drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+            className="h-28 sm:h-36 md:h-44 w-auto object-contain mx-auto"
           />
         </div>
 
         {/* Brand Micro-Descriptor in Haute Couture Spacing */}
         <p className="text-[11px] sm:text-xs font-sans tracking-[0.35em] uppercase text-sofiya-viola font-light mb-4">
-          Салон авторской флористики • Нижнекамск, пр. Шинников, 13В
+          Салон авторской флористики , Нижнекамск, пр. Шинников, 13В
         </p>
 
         {/* Editorial Heading: Cormorant Garamond */}
-        <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-[#FAF4F6] font-light tracking-tight leading-[1.04]">
+        <h1 className="font-sans text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-[#FAF4F6] font-light tracking-tight leading-[1.04]">
           Доставка живых цветов
-          <span className="block font-serif italic text-sofiya-petal font-normal mt-2 sm:mt-3 text-3xl sm:text-5xl md:text-6xl">
+          <span className="block font-sans italic text-sofiya-petal font-normal mt-2 sm:mt-3 text-3xl sm:text-5xl md:text-6xl">
             в Нижнекамске от 30 минут
           </span>
         </h1>
 
         {/* Pure Typography Description (No cards, no glass blobs) */}
         <p className="mt-6 text-sofiya-petal/80 font-sans text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed">
-          Свежие поставки редких сортов роз, пионов и гортензий. Собираем авторские букеты и отправляем детальное фото композиции в WhatsApp перед выездом курьера.
+          Свежие поставки редких сортов роз, пионов и гортензий. Собираем авторские букеты и отправляем детальное фото композиции в MAX перед выездом курьера.
         </p>
 
         {/* Architectural Editorial Action Row */}
@@ -72,21 +71,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Primary CTA: Catalog */}
           <button
             onClick={onExploreCatalog}
-            className="w-full sm:w-auto px-10 py-4 bg-sofiya-red-berry hover:bg-sofiya-red-berry/90 text-white font-sans text-xs uppercase tracking-[0.25em] font-medium border border-sofiya-viola/30 transition-all duration-300 shadow-[0_4px_20px_rgba(30,7,8,0.6)] hover:border-sofiya-viola flex items-center justify-center gap-3"
+            className="w-full sm:w-auto px-10 py-4 bg-sofiya-red-berry hover:bg-sofiya-red-berry/90 text-white font-sans text-xs uppercase tracking-[0.25em] font-medium border border-sofiya-viola/30 transition-colors duration-300 shadow-[0_4px_20px_rgba(30,7,8,0.6)] hover:border-sofiya-viola flex items-center justify-center gap-3"
           >
             <ShoppingBag className="w-4 h-4 text-sofiya-petal" />
             <span>Смотреть каталог</span>
           </button>
 
-          {/* Secondary CTA: WhatsApp Direct with Real Number */}
+          {/* Secondary CTA: MAX Direct with Real Number */}
           <a
-            href="https://wa.me/79172563235?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%20%D1%86%D0%B2%D0%B5%D1%82%D1%8B%20%D0%B2%20%D1%81%D0%B0%D0%BB%D0%BE%D0%BD%D0%B5%20%D0%A1%D0%BE%D1%84%D0%B8%D1%8F%20(%D0%A8%D0%B8%D0%BD%D0%BD%D0%B8%D0%BA%D0%BE%D0%B2%2013%D0%92)"
+            href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto px-8 py-4 bg-sofiya-black-purple/60 hover:bg-sofiya-black-purple/90 text-sofiya-petal font-sans text-xs uppercase tracking-[0.2em] font-light border border-sofiya-viola/30 hover:border-sofiya-viola transition-all duration-300 flex items-center justify-center gap-2.5"
+            className="w-full sm:w-auto px-8 py-4 bg-sofiya-black-purple/60 hover:bg-sofiya-black-purple/90 text-sofiya-petal font-sans text-xs uppercase tracking-[0.2em] font-light border border-sofiya-viola/30 hover:border-sofiya-viola transition-colors duration-300 flex items-center justify-center gap-2.5"
           >
             <MessageCircle className="w-4 h-4 text-sofiya-viola" />
-            <span>Заказ в WhatsApp</span>
+            <span>Заказ в MAX</span>
           </a>
         </div>
       </div>

@@ -5,7 +5,8 @@ import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
 import { FigmaMapSection } from './FigmaMapSection';
 import { SeoRoute, formatShownCount } from '../../utils/routes';
-import { WhatsAppIcon } from '../common/WhatsAppIcon';
+import { MaxIcon } from '../common/MaxIcon';
+import { SALON_MAX_URL } from '../../config/contacts';
 import { BouquetCard } from '../catalog/BouquetCard';
 
 interface FigmaCatalogScreenProps {
@@ -89,14 +90,14 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </a>
 
             <a
-              href="https://wa.me/79172563235"
+              href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-emerald-600 text-white shadow-md flex items-center justify-center hover:bg-emerald-700 active:scale-95 transition-colors"
-              aria-label="Написать в WhatsApp"
-              title="Написать в WhatsApp"
+              className="w-10 h-10 rounded-xl bg-[#5B4BFF] text-white shadow-md flex items-center justify-center hover:bg-[#4636E3] active:scale-95 transition-colors"
+              aria-label="Написать в MAX"
+              title="Написать в MAX"
             >
-              <WhatsAppIcon className="w-5 h-5 fill-current" />
+              <MaxIcon className="w-5 h-5" />
             </a>
           </div>
         </div>
@@ -176,12 +177,12 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 </a>
                 <span className="flex items-center gap-2 bg-white/15 hover:bg-white/20 border border-white/25 px-3.5 py-2 rounded-xl transition-colors">
                   <Sparkles className="w-3.5 h-3.5 text-[#E5C398]" />
-                  <span>Фото букета в WhatsApp</span>
+                  <span>Фото букета в MAX</span>
                 </span>
               </div>
             </div>
 
-            {/* Quick Contact & WhatsApp Card - Frosted Velvet Glass with Gold Accent */}
+            {/* Quick Contact & MAX Card - Frosted Velvet Glass with Gold Accent */}
             <div className="w-full lg:w-80 bg-[#5A1019]/90 border border-[#E5C398]/35 rounded-xl p-5 sm:p-6 shrink-0 text-center space-y-3 shadow-xl">
               <span className="text-[11px] uppercase tracking-[0.25em] text-[#E5C398] font-semibold block">
                 Связь с шеф-флористом
@@ -195,17 +196,17 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               </a>
 
               <p className="text-xs text-[#FAF0F2]/85 font-light leading-relaxed">
-                Индивидуальная сборка или подбор сортов по фото в WhatsApp
+                Индивидуальная сборка или подбор сортов по фото в MAX
               </p>
 
               <a
-                href="https://wa.me/79172563235"
+                href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md active:scale-95"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md active:scale-95"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Написать в WhatsApp</span>
+                <MaxIcon className="w-4 h-4" />
+                <span>Написать в MAX</span>
               </a>
             </div>
           </div>
@@ -299,19 +300,17 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               Позиции в категории «{activeLabel}» собираются под заказ
             </h3>
             <p className="text-xs sm:text-sm text-[#7C636B] font-light max-w-md mx-auto mb-6 leading-relaxed">
-              Наши шеф-флористы соберут букет или композицию из свежей поставки с обязательным фотоотчетом в WhatsApp перед передачей курьеру.
+              Наши шеф-флористы соберут букет или композицию из свежей поставки с обязательным фотоотчетом в MAX перед передачей курьеру.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
-                href={`https://wa.me/79172563235?text=${encodeURIComponent(
-                  `Здравствуйте! Хочу заказать в категории «${activeLabel}» в Нижнекамске.`
-                )}`}
+                href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium flex items-center justify-center gap-2 shadow"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white text-xs font-medium flex items-center justify-center gap-2 shadow"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Связаться с шеф-флористом</span>
+                <MaxIcon className="w-4 h-4" />
+                <span>Написать в MAX</span>
               </a>
               <button
                 onClick={() => {

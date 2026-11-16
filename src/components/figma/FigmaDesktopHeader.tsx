@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { ShoppingBag, Phone } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { useAuth } from '../../context/AuthContext';
-import { WhatsAppIcon } from '../common/WhatsAppIcon';
+import { MaxIcon } from '../common/MaxIcon';
+import { SALON_MAX_URL } from '../../config/contacts';
 
 interface FigmaDesktopHeaderProps {
   activeTab: FigmaTab;
@@ -144,14 +145,14 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             </a>
 
             <a
-              href="https://wa.me/79172563235"
+              href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center active:scale-95 shadow-sm"
-              title="Написать в WhatsApp"
-              aria-label="Написать в WhatsApp"
+              className="w-10 h-10 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white transition-colors flex items-center justify-center active:scale-95 shadow-sm"
+              title="Написать в MAX"
+              aria-label="Написать в MAX"
             >
-              <WhatsAppIcon className="w-5 h-5 fill-current" />
+              <MaxIcon className="w-5 h-5" />
             </a>
           </div>
 

@@ -29,15 +29,15 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-500 ${
         scrolled
-          ? 'py-3 bg-sofiya-black-purple/95 backdrop-blur-md border-b border-sofiya-viola/15 shadow-2xl'
-          : 'py-5 bg-gradient-to-b from-sofiya-black-purple/90 via-sofiya-black-purple/40 to-transparent'
+          ? 'py-3 bg-sofiya-black-purple/95  border-b border-sofiya-viola/15 shadow-2xl'
+          : 'py-5 bg-[#6C1E26] from-sofiya-black-purple/90 via-sofiya-black-purple/40 to-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Brand Wordmark & Butterfly Symbol */}
-        <a href="#" className="flex items-center gap-3.5 group">
+        <a href="/" className="flex items-center gap-3.5 group">
           <img
             src="/logo-light.png"
             alt="Салон цветов София"
@@ -64,16 +64,16 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4 sm:gap-5">
-          {/* Working Phone & WhatsApp */}
+          {/* Working Phone & MAX */}
           <div className="hidden xl:flex items-center gap-4 text-xs font-sans">
             <a
-              href="https://wa.me/79172563235?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%20%D0%B1%D1%83%D0%BA%D0%B5%D1%82"
+              href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-sofiya-petal/80 hover:text-white transition-colors tracking-wide py-1 border-b border-transparent hover:border-sofiya-viola"
             >
               <MessageCircle className="w-3.5 h-3.5 text-sofiya-viola" />
-              <span>WhatsApp</span>
+              <span>MAX</span>
             </a>
 
             <a
@@ -104,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <User className="w-3.5 h-3.5 text-sofiya-viola" />
               <span className="max-w-[100px] truncate">{customer.firstName}</span>
-              <span className="px-1.5 py-0.2 bg-sofiya-red-berry text-[10px] font-serif text-white border border-sofiya-viola/30">
+              <span className="px-1.5 py-0.2 bg-sofiya-red-berry text-[10px] font-sans text-white border border-sofiya-viola/30">
                 {customer.discountPercent}%
               </span>
             </button>
@@ -121,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Minimalist Cart Trigger */}
           <button
             onClick={onOpenCart}
-            className="relative flex items-center gap-2 px-4 py-2 border border-sofiya-viola/30 hover:border-sofiya-viola bg-sofiya-red-berry/30 hover:bg-sofiya-red-berry/50 text-sofiya-petal text-[11px] font-sans uppercase tracking-[0.2em] transition-all"
+            className="relative flex items-center gap-2 px-4 py-2 border border-sofiya-viola/30 hover:border-sofiya-viola bg-sofiya-red-berry/30 hover:bg-sofiya-red-berry/50 text-sofiya-petal text-[11px] font-sans uppercase tracking-[0.2em] transition-colors"
           >
             <ShoppingBag className="w-3.5 h-3.5 text-sofiya-viola" />
             <span className="hidden sm:inline">Корзина</span>
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                   onOpenAdminClients();
                 }}
-                className="text-left text-zinc-300 py-1 flex items-center gap-2"
+                className="text-left text-[#9C828B] py-1 flex items-center gap-2"
               >
                 <Users className="w-4 h-4 text-sofiya-viola" />
                 <span>CRM Владелицы (база клиентов)</span>
@@ -200,13 +200,13 @@ export const Header: React.FC<HeaderProps> = ({
             </a>
 
             <a
-              href="https://wa.me/79172563235"
+              href="https://max.ru/u/f9LHodD0cOKG3_iDtgDpdmSTjHzJbBZW3_A7Z5AgjsHJp3XnDn_JixYJu6c"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sofiya-viola flex items-center gap-2"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>Написать в WhatsApp</span>
+              <span>Написать в MAX</span>
             </a>
           </div>
         </div>

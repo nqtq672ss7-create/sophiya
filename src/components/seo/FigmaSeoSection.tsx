@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, ArrowRight, Plus, Minus } from 'lucide-react';
 import { SeoRoute, getRouteByPath } from '../../utils/routes';
+import { SALON_MAX_URL } from '../../config/contacts';
 
 interface FigmaSeoSectionProps {
   currentRoute?: SeoRoute;
@@ -44,9 +45,9 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
       metric: '100%',
       unit: 'фото',
       badge: 'Контроль качества',
-      title: 'Фото в WhatsApp до выезда',
+      title: 'Фото в MAX до выезда',
       description:
-        'Флорист отправляет детальный снимок собранной композиции в WhatsApp заказчику перед передачей курьеру.',
+        'Флорист отправляет детальный снимок собранной композиции в MAX заказчику перед передачей курьеру.',
       Icon: ShieldCheck,
     },
     {
@@ -215,7 +216,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                   Привезём за 30–60 минут
                 </h3>
                 <p className="text-xs sm:text-[13px] text-white/85 leading-relaxed">
-                  Бесплатная доставка при заказе от 4 500 ₽. Перед выездом курьера отправим фото готового букета в WhatsApp.
+                  Бесплатная доставка при заказе от 4 500 ₽. Перед выездом курьера отправим фото готового букета в MAX.
                 </p>
               </div>
 
@@ -359,8 +360,12 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                 {openAccordion === 2 && (
                   <div className="px-5 pb-5 pt-2 space-y-2.5 text-xs text-[#5C454C] leading-relaxed border-t border-[#F1EAE6]">
                     <p>
-                      Пришлите понравившийся пример букета или назовите бюджет в WhatsApp по номеру{' '}
-                      <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" className="text-[#922E3D] font-semibold underline">
+                      Пришлите понравившийся пример букета или назовите бюджет в{' '}
+                      <a href={SALON_MAX_URL} target="_blank" rel="noopener noreferrer" className="text-[#922E3D] font-semibold underline">
+                        чат MAX
+                      </a>{' '}
+                      или по телефону{' '}
+                      <a href="tel:+79172563235" className="text-[#922E3D] font-semibold underline">
                         +7 (917) 256-32-35
                       </a>
                       .

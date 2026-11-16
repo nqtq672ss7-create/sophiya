@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, ShoppingCart, Check, X, Clock, MapPin } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
-import { WhatsAppIcon } from '../common/WhatsAppIcon';
+import { MaxIcon } from '../common/MaxIcon';
+import { SALON_MAX_URL } from '../../config/contacts';
 
 interface FigmaProductDetailModalProps {
   bouquet: Bouquet|null;
@@ -188,7 +189,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
                     <span>Доставка по Нижнекамску от 30 минут</span>
                   </div>
                   <p className="text-[#7C636B] font-light pl-6">
-                    Бережная транспортировка в специальном аквабоксе с водой. Обязательное фото готового букета в WhatsApp перед выездом курьера.
+                    Бережная транспортировка в специальном аквабоксе с водой. Обязательное фото готового букета в MAX перед выездом курьера.
                   </p>
 
                   <div className="flex items-center gap-2 text-[#922E3D] font-medium pt-1">
@@ -246,16 +247,14 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
             </button>
 
             <a
-              href={`https://wa.me/79172563235?text=${encodeURIComponent(
-                `Здравствуйте! Хочу уточнить детали и заказать букет «${bouquet.title}» (${bouquet.price} ₽) в Нижнекамске.`
-              )}`}
+              href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
-              title="Задать вопрос или заказать в WhatsApp"
-              aria-label="Заказать в WhatsApp"
+              className="w-12 h-12 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              title="Задать вопрос или заказать в MAX"
+              aria-label="Заказать в MAX"
             >
-              <WhatsAppIcon className="w-5 h-5 fill-current" />
+              <MaxIcon className="w-5 h-5" />
             </a>
           </div>
         </div>

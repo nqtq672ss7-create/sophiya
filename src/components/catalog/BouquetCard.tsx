@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
-import { WhatsAppIcon } from '../common/WhatsAppIcon';
+import { MaxIcon } from '../common/MaxIcon';
+import { SALON_MAX_URL } from '../../config/contacts';
 
 interface BouquetCardProps {
   bouquet: Bouquet;
@@ -151,17 +152,15 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
             </button>
 
             <a
-              href={`https://wa.me/79172563235?text=${encodeURIComponent(
-                `Здравствуйте! Хочу заказать букет «${bouquet.title}» (${bouquet.price} ₽) с доставкой в Нижнекамске.`
-              )}`}
+              href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
-              title="Заказать через WhatsApp"
-              aria-label="Заказать через WhatsApp"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              title="Написать в MAX"
+              aria-label="Написать в MAX"
             >
-              <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
+              <MaxIcon className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

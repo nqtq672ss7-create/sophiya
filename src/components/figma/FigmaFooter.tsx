@@ -3,7 +3,8 @@ import { Phone, MapPin, Clock, MessageSquare, Lock, ExternalLink } from 'lucide-
 import { FigmaTab } from './FigmaBottomNav';
 import { RequisitesModal } from '../payment/RequisitesModal';
 import { YandexIcon } from '../common/YandexIcon';
-import { WhatsAppIcon } from '../common/WhatsAppIcon';
+import { MaxIcon } from '../common/MaxIcon';
+import { SALON_MAX_URL } from '../../config/contacts';
 
 interface FigmaFooterProps {
   onTabChange: (tab: FigmaTab) => void;
@@ -111,13 +112,13 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                 Подберём свежие цветы под ваш бюджет и пришлём фото букета перед отправкой.
               </p>
               <a
-                href="https://wa.me/79172563235"
+                href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#6C1E26] hover:bg-[#8E2433] text-white text-xs font-semibold transition-colors shadow-lg active:scale-95"
               >
-                <WhatsAppIcon className="w-4 h-4 fill-current" />
-                <span>Написать флористу</span>
+                <MaxIcon className="w-4 h-4" />
+                <span>Написать в MAX</span>
               </a>
             </div>
 
@@ -249,14 +250,14 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                 {/* Quick Channels Row */}
                 <div className="flex items-center justify-center gap-2 mt-3 pt-2.5 border-t border-[#EFE7E3]">
                   <a
-                    href="https://wa.me/79172563235"
+                    href={SALON_MAX_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors"
-                    title="WhatsApp салона"
-                    aria-label="WhatsApp"
+                    className="w-8 h-8 rounded-lg bg-[#5B4BFF] hover:bg-[#4636E3] text-white flex items-center justify-center transition-colors"
+                    title="Написать в MAX"
+                    aria-label="MAX"
                   >
-                    <WhatsAppIcon className="w-4 h-4 fill-current" />
+                    <MaxIcon className="w-4 h-4" />
                   </a>
                   <a
                     href="tel:+79172563235"

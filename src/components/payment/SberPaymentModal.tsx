@@ -43,16 +43,16 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-none font-sans animate-fadeIn"
+      className="fixed inset-0 z-50 bg-black/75  flex items-center justify-center p-3 sm:p-4 select-none font-sans animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg bg-[#FAF7F5] rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 p-6 sm:p-8 max-h-[92vh] overflow-y-auto"
+        className="relative w-full max-w-lg bg-[#FAF7F5] rounded-xl shadow-2xl overflow-hidden border border-[#E5DDD9] p-6 sm:p-8 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-200/80 hover:bg-zinc-300 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition-colors"
+          className="absolute top-5 right-5 w-8 h-8 rounded-xl bg-[#EFE7E3] hover:bg-[#E5DDD9] flex items-center justify-center text-[#5C454C] hover:text-[#1C1215] transition-colors"
           aria-label="Закрыть"
         >
           <X className="w-4 h-4" />
@@ -62,37 +62,37 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
         <div className="flex items-center gap-2 text-emerald-700 mb-2">
           <ShieldCheck className="w-5 h-5 text-emerald-600" />
           <span className="text-[11px] uppercase tracking-[0.2em] font-semibold">
-            ПАО Сбербанк • Безопасный платёж
+            ПАО Сбербанк , Безопасный платёж
           </span>
         </div>
 
-        <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
+        <h3 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-normal">
           Оплата заказа {orderNumber}
         </h3>
 
         {/* Amount Card */}
-        <div className="my-5 p-4 rounded-2xl bg-white border border-emerald-100 shadow-sm flex items-center justify-between">
+        <div className="my-5 p-4 rounded-xl bg-white border border-emerald-100 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs text-zinc-400 font-light block">Сумма к списанию</span>
-            <span className="font-serif text-3xl font-bold text-emerald-800">
+            <span className="text-xs text-[#7C636B] font-light block">Сумма к списанию</span>
+            <span className="font-sans text-3xl font-bold text-emerald-800">
               {totalAmount.toLocaleString('ru-RU')} ₽
             </span>
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block">Получатель</span>
-            <span className="text-xs font-semibold text-zinc-800 block">
+            <span className="text-[10px] text-[#7C636B] uppercase tracking-wider block">Получатель</span>
+            <span className="text-xs font-semibold text-[#1C1215] block">
               ИП Обручников Д. В.
             </span>
-            <span className="text-[11px] text-zinc-500 font-mono">
+            <span className="text-[11px] text-[#5C454C] font-mono">
               р/с ...90051
             </span>
           </div>
         </div>
 
         {/* SberPay / SBP QR Code */}
-        <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm text-center space-y-4">
-          <div className="inline-block p-3 bg-emerald-50/50 rounded-2xl border border-emerald-200/60 shadow-inner">
+        <div className="bg-white rounded-xl p-5 border border-[#E5DDD9] shadow-sm text-center space-y-4">
+          <div className="inline-block p-3 bg-emerald-50/50 rounded-xl border border-emerald-200/60 shadow-inner">
             <img
               src={sberQrCodeUrl}
               alt="QR-код для оплаты через Сбербанк или СБП"
@@ -101,11 +101,11 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <span className="text-xs font-medium text-zinc-800 flex items-center justify-center gap-1.5">
+            <span className="text-xs font-medium text-[#1C1215] flex items-center justify-center gap-1.5">
               <Smartphone className="w-4 h-4 text-emerald-600" />
               <span>Наведите камеру смартфона для оплаты</span>
             </span>
-            <p className="text-[11px] text-zinc-500 font-light max-w-xs mx-auto leading-relaxed">
+            <p className="text-[11px] text-[#5C454C] font-light max-w-xs mx-auto leading-relaxed">
               Откроется приложение <strong>СберБанк Онлайн</strong> или любого вашего банка через СБП с готовой суммой и получателем.
             </p>
           </div>
@@ -130,7 +130,7 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
             type="button"
             disabled={isPaid}
             onClick={handleConfirmPayment}
-            className="w-full py-3.5 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3.5 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-colors shadow-md active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isPaid ? (
               <>
@@ -145,8 +145,8 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
             )}
           </button>
 
-          <p className="text-[11px] text-center text-zinc-400 font-light">
-            После подтверждения флорист салона свяжется с вами и пришлет фото готового букета в WhatsApp.
+          <p className="text-[11px] text-center text-[#7C636B] font-light">
+            После подтверждения флорист салона свяжется с вами и пришлет фото готового букета в MAX.
           </p>
         </div>
       </div>
