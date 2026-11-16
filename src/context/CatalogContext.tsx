@@ -20,29 +20,38 @@ interface CatalogContextType {
 
 const CatalogContext = createContext<CatalogContextType|undefined>(undefined);
 
-// Bumped storage key so that old dirty browser caches in Vivaldi/Safari are instantly ignored
-const STORAGE_KEY = 'sophiya_catalog_bouquets_v5_live';
+// Bumped storage key so that old 5-bouquet demo caches on phones are instantly purged
+const STORAGE_KEY = 'sophiya_catalog_bouquets_v6_live';
+const LEGACY_KEYS = [
+  'sophiya_catalog_bouquets_v5_live',
+  'sophiya_catalog_bouquets_v4_clean',
+  'sophiya_catalog_bouquets_v3',
+  'sophiya_catalog_bouquets_v2',
+  'sophiya_catalog_bouquets',
+];
+
+function isStaleDemoCache(items: Bouquet[]): boolean {
+  if (items.length === 0) return false;
+  const hasOnlyLegacyDemoIds = items.every((b) => ['1', '2', '3', '4', '5', '6'].includes(b.id));
+  return hasOnlyLegacyDemoIds && BOUQUETS_CATALOG.length > items.length;
+}
 
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date|null>(null);
 
-  // Initial state: starts clean, clears rogue legacy keys
+  // Initial state: clears legacy keys and falls back to live 37-bouquet snapshot if cache is stale/empty
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
     try {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('sophiya_catalog_bouquets_v4_clean');
-        localStorage.removeItem('sophiya_catalog_bouquets_v3');
-        localStorage.removeItem('sophiya_catalog_bouquets_v2');
-        localStorage.removeItem('sophiya_catalog_bouquets');
-      }
-
-      const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed;
+        LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0 && !isStaleDemoCache(parsed)) {
+            return parsed;
+          }
         }
       }
     } catch (e) {
@@ -57,7 +66,13 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
       }
     } catch (e) {
-      console.error('Failed to save to storage:', e);
+      // On mobile Safari 5MB quota may be exceeded when catalog grows; clear legacy keys and retry once
+      try {
+        LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      } catch {
+        console.warn('localStorage quota exceeded, keeping catalog in memory:', e);
+      }
     }
   };
 
@@ -151,10 +166,17 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const refreshCatalog = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`));
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = controller ? setTimeout(() => controller.abort(), 10000) : null;
+
+      const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`), {
+        signal: controller?.signal,
+      });
+      if (timer) clearTimeout(timer);
+
       if (res.ok) {
         const remote = await res.json();
-        if (Array.isArray(remote)) {
+        if (Array.isArray(remote) && remote.length > 0) {
           // Cloud is the single absolute truth for all devices
           setBouquets(remote);
           saveToStorage(remote);
