@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
 import { calculateLoyaltyTier } from '../../types/customer';
-import { Bouquet } from '../../types/figma-app';
+import { Bouquet, EDITABLE_CATEGORIES } from '../../types/figma-app';
 import { CustomerDatabaseService } from '../../services/customerDb';
 import { getApiUrl } from '../../config/api';
 
@@ -44,11 +44,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
     try {
-      const token = sessionStorage.getItem('sophiya_admin_token');
+      if (typeof window === 'undefined') return false;
+      const token =
+        sessionStorage.getItem('sophiya_admin_token') ||
+        localStorage.getItem('sophiya_admin_token_v1');
       if (!token || isTokenExpired(token)) {
         sessionStorage.removeItem('sophiya_admin_token');
+        localStorage.removeItem('sophiya_admin_token_v1');
         return false;
       }
+      sessionStorage.setItem('sophiya_admin_token', token);
       return true;
     } catch {
       return false;
@@ -397,11 +402,17 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setPinError('');
 
     try {
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
+
       const res = await fetch(getApiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pin, honeypot: '' }),
+        signal: controller?.signal,
       });
+
+      if (timeoutId) clearTimeout(timeoutId);
 
       const data = await res.json().catch(() => ({}));
 
@@ -410,6 +421,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         setPinError('');
         setPinInput('');
         sessionStorage.setItem('sophiya_admin_token', data.token);
+        localStorage.setItem('sophiya_admin_token_v1', data.token);
         refreshCustomers();
         refreshReviews();
         refreshPending();
@@ -417,9 +429,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         setPinError(data.error || 'Неверный пароль доступа. Попробуйте снова.');
         setPinInput('');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login request failed:', err);
-      setPinError('Не удалось подключиться к серверу авторизации.');
+      if (err?.name === 'AbortError') {
+        setPinError('Время ожидания ответа сервера истекло. Проверьте интернет и нажмите «Войти» снова.');
+      } else {
+        setPinError('Не удалось подключиться к серверу авторизации. Проверьте интернет.');
+      }
     } finally {
       setIsAuthenticating(false);
     }
@@ -431,6 +447,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setPinError('');
     try {
       sessionStorage.removeItem('sophiya_admin_token');
+      localStorage.removeItem('sophiya_admin_token_v1');
       sessionStorage.removeItem('sophiya_crm_unlocked');
       localStorage.removeItem('sophiya_crm_unlocked');
     } catch (err) {
@@ -999,10 +1016,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       onChange={(e) => setNewCategory(e.target.value as any)}
                       className="w-full px-3 py-2 bg-[#2C1F22] border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
                     >
-                      <option value="Монобукеты">Монобукеты</option>
-                      <option value="Авторские">Авторские</option>
-                      <option value="Коробки">Коробки</option>
-                      <option value="Корзины">Корзины</option>
+                      {EDITABLE_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -1197,10 +1215,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       onChange={(e) => setEditCategory(e.target.value as any)}
                       className="w-full px-3 py-2 bg-[#2C1F22] border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
                     >
-                      <option value="Монобукеты">Монобукеты</option>
-                      <option value="Авторские">Авторские</option>
-                      <option value="Коробки">Коробки</option>
-                      <option value="Корзины">Корзины</option>
+                      {EDITABLE_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>

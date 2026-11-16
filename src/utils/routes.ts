@@ -385,16 +385,36 @@ export function filterBouquetsForRoute(
   route: SeoRoute,
   interactiveCategory: string = 'Все'
 ): Bouquet[] {
-  // 1. Root main catalog route ('/')
-  if (route.path === '/') {
-    if (interactiveCategory === 'Все') return bouquets;
-    return bouquets.filter((b) => b.category === interactiveCategory);
+  // 1. If user selected a specific interactive category chip
+  if (interactiveCategory !== 'Все') {
+    const matched = bouquets.filter((b) => {
+      if (b.category === interactiveCategory) return true;
+      if (
+        interactiveCategory === 'Розы' &&
+        (/роз/i.test(b.title) || (b.tags && b.tags.includes('розы')))
+      ) {
+        return true;
+      }
+      if (
+        interactiveCategory === 'Хризантемы' &&
+        (/хризантем/i.test(b.title) || (b.tags && b.tags.includes('хризантемы')))
+      ) {
+        return true;
+      }
+      return false;
+    });
+    if (matched.length > 0) return matched;
   }
 
-  // 2. Strict tag-based routes
+  // 2. Root main catalog route ('/')
+  if (route.path === '/') {
+    return bouquets;
+  }
+
+  // 3. Strict tag-based routes
   if (route.targetTag) {
     const tag = route.targetTag.toLowerCase();
-    return bouquets.filter((b) => {
+    const tagMatches = bouquets.filter((b) => {
       if (b.flowerTypes && b.flowerTypes.some((ft) => ft.toLowerCase().includes(tag))) return true;
       if (b.tags && b.tags.some((t) => t.toLowerCase().includes(tag))) return true;
       if (tag === 'розы' && /роз/i.test(b.title)) return true;
@@ -403,16 +423,18 @@ export function filterBouquetsForRoute(
       if (tag === 'свадебные' && /свадебн/i.test(b.title)) return true;
       return false;
     });
+    if (tagMatches.length > 0) return tagMatches;
   }
 
-  // 3. Strict category-based routes
+  // 4. Strict category-based routes
   if (route.targetCategory) {
     const cat = route.targetCategory.toLowerCase();
-    return bouquets.filter((b) => {
-      if (b.category.toLowerCase() === cat) return true;
+    const catMatches = bouquets.filter((b) => {
+      if (b.category && b.category.toLowerCase() === cat) return true;
       if (b.tags && b.tags.some((t) => t.toLowerCase() === cat)) return true;
       return false;
     });
+    if (catMatches.length > 0) return catMatches;
   }
 
   return bouquets;

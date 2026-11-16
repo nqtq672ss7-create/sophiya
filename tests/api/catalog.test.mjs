@@ -101,6 +101,91 @@ test('POST sanitizes string prices and trims whitespace', async () => {
   assert.equal(saved[0].price, 4500);
 });
 
+test('POST action:add prepends new bouquet to KV', async () => {
+  kv.seedJson('catalog_bouquets', [
+    { id: 'b1', title: 'Старый букет', price: 2000, category: 'Монобукеты' },
+  ]);
+  const req = makeReq({
+    method: 'POST',
+    headers: { authorization: `Bearer ${adminToken()}` },
+    body: {
+      action: 'add',
+      item: { title: 'Новый букет', price: 3500, category: 'Авторские' },
+    },
+  });
+  const res = makeRes();
+  await handler(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.success, true);
+  assert.equal(res.body.count, 2);
+
+  const saved = kv.readJson('catalog_bouquets');
+  assert.equal(saved.length, 2);
+  assert.equal(saved[0].title, 'Новый букет');
+  assert.equal(saved[1].title, 'Старый букет');
+});
+
+test('POST action:update updates existing bouquet in KV', async () => {
+  kv.seedJson('catalog_bouquets', [
+    { id: 'b1', title: 'Букет 1', price: 2000, category: 'Монобукеты' },
+  ]);
+  const req = makeReq({
+    method: 'POST',
+    headers: { authorization: `Bearer ${adminToken()}` },
+    body: {
+      action: 'update',
+      id: 'b1',
+      updates: { price: 2500, title: 'Букет 1 обновленный' },
+    },
+  });
+  const res = makeRes();
+  await handler(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.success, true);
+
+  const saved = kv.readJson('catalog_bouquets');
+  assert.equal(saved[0].price, 2500);
+  assert.equal(saved[0].title, 'Букет 1 обновленный');
+});
+
+test('POST action:delete removes bouquet from KV', async () => {
+  kv.seedJson('catalog_bouquets', [
+    { id: 'b1', title: 'Букет 1', price: 2000 },
+    { id: 'b2', title: 'Букет 2', price: 3000 },
+  ]);
+  const req = makeReq({
+    method: 'POST',
+    headers: { authorization: `Bearer ${adminToken()}` },
+    body: { action: 'delete', id: 'b1' },
+  });
+  const res = makeRes();
+  await handler(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.count, 1);
+
+  const saved = kv.readJson('catalog_bouquets');
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].id, 'b2');
+});
+
+test('POST action:toggleStock flips stock status in KV', async () => {
+  kv.seedJson('catalog_bouquets', [
+    { id: 'b1', title: 'Букет 1', price: 2000, inStock: true },
+  ]);
+  const req = makeReq({
+    method: 'POST',
+    headers: { authorization: `Bearer ${adminToken()}` },
+    body: { action: 'toggleStock', id: 'b1' },
+  });
+  const res = makeRes();
+  await handler(req, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.inStock, false);
+
+  const saved = kv.readJson('catalog_bouquets');
+  assert.equal(saved[0].inStock, false);
+});
+
 test('legitimate site origins are reflected in CORS headers', async () => {
   const validOrigins = [
     'https://sitesophiya.vercel.app',

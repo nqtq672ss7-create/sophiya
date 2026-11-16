@@ -469,7 +469,7 @@ function filterBouquetsForRoute(route) {
 
   if (route.targetTag) {
     const tag = route.targetTag.toLowerCase();
-    return activeBouquets.filter(b => {
+    const matched = activeBouquets.filter(b => {
       if (b.flowerTypes && b.flowerTypes.some(ft => ft.toLowerCase().includes(tag))) return true;
       if (b.tags && b.tags.some(t => t.toLowerCase().includes(tag))) return true;
       if (tag === 'розы' && /роз/i.test(b.title)) return true;
@@ -480,15 +480,17 @@ function filterBouquetsForRoute(route) {
       if (tag === 'на-юбилей' && (b.tags && b.tags.includes('на-юбилей'))) return true;
       return false;
     });
+    if (matched.length > 0) return matched;
   }
 
   if (route.targetCategory) {
     const cat = route.targetCategory.toLowerCase();
-    return activeBouquets.filter(b => {
+    const matched = activeBouquets.filter(b => {
       if (b.category && b.category.toLowerCase() === cat) return true;
       if (b.tags && b.tags.some(t => t.toLowerCase() === cat)) return true;
       return false;
     });
+    if (matched.length > 0) return matched;
   }
 
   return activeBouquets;
@@ -1254,7 +1256,7 @@ function generateJsonLd(route) {
 async function runPrerender() {
   process.stdout.write('[SSG] Starting SSG Pre-rendering for 23 landing pages...\n');
 
-  // Try to load live catalog from cloud backend
+  // Try to load live catalog from cloud backend or local snapshot
   try {
     const res = await fetch('https://sitesophiya.vercel.app/api/catalog?t=' + Date.now());
     if (res.ok) {
@@ -1265,7 +1267,20 @@ async function runPrerender() {
       }
     }
   } catch (err) {
-    process.stdout.write(`[Warn] Cloud fetch skipped during build, using defaults: ${err.message}\n`);
+    process.stdout.write(`[Warn] Cloud fetch skipped during build, checking snapshot: ${err.message}\n`);
+  }
+
+  if (activeBouquets === BOUQUETS) {
+    const snapshotPath = path.resolve(ROOT_DIR, 'backups/catalog_live_36_snapshot.json');
+    if (fs.existsSync(snapshotPath)) {
+      try {
+        const snap = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+        if (Array.isArray(snap) && snap.length > 0) {
+          activeBouquets = snap;
+          process.stdout.write(`[Snapshot] Loaded ${snap.length} bouquets from local snapshot for pre-rendering!\n`);
+        }
+      } catch {}
+    }
   }
 
   const templatePath = path.resolve(DIST_DIR, 'index.html');

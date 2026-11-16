@@ -37,6 +37,7 @@ function isAllowedOrigin(origin: string|undefined): boolean {
     /^https?:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai(:[0-9]+)?$/,
     /^https?:\/\/(www\.)?цветы-софия\.рф(:[0-9]+)?$/,
     /^https?:\/\/sitesophiya\.vercel\.app(:[0-9]+)?$/,
+    /^https?:\/\/([a-zA-Z0-9_-]+\.)?github\.io(:[0-9]+)?$/,
     /^https?:\/\/localhost(:[0-9]+)?$/,
     /^https?:\/\/127\.0\.0\.1(:[0-9]+)?$/,
   ];
@@ -95,6 +96,29 @@ async function saveKvBackup(client: any, key: string, data: any): Promise<void> 
   }
 }
 
+function sanitizeSingleBouquet(item: any, fallbackId?: string) {
+  if (!item || typeof item !== 'object') {
+    throw new Error('Элемент имеет неверный формат');
+  }
+  const title = typeof item.title === 'string' ? item.title.trim() : '';
+  if (!title) {
+    throw new Error('У букета отсутствует название');
+  }
+  const id =
+    typeof item.id === 'string' && item.id.trim()
+      ? item.id.trim()
+      : fallbackId || `custom_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const rawPrice = typeof item.price === 'string' ? item.price.replace(/\s+/g, '') : item.price;
+  const price = Number(rawPrice) || 0;
+
+  return {
+    ...item,
+    id,
+    title,
+    price,
+  };
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setSecureCors(req, res);
 
@@ -135,43 +159,111 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-      let items = req.body;
-      if (typeof items === 'string') {
+      let payload = req.body;
+      if (typeof payload === 'string') {
         try {
-          items = JSON.parse(items);
+          payload = JSON.parse(payload);
         } catch {
           return res.status(400).json({ error: 'Неверный формат JSON' });
         }
       }
 
-      if (!Array.isArray(items)) {
-        return res.status(400).json({ error: 'Ожидается массив букетов' });
+      // Helper to fetch current KV bouquets
+      const getCurrentBouquets = async (): Promise<any[]> => {
+        let raw = await client.get('catalog_bouquets');
+        if (typeof raw === 'string') {
+          try {
+            raw = JSON.parse(raw);
+          } catch {}
+        }
+        return Array.isArray(raw) ? raw : [];
+      };
+
+      // 1. Granular Action: ADD
+      if (payload && payload.action === 'add' && payload.item) {
+        const single = sanitizeSingleBouquet(payload.item);
+        const current = await getCurrentBouquets();
+        const updated = [single, ...current.filter((b) => b.id !== single.id)];
+        await client.set('catalog_bouquets', updated);
+        saveKvBackup(client, 'catalog_bouquets', updated).catch(() => {});
+        return res.status(200).json({ success: true, item: single, count: updated.length });
       }
 
-      const sanitizedItems = items.map((item, idx) => {
-        if (!item || typeof item !== 'object') {
-          throw new Error(`Элемент #${idx + 1} имеет неверный формат`);
+      // 2. Granular Action: UPDATE
+      if (payload && payload.action === 'update' && payload.id) {
+        const id = String(payload.id).trim();
+        const updates = payload.updates || {};
+        const current = await getCurrentBouquets();
+        let found = false;
+        const updated = current.map((b) => {
+          if (b.id === id) {
+            found = true;
+            const merged = { ...b, ...updates };
+            if (updates.price !== undefined) {
+              const rawPrice =
+                typeof updates.price === 'string'
+                  ? updates.price.replace(/\s+/g, '')
+                  : updates.price;
+              merged.price = Number(rawPrice) || 0;
+            }
+            if (updates.title) merged.title = String(updates.title).trim();
+            return merged;
+          }
+          return b;
+        });
+        if (!found) {
+          return res.status(404).json({ error: `Букет с ID ${id} не найден` });
         }
-        const title = typeof item.title === 'string' ? item.title.trim() : '';
-        if (!title) {
-          throw new Error(`У букета #${idx + 1} отсутствует название`);
-        }
-        const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : `custom_${Date.now()}_${idx}`;
-        const rawPrice = typeof item.price === 'string' ? item.price.replace(/\s+/g, '') : item.price;
-        const price = Number(rawPrice) || 0;
+        await client.set('catalog_bouquets', updated);
+        saveKvBackup(client, 'catalog_bouquets', updated).catch(() => {});
+        return res.status(200).json({ success: true, count: updated.length });
+      }
 
-        return {
-          ...item,
-          id,
-          title,
-          price,
-        };
-      });
+      // 3. Granular Action: DELETE
+      if (payload && payload.action === 'delete' && payload.id) {
+        const id = String(payload.id).trim();
+        const current = await getCurrentBouquets();
+        const updated = current.filter((b) => b.id !== id);
+        await client.set('catalog_bouquets', updated);
+        saveKvBackup(client, 'catalog_bouquets', updated).catch(() => {});
+        return res.status(200).json({ success: true, count: updated.length });
+      }
 
-      // 1. Save directly to primary key (fast, reliable)
+      // 4. Granular Action: TOGGLE STOCK
+      if (payload && payload.action === 'toggleStock' && payload.id) {
+        const id = String(payload.id).trim();
+        const current = await getCurrentBouquets();
+        let newStock = false;
+        const updated = current.map((b) => {
+          if (b.id === id) {
+            newStock = !b.inStock;
+            return { ...b, inStock: newStock };
+          }
+          return b;
+        });
+        await client.set('catalog_bouquets', updated);
+        saveKvBackup(client, 'catalog_bouquets', updated).catch(() => {});
+        return res.status(200).json({ success: true, inStock: newStock, count: updated.length });
+      }
+
+      // 5. Batch / Array Replacement (Backward Compatibility)
+      const items = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.items)
+          ? payload.items
+          : null;
+      if (!items) {
+        return res.status(400).json({ error: 'Ожидается массив букетов или валидное действие (action)' });
+      }
+
+      const sanitizedItems = items.map((item, idx) =>
+        sanitizeSingleBouquet(item, `custom_${Date.now()}_${idx}`)
+      );
+
+      // Save directly to primary key
       await client.set('catalog_bouquets', sanitizedItems);
 
-      // 2. Save rolling backup asynchronously without blocking response
+      // Save rolling backup asynchronously without blocking response
       saveKvBackup(client, 'catalog_bouquets', sanitizedItems).catch(() => {});
 
       return res.status(200).json({ success: true, count: sanitizedItems.length });

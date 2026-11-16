@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, MapPin, Clock, MessageSquare, ShieldCheck, FileText } from 'lucide-react';
+import { Phone, MapPin, Clock, MessageSquare, ShieldCheck, FileText, Lock } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { RequisitesModal } from '../payment/RequisitesModal';
 
@@ -236,15 +236,30 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           <span>
             © 2026 Салон цветов «София». Все права защищены.
           </span>
-          <a
-            href="https://yandex.ru/maps/org/sofiya/105599949171"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white/70 transition-colors"
-            title="Салон на Яндекс Картах"
-          >
-            г. Нижнекамск, пр. Шинников, 13В
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://yandex.ru/maps/org/sofiya/105599949171"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/70 transition-colors"
+              title="Салон на Яндекс Картах"
+            >
+              г. Нижнекамск, пр. Шинников, 13В
+            </a>
+            <span className="text-white/20">•</span>
+            <a
+              href="/admin/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.hash = '#admin';
+              }}
+              className="hover:text-[#C5A880] text-white/50 transition-colors flex items-center gap-1 cursor-pointer"
+              title="Вход в панель управления для владелицы салона"
+            >
+              <Lock className="w-3 h-3 text-[#C5A880]" />
+              <span>CRM</span>
+            </a>
+          </div>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ArrowRight, User, Phone, Calendar, CheckCircle2 } from 'lucide-react';
+import { X, ArrowRight, User, Phone, Calendar, CheckCircle2, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatRussianPhone, normalizePhone } from '../../services/customerDb';
 
@@ -277,6 +277,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             </button>
             .
           </p>
+
+          {/* Direct link for salon owner so she is never confused */}
+          <div className="pt-3 mt-3 border-t border-white/10 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                closeAuthModal();
+                window.location.hash = '#admin';
+              }}
+              className="text-xs text-[#C5A880]/80 hover:text-[#C5A880] transition-colors inline-flex items-center gap-1.5 font-light cursor-pointer py-1 px-2.5 rounded-lg hover:bg-white/5"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>Вы владелица салона? Войти в CRM управление</span>
+            </button>
+          </div>
         </form>
       </div>
     </div>

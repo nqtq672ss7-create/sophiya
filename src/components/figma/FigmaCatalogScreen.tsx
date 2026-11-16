@@ -37,14 +37,18 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
 
   const CATEGORY_ITEMS = [
     { label: 'Все', path: '/', category: 'Все' },
-    { label: 'Розы', path: '/rozy/', category: 'Монобукеты' },
     { label: 'Монобукеты', path: '/monobukety/', category: 'Монобукеты' },
     { label: 'Авторские', path: '/avtorskie-bukety/', category: 'Авторские' },
+    { label: 'Цветы поштучно', path: '/', category: 'Цветы поштучно' },
     { label: 'Коробки', path: '/cvety-v-korobke/', category: 'Коробки' },
     { label: 'Корзины', path: '/korziny-cvetov/', category: 'Корзины' },
-    { label: 'Свадебные', path: '/svadebnye-bukety/', category: 'Авторские' },
-    { label: 'Пионы', path: '/piony/', category: 'Монобукеты' },
-    { label: 'Хризантемы', path: '/hrizantemy/', category: 'Монобукеты' },
+    { label: 'Шары', path: '/', category: 'Шары' },
+    { label: 'Топперы', path: '/', category: 'Топперы' },
+    { label: 'Мягкие игрушки', path: '/', category: 'Мягкие игрушки' },
+    { label: 'Сладости', path: '/', category: 'Сладости' },
+    { label: 'Комнатные растения', path: '/gorshechnye-rasteniya/', category: 'Комнатные растения' },
+    { label: 'Розы', path: '/rozy/', category: 'Розы' },
+    { label: 'Хризантемы', path: '/hrizantemy/', category: 'Хризантемы' },
   ];
 
   const displayedBouquets = bouquets.filter((b) => {
@@ -310,7 +314,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {displayedBouquets.map((bouquet) => (
               <BouquetCard
                 key={bouquet.id}

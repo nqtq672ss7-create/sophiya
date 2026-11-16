@@ -55,31 +55,38 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
           loading="lazy"
         />
 
+        {/* Category Badge */}
+        {bouquet.category && bouquet.category !== 'Все' && (
+          <span className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-2 py-0.5 rounded-md bg-[#1C1215]/85 text-[9px] sm:text-[10px] text-white/95 font-medium select-none">
+            {bouquet.category}
+          </span>
+        )}
+
         {/* Multi-photo Navigation Arrows */}
         {photos.length > 1 && (
           <>
             <button
               type="button"
               onClick={handlePrevPhoto}
-              className="absolute left-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               aria-label="Предыдущее фото"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
             <button
               type="button"
               onClick={handleNextPhoto}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               aria-label="Следующее фото"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </>
         )}
 
         {/* Dots Indicator */}
         {photos.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-md">
+          <div className="absolute bottom-1.5 sm:bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-1.5 bg-black/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md">
             {photos.map((_, dotIdx) => (
               <button
                 key={dotIdx}
@@ -87,8 +94,8 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
                 onClick={(e) => handleDotClick(e, dotIdx)}
                 className={`rounded-sm transition-colors cursor-pointer ${
                   dotIdx === activePhoto
-                    ? 'w-4 h-1.5 bg-white'
-                    : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                    ? 'w-3 sm:w-4 h-1 sm:h-1.5 bg-white'
+                    : 'w-1 sm:w-1.5 h-1 sm:h-1.5 bg-white/50 hover:bg-white/80'
                 }`}
                 aria-label={`Фото ${dotIdx + 1}`}
               />
@@ -98,32 +105,32 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
       </div>
 
       {/* Info Container */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      <div className="p-2.5 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-sans text-base text-[#1C1215] font-semibold leading-snug group-hover:text-[#922E3D] transition-colors mb-1.5 line-clamp-1">
+          <h3 className="font-sans text-xs sm:text-base text-[#1C1215] font-semibold leading-snug group-hover:text-[#922E3D] transition-colors mb-1 line-clamp-2 sm:line-clamp-1">
             {bouquet.title}
           </h3>
 
-          <p className="text-xs text-[#5C454C] font-light line-clamp-2 leading-relaxed mb-3">
+          <p className="hidden sm:block text-xs text-[#5C454C] font-light line-clamp-2 leading-relaxed mb-3">
             {bouquet.description}
           </p>
         </div>
 
         {/* Price & Action Row */}
         <div>
-          <div className="flex items-baseline justify-between pt-2.5 border-t border-[#E5DDD9] mb-3">
+          <div className="flex items-baseline justify-between pt-1.5 sm:pt-2.5 border-t border-[#E5DDD9] mb-2 sm:mb-3">
             <div>
               {userDiscount > 0 ? (
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-sans text-xl font-bold text-[#922E3D]">
+                <div className="flex items-baseline gap-1 sm:gap-1.5">
+                  <span className="font-sans text-sm sm:text-xl font-bold text-[#922E3D]">
                     {discountedPrice.toLocaleString('ru-RU')} ₽
                   </span>
-                  <span className="text-xs text-[#7C636B] line-through">
+                  <span className="text-[10px] sm:text-xs text-[#7C636B] line-through">
                     {bouquet.price.toLocaleString('ru-RU')} ₽
                   </span>
                 </div>
               ) : (
-                <span className="font-sans text-xl font-bold text-[#922E3D]">
+                <span className="font-sans text-sm sm:text-xl font-bold text-[#922E3D]">
                   {bouquet.price.toLocaleString('ru-RU')} ₽
                 </span>
               )}
@@ -131,14 +138,14 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
           </div>
 
           {/* Action: Cart Button + WhatsApp Icon Button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={(e) => onAddToCart(bouquet, e)}
-              className="flex-1 py-2 px-3 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-95 cursor-pointer"
+              className="flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 transition-colors shadow-sm active:scale-95 cursor-pointer"
             >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              <span>В корзину</span>
+              <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span className="truncate">В корзину</span>
             </button>
 
             <a
@@ -148,11 +155,11 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
               title="Заказать через WhatsApp"
               aria-label="Заказать через WhatsApp"
             >
-              <WhatsAppIcon className="w-4 h-4 fill-current" />
+              <WhatsAppIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
             </a>
           </div>
         </div>

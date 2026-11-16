@@ -37,6 +37,7 @@ function isAllowedOrigin(origin: string | undefined): boolean {
     /^https?:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai(:[0-9]+)?$/,
     /^https?:\/\/(www\.)?цветы-софия\.рф(:[0-9]+)?$/,
     /^https?:\/\/sitesophiya\.vercel\.app(:[0-9]+)?$/,
+    /^https?:\/\/([a-zA-Z0-9_-]+\.)?github\.io(:[0-9]+)?$/,
     /^https?:\/\/localhost(:[0-9]+)?$/,
     /^https?:\/\/127\.0\.0\.1(:[0-9]+)?$/,
   ];

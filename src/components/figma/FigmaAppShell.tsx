@@ -33,7 +33,52 @@ export const FigmaAppShell: React.FC = () => {
     return 'catalog';
   });
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved =
+          localStorage.getItem('sophiya_cart_items_v2') ||
+          localStorage.getItem('sophiya_cart_items_v1') ||
+          localStorage.getItem('sophiya_cart');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load cart from storage:', e);
+    }
+    return [];
+  });
+
+  // Persist cart to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sophiya_cart_items_v2', JSON.stringify(cartItems));
+        if (customer?.phone) {
+          localStorage.setItem(`sophiya_cart_${customer.phone}`, JSON.stringify(cartItems));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to save cart to storage:', e);
+    }
+  }, [cartItems, customer?.phone]);
+
+  // If customer logs in and had items previously under this phone, restore them if current cart is empty
+  useEffect(() => {
+    if (customer?.phone && cartItems.length === 0) {
+      try {
+        const userSaved = localStorage.getItem(`sophiya_cart_${customer.phone}`);
+        if (userSaved) {
+          const parsed = JSON.parse(userSaved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCartItems(parsed);
+          }
+        }
+      } catch {}
+    }
+  }, [customer?.phone]);
   const [selectedBouquet, setSelectedBouquet] = useState<Bouquet|null>(null);
   const [toastBouquet, setToastBouquet] = useState<Bouquet|null>(null);
   const [isToastOpen, setIsToastOpen] = useState(false);
