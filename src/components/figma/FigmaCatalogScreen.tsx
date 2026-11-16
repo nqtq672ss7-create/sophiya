@@ -270,10 +270,20 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       </div>
 
       {/* 6. Bouquets Catalog Grid */}
+      {(() => {
+        const activeLabel =
+          activeCategory !== 'Все' ? activeCategory : currentRoute.breadcrumbLabel;
+        const headingText =
+          activeCategory !== 'Все'
+            ? `Каталог: ${activeCategory}`
+            : currentRoute.path === '/'
+              ? 'Каталог букетов'
+              : `Каталог: ${currentRoute.breadcrumbLabel}`;
+        return (
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-8">
         <div className="flex items-baseline justify-between mb-6 pb-2 border-b border-[#E5DDD9]">
           <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold tracking-tight">
-            {currentRoute.path === '/' ? 'Каталог букетов' : `Каталог: ${currentRoute.breadcrumbLabel}`}
+            {headingText}
           </h2>
           <span className="text-xs text-[#7C636B] font-light">
             {formatShownCount(displayedBouquets.length)}
@@ -286,15 +296,15 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               <Sparkles className="w-6 h-6 text-[#922E3D]" />
             </div>
             <h3 className="font-sans text-xl sm:text-2xl text-[#1C1215] font-semibold mb-2">
-              Позиции в категории «{currentRoute.breadcrumbLabel}» собираются под заказ
+              Позиции в категории «{activeLabel}» собираются под заказ
             </h3>
             <p className="text-xs sm:text-sm text-[#7C636B] font-light max-w-md mx-auto mb-6 leading-relaxed">
-              Наши шеф-флористы соберут букет из свежих цветов сегодняшней поставки с обязательным фотоотчетом в WhatsApp перед передачей курьеру.
+              Наши шеф-флористы соберут букет или композицию из свежей поставки с обязательным фотоотчетом в WhatsApp перед передачей курьеру.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
                 href={`https://wa.me/79172563235?text=${encodeURIComponent(
-                  `Здравствуйте! Хочу заказать букет в категории «${currentRoute.breadcrumbLabel}» в Нижнекамске.`
+                  `Здравствуйте! Хочу заказать в категории «${activeLabel}» в Нижнекамске.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -329,6 +339,8 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
           </div>
         )}
       </div>
+        );
+      })()}
 
       {/* 7. Rotating Reviews Section */}
       <FigmaReviewsSection />

@@ -385,9 +385,9 @@ export function filterBouquetsForRoute(
   route: SeoRoute,
   interactiveCategory: string = 'Все'
 ): Bouquet[] {
-  // 1. If user selected a specific interactive category chip
+  // 1. If user selected a specific interactive category chip — always strictly filter by it
   if (interactiveCategory !== 'Все') {
-    const matched = bouquets.filter((b) => {
+    return bouquets.filter((b) => {
       if (b.category === interactiveCategory) return true;
       if (
         interactiveCategory === 'Розы' &&
@@ -403,7 +403,6 @@ export function filterBouquetsForRoute(
       }
       return false;
     });
-    if (matched.length > 0) return matched;
   }
 
   // 2. Root main catalog route ('/')
@@ -414,7 +413,7 @@ export function filterBouquetsForRoute(
   // 3. Strict tag-based routes
   if (route.targetTag) {
     const tag = route.targetTag.toLowerCase();
-    const tagMatches = bouquets.filter((b) => {
+    return bouquets.filter((b) => {
       if (b.flowerTypes && b.flowerTypes.some((ft) => ft.toLowerCase().includes(tag))) return true;
       if (b.tags && b.tags.some((t) => t.toLowerCase().includes(tag))) return true;
       if (tag === 'розы' && /роз/i.test(b.title)) return true;
@@ -423,18 +422,16 @@ export function filterBouquetsForRoute(
       if (tag === 'свадебные' && /свадебн/i.test(b.title)) return true;
       return false;
     });
-    if (tagMatches.length > 0) return tagMatches;
   }
 
   // 4. Strict category-based routes
   if (route.targetCategory) {
     const cat = route.targetCategory.toLowerCase();
-    const catMatches = bouquets.filter((b) => {
+    return bouquets.filter((b) => {
       if (b.category && b.category.toLowerCase() === cat) return true;
       if (b.tags && b.tags.some((t) => t.toLowerCase() === cat)) return true;
       return false;
     });
-    if (catMatches.length > 0) return catMatches;
   }
 
   return bouquets;
