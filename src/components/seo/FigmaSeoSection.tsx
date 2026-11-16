@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, ArrowRight } from 'lucide-react';
+import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, ArrowRight, Plus, Minus } from 'lucide-react';
 import { SeoRoute, getRouteByPath } from '../../utils/routes';
 
 interface FigmaSeoSectionProps {
@@ -8,6 +8,7 @@ interface FigmaSeoSectionProps {
 
 export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: propRoute }) => {
   const [pathname, setPathname] = useState(() => (typeof window !== 'undefined' ? window.location.pathname : '/'));
+  const [openAccordion, setOpenAccordion] = useState<number>(0);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -196,179 +197,179 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
             </p>
           </div>
 
-          {/* 3 Refined Editorial Cards (Zero Slop / Luxury Editorial Layout) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-            {/* Card 1: Delivery by Districts */}
-            <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
-                    <Truck className="w-5 h-5" />
-                  </div>
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#922E3D] bg-[#922E3D]/10 px-3 py-1 rounded-md">
+          {/* Variant 5: Burgundy Logistics Card Left + Interactive Accordion Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
+            {/* Left: Burgundy Logistics Card */}
+            <div className="lg:col-span-5 bg-[#781F2A] text-white rounded-xl p-6 sm:p-7 shadow-sm flex flex-col justify-between gap-5">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#E8D5B7]">
+                    Доставка по Нижнекамску
+                  </span>
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-black/25 text-[#E8D5B7]">
                     08:00 – 21:00
                   </span>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-bold text-[#1C1215] leading-snug">
-                    Доставка цветов по районам города
-                  </h3>
-                  <p className="text-xs text-[#5C454C] leading-relaxed mt-1">
-                    Курьеры салона доставляют букеты ежедневно с интервалом от 30 до 60 минут с момента сборки.
-                  </p>
+                <h3 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-2">
+                  Привезём за 30–60 минут
+                </h3>
+                <p className="text-xs sm:text-[13px] text-white/85 leading-relaxed">
+                  Бесплатная доставка при заказе от 4 500 ₽. Перед выездом курьера отправим фото готового букета в WhatsApp.
+                </p>
+              </div>
+
+              <div className="bg-black/25 rounded-xl p-4 space-y-3 border border-white/10">
+                <div className="flex items-start justify-between gap-3 text-xs">
+                  <div>
+                    <div className="font-semibold text-white">Центр и жилые микрорайоны</div>
+                    <div className="text-[11px] text-white/70 mt-0.5">Шинников, Мира, Строителей, Сююмбике, Химиков</div>
+                  </div>
+                  <span className="font-bold text-[#E8D5B7] shrink-0">300 ₽</span>
                 </div>
 
-                <div className="space-y-2.5 pt-1">
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-[#1C1215]">Центр и жилые микрорайоны</div>
-                      <div className="text-[11px] text-[#7C636B] leading-tight">Шинников, Мира, Строителей, Сююмбике, Химиков</div>
-                    </div>
-                    <span className="text-xs font-bold text-[#922E3D] shrink-0">300 ₽</span>
-                  </div>
+                <div className="h-px bg-white/10" />
 
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-[#1C1215]">Пригородные посёлки</div>
-                      <div className="text-[11px] text-[#7C636B] leading-tight">Красный Ключ, Большое и Нижнее Афанасово</div>
-                    </div>
-                    <span className="text-xs font-bold text-[#922E3D] shrink-0">450 ₽</span>
+                <div className="flex items-start justify-between gap-3 text-xs">
+                  <div>
+                    <div className="font-semibold text-white">Пригородные посёлки</div>
+                    <div className="text-[11px] text-white/70 mt-0.5">Красный Ключ, Большое и Нижнее Афанасово</div>
                   </div>
+                  <span className="font-bold text-[#E8D5B7] shrink-0">450 ₽</span>
+                </div>
 
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-[#1C1215]">Промзона и предприятия</div>
-                      <div className="text-[11px] text-[#7C636B] leading-tight">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
-                    </div>
-                    <span className="text-xs font-bold text-[#922E3D] shrink-0">500 ₽</span>
+                <div className="h-px bg-white/10" />
+
+                <div className="flex items-start justify-between gap-3 text-xs">
+                  <div>
+                    <div className="font-semibold text-white">Промзона и предприятия</div>
+                    <div className="text-[11px] text-white/70 mt-0.5">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
                   </div>
+                  <span className="font-bold text-[#E8D5B7] shrink-0">500 ₽</span>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#E5DDD9] text-[11px] text-[#7C636B] flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Бесплатная доставка при заказе от 4 500 ₽</span>
-              </div>
-            </div>
-
-            {/* Card 2: Occasions */}
-            <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
-                    <Calendar className="w-5 h-5" />
-                  </div>
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#922E3D] bg-[#922E3D]/10 px-3 py-1 rounded-md">
-                    Под любой повод
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-[#1C1215] leading-snug">
-                    Букеты под любые поводы и события
-                  </h3>
-                  <p className="text-xs text-[#5C454C] leading-relaxed mt-1">
-                    Шеф-флористы «Софии» подбирают сортовой состав, гамму и упаковку под атмосферу события:
-                  </p>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] space-y-1">
-                    <div className="flex items-center justify-between text-xs font-bold text-[#1C1215]">
-                      <span>День рождения, юбилей</span>
-                      <span className="text-[10px] text-amber-700 font-medium px-2 py-0.5 rounded-md bg-amber-50">Выбор гостей</span>
-                    </div>
-                    <p className="text-[11px] text-[#7C636B] leading-tight">
-                      Пышные сеты с французскими розами, гортензиями, а также монобукеты из 25, 51 или 101 розы.
-                    </p>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] space-y-1">
-                    <div className="text-xs font-bold text-[#1C1215]">Свадьба, поздравление</div>
-                    <p className="text-[11px] text-[#7C636B] leading-tight">
-                      Букеты невесты, бутоньерки жениха и подарочные шляпные коробки в светлой пастельной гамме.
-                    </p>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] space-y-1">
-                    <div className="text-xs font-bold text-[#1C1215]">8 Марта, 14 Февраля</div>
-                    <p className="text-[11px] text-[#7C636B] leading-tight">
-                      Сортовые тюльпаны, мимоза, алые эквадорские розы Explorer и Red Naomi с фирменной открыткой.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-[#E5DDD9] text-[11px] text-[#7C636B] flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Фото собранной композиции в WhatsApp до выезда</span>
+              <div className="flex items-center gap-2 text-xs text-[#E8D5B7] font-medium">
+                <Check className="w-4 h-4 shrink-0" />
+                <span>Бережная доставка в аквабоксе с водой</span>
               </div>
             </div>
 
-            {/* Card 3: Flower Care Guide */}
-            <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-5">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-11 h-11 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
-                    <Droplets className="w-5 h-5" />
+            {/* Right: Interactive Accordion */}
+            <div className="lg:col-span-7 flex flex-col gap-3">
+              {/* Accordion Item 1: Occasions */}
+              <div
+                className={`bg-white rounded-xl border transition-colors ${
+                  openAccordion === 0 ? 'border-[#922E3D] shadow-sm' : 'border-[#E5DDD9]'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenAccordion(openAccordion === 0 ? -1 : 0)}
+                  className="w-full p-5 flex items-center justify-between gap-4 text-left cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#FDF2F4] text-[#922E3D] flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <span className="font-sans text-sm sm:text-base font-semibold text-[#1C1215]">
+                      Букеты под любые поводы и события
+                    </span>
                   </div>
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-emerald-800 bg-emerald-50 px-3 py-1 rounded-md">
-                    10–14 дней стойкости
+                  <span className="w-7 h-7 rounded-lg bg-[#FAF7F5] text-[#922E3D] flex items-center justify-center shrink-0">
+                    {openAccordion === 0 ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </span>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-[#1C1215] leading-snug">
-                    Памятка по уходу за срезанными цветами
-                  </h3>
-                  <p className="text-xs text-[#5C454C] leading-relaxed mt-1">
-                    Соблюдение четырёх простых правил продлит радость от цветов в вазе до двух недель:
-                  </p>
-                </div>
-
-                <div className="space-y-2.5 pt-1">
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                      1
-                    </span>
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-[#1C1215]">Косой срез под 45°</div>
-                      <p className="text-[11px] text-[#7C636B] leading-tight">
-                        Срежьте стебли на 1,5–2 см острым ножом перед постановкой в воду.
-                      </p>
-                    </div>
+                </button>
+                {openAccordion === 0 && (
+                  <div className="px-5 pb-5 pt-1 space-y-2.5 text-xs text-[#5C454C] leading-relaxed border-t border-[#F1EAE6]">
+                    <p>
+                      <strong className="text-[#1C1215]">День рождения и юбилей:</strong> пышные сеты с французскими розами, гортензиями, а также монобукеты из 25, 51 или 101 розы.
+                    </p>
+                    <p>
+                      <strong className="text-[#1C1215]">Свадьба и поздравление:</strong> букеты невесты, бутоньерки жениха и подарочные шляпные коробки в светлой пастельной гамме.
+                    </p>
+                    <p>
+                      <strong className="text-[#1C1215]">8 Марта и 14 Февраля:</strong> сортовые тюльпаны, мимоза, алые эквадорские розы Explorer и Red Naomi с фирменной открыткой.
+                    </p>
                   </div>
-
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                      2
-                    </span>
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-[#1C1215]">Чистая вода и Chrysal</div>
-                      <p className="text-[11px] text-[#7C636B] leading-tight">
-                        Используйте прохладную воду и пакетик Chrysal, прилагаемый в подарок.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                      3
-                    </span>
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-[#1C1215]">Снятие нижних листьев</div>
-                      <p className="text-[11px] text-[#7C636B] leading-tight">
-                        Удалите листву в воде, чтобы вода не зацветала и оставалась прозрачной.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
 
-              <div className="pt-3 border-t border-[#E5DDD9] text-[11px] text-[#7C636B] flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Подкормка Chrysal бесплатно к каждому букету</span>
+              {/* Accordion Item 2: Care Guide */}
+              <div
+                className={`bg-white rounded-xl border transition-colors ${
+                  openAccordion === 1 ? 'border-[#922E3D] shadow-sm' : 'border-[#E5DDD9]'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenAccordion(openAccordion === 1 ? -1 : 1)}
+                  className="w-full p-5 flex items-center justify-between gap-4 text-left cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#FDF2F4] text-[#922E3D] flex items-center justify-center shrink-0">
+                      <Droplets className="w-4 h-4" />
+                    </div>
+                    <span className="font-sans text-sm sm:text-base font-semibold text-[#1C1215]">
+                      Памятка по уходу за срезанными цветами (10–14 дней стойкости)
+                    </span>
+                  </div>
+                  <span className="w-7 h-7 rounded-lg bg-[#FAF7F5] text-[#922E3D] flex items-center justify-center shrink-0">
+                    {openAccordion === 1 ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  </span>
+                </button>
+                {openAccordion === 1 && (
+                  <div className="px-5 pb-5 pt-2 space-y-2.5 text-xs text-[#5C454C] leading-relaxed border-t border-[#F1EAE6]">
+                    <p>
+                      <strong className="text-[#922E3D]">1. Косой срез под 45°:</strong> срежьте стебли на 1,5–2 см острым ножом перед постановкой в воду.
+                    </p>
+                    <p>
+                      <strong className="text-[#922E3D]">2. Чистая вода и Chrysal:</strong> используйте прохладную воду и пакетик подкормки Chrysal, прилагаемый в подарок.
+                    </p>
+                    <p>
+                      <strong className="text-[#922E3D]">3. Снятие нижних листьев:</strong> удалите листву, попадающую в воду, чтобы вода оставалась прозрачной.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion Item 3: Custom Photo Order */}
+              <div
+                className={`bg-white rounded-xl border transition-colors ${
+                  openAccordion === 2 ? 'border-[#922E3D] shadow-sm' : 'border-[#E5DDD9]'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenAccordion(openAccordion === 2 ? -1 : 2)}
+                  className="w-full p-5 flex items-center justify-between gap-4 text-left cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#FDF2F4] text-[#922E3D] flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <span className="font-sans text-sm sm:text-base font-semibold text-[#1C1215]">
+                      Как заказать индивидуальную сборку по фото?
+                    </span>
+                  </div>
+                  <span className="w-7 h-7 rounded-lg bg-[#FAF7F5] text-[#922E3D] flex items-center justify-center shrink-0">
+                    {openAccordion === 2 ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  </span>
+                </button>
+                {openAccordion === 2 && (
+                  <div className="px-5 pb-5 pt-2 space-y-2.5 text-xs text-[#5C454C] leading-relaxed border-t border-[#F1EAE6]">
+                    <p>
+                      Пришлите понравившийся пример букета или назовите бюджет в WhatsApp по номеру{' '}
+                      <a href="https://wa.me/79172563235" target="_blank" rel="noopener noreferrer" className="text-[#922E3D] font-semibold underline">
+                        +7 (917) 256-32-35
+                      </a>
+                      .
+                    </p>
+                    <p>
+                      Шеф-флорист подберёт свежие цветы из сегодняшней поставки, соберёт композицию и пришлёт фото для согласования до выезда курьера.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
