@@ -29,9 +29,9 @@ export default {
       },
       fontFamily: {
         faberge: ['Faberge', 'sans-serif'],
-        serif: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['Manrope Variable', 'Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['Manrope Variable', 'Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        display: ['Manrope Variable', 'Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 30s linear infinite',

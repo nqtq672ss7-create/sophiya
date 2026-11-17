@@ -7,6 +7,7 @@ import { calculateLoyaltyTier } from '../../types/customer';
 import { Bouquet, EDITABLE_CATEGORIES } from '../../types/figma-app';
 import { CustomerDatabaseService } from '../../services/customerDb';
 import { getApiUrl } from '../../config/api';
+import { formatBouquetAlt } from '../../utils/routes';
 
 interface SalonAdminClientsModalProps {
   isOpen: boolean;
@@ -1452,7 +1453,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   <div className="flex items-center gap-3">
                     <img
                       src={b.image}
-                      alt={b.title}
+                      alt={formatBouquetAlt(b.title)}
                       className="w-14 h-14 rounded-xl object-cover shrink-0 bg-[#2A181C]"
                     />
 

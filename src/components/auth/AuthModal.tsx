@@ -26,6 +26,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isPdAgreed, setIsPdAgreed] = useState(false);
 
   if (!isAuthModalOpen) return null;
 
@@ -51,6 +52,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
     const normalized = normalizePhone(phone);
     if (normalized.length < 11) {
       setError('Пожалуйста, укажите полный 11-значный номер телефона');
+      return;
+    }
+
+    if (!isPdAgreed) {
+      setError('Пожалуйста, подтвердите согласие на обработку персональных данных');
       return;
     }
 
@@ -248,6 +254,41 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             </>
           )}
 
+          {/* Explicit 152-FZ Consent Checkbox */}
+          <label className="flex items-start gap-2.5 text-[11px] text-white/75 font-light leading-relaxed cursor-pointer select-none pt-1">
+            <input
+              type="checkbox"
+              checked={isPdAgreed}
+              onChange={(e) => {
+                setIsPdAgreed(e.target.checked);
+                if (error) setError('');
+              }}
+              required
+              className="mt-0.5 w-4 h-4 rounded border-white/30 bg-black/40 text-[#922E3D] focus:ring-[#C5A880] shrink-0 cursor-pointer"
+            />
+            <span>
+              Я даю согласие на обработку персональных данных в соответствии с{' '}
+              <a
+                href="/privacy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#C5A880] hover:underline font-medium"
+              >
+                Политикой конфиденциальности (152-ФЗ)
+              </a>{' '}
+              и принимаю условия{' '}
+              <a
+                href="/offer/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#C5A880] hover:underline font-medium"
+              >
+                Публичной оферты
+              </a>
+              .
+            </span>
+          </label>
+
           {/* Submit Action */}
           <div className="pt-2">
             <button
@@ -264,19 +305,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Legal 152-FZ Consent Disclaimer */}
-          <p className="text-[10px] text-center text-white/50 font-light mt-3 leading-relaxed">
-            Нажимая кнопку, вы подтверждаете согласие с правилами клуба и обработкой персональных данных согласно{' '}
-            <button
-              type="button"
-              onClick={() => onOpenLegal?.('privacy')}
-              className="text-[#C5A880] hover:underline font-medium cursor-pointer"
-            >
-              152-ФЗ РФ
-            </button>
-            .
-          </p>
 
           {/* Direct link for salon owner so she is never confused */}
           <div className="pt-3 mt-3 border-t border-white/10 text-center">

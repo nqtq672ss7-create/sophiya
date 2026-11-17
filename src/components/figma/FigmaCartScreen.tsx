@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import {
   Minus,
   Plus,
@@ -20,8 +20,14 @@ import {
 import { CartItem } from '../../types/figma-app';
 import { SALON_MAX_URL } from '../../config/contacts';
 import { useAuth } from '../../context/AuthContext';
-import { SberPaymentModal } from '../payment/SberPaymentModal';
-import { B2BInvoiceModal } from '../payment/B2BInvoiceModal';
+import { formatBouquetAlt } from '../../utils/routes';
+
+const SberPaymentModal = lazy(() =>
+  import('../payment/SberPaymentModal').then((m) => ({ default: m.SberPaymentModal }))
+);
+const B2BInvoiceModal = lazy(() =>
+  import('../payment/B2BInvoiceModal').then((m) => ({ default: m.B2BInvoiceModal }))
+);
 
 interface FigmaCartScreenProps {
   items: CartItem[];
@@ -51,6 +57,8 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [deliveryAddress, setDeliveryAddress] = useState('г. Нижнекамск, ');
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [isPdAgreed, setIsPdAgreed] = useState(false);
+  const [consentError, setConsentError] = useState('');
 
   // Modals state
   const [isSberModalOpen, setIsSberModalOpen] = useState(false);
@@ -70,6 +78,12 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
+
+    if (!isPdAgreed) {
+      setConsentError('Подтвердите согласие на обработку персональных данных и принятие оферты');
+      return;
+    }
+    setConsentError('');
 
     const generatedNum = 'SF-' + Math.floor(100000 + Math.random() * 900000);
     setOrderNumber(generatedNum);
@@ -226,7 +240,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
               >
                 <img
                   src={bouquet.image}
-                  alt={bouquet.title}
+                  alt={formatBouquetAlt(bouquet.title)}
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shrink-0"
                 />
 
@@ -498,6 +512,46 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   </div>
                 </div>
 
+                {/* Explicit 152-FZ Consent Checkbox */}
+                <div className="pt-1 space-y-1.5">
+                  <label className="flex items-start gap-2.5 text-[11px] text-[#5C454C] font-light leading-relaxed cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={isPdAgreed}
+                      onChange={(e) => {
+                        setIsPdAgreed(e.target.checked);
+                        if (consentError) setConsentError('');
+                      }}
+                      required
+                      className="mt-0.5 w-4 h-4 rounded border-[#E5DDD9] text-[#6C1E26] focus:ring-[#6C1E26] shrink-0 cursor-pointer"
+                    />
+                    <span>
+                      Я согласен(на) на обработку персональных данных в соответствии с{' '}
+                      <a
+                        href="/privacy/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#922E3D] hover:underline font-medium"
+                      >
+                        Политикой конфиденциальности (152-ФЗ)
+                      </a>{' '}
+                      и принимаю условия{' '}
+                      <a
+                        href="/offer/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#922E3D] hover:underline font-medium"
+                      >
+                        Публичной оферты
+                      </a>
+                      .
+                    </span>
+                  </label>
+                  {consentError && (
+                    <p className="text-[11px] text-red-600 font-medium">{consentError}</p>
+                  )}
+                </div>
+
                 {/* Submit */}
                 <button
                   className="w-full py-4 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-sm sm:text-base transition-colors shadow-lg active:scale-[0.99] mt-4 flex items-center justify-center gap-2 cursor-pointer"
@@ -523,30 +577,38 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
       </div>
 
       {/* Sberbank Payment Modal */}
-      <SberPaymentModal
-        isOpen={isSberModalOpen}
-        onClose={() => setIsSberModalOpen(false)}
-        orderNumber={orderNumber}
-        totalAmount={totalToPay}
-        itemsSummary={items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`).join(', ')}
-        recipientName={recipientName}
-        recipientPhone={recipientPhone}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {isSberModalOpen && (
+        <Suspense fallback={null}>
+          <SberPaymentModal
+            isOpen={isSberModalOpen}
+            onClose={() => setIsSberModalOpen(false)}
+            orderNumber={orderNumber}
+            totalAmount={totalToPay}
+            itemsSummary={items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`).join(', ')}
+            recipientName={recipientName}
+            recipientPhone={recipientPhone}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        </Suspense>
+      )}
 
       {/* B2B Invoice Modal */}
-      <B2BInvoiceModal
-        isOpen={isInvoiceModalOpen}
-        onClose={() => setIsInvoiceModalOpen(false)}
-        orderNumber={orderNumber}
-        totalAmount={totalToPay}
-        items={items.map((i) => ({
-          title: i.bouquet.title,
-          price: i.bouquet.price,
-          quantity: i.quantity,
-        }))}
-        onInvoiceCreated={handlePaymentSuccess}
-      />
+      {isInvoiceModalOpen && (
+        <Suspense fallback={null}>
+          <B2BInvoiceModal
+            isOpen={isInvoiceModalOpen}
+            onClose={() => setIsInvoiceModalOpen(false)}
+            orderNumber={orderNumber}
+            totalAmount={totalToPay}
+            items={items.map((i) => ({
+              title: i.bouquet.title,
+              price: i.bouquet.price,
+              quantity: i.quantity,
+            }))}
+            onInvoiceCreated={handlePaymentSuccess}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

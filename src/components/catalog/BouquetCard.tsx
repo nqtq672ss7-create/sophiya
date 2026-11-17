@@ -3,6 +3,7 @@ import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
+import { formatBouquetAlt } from '../../utils/routes';
 
 interface BouquetCardProps {
   bouquet: Bouquet;
@@ -49,7 +50,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
       <div className="relative overflow-hidden aspect-square bg-[#FAF7F5] select-none">
         <img
           src={photos[activePhoto] || bouquet.image}
-          alt={`${bouquet.title} в Нижнекамске — салон цветов София`}
+          alt={formatBouquetAlt(bouquet.title)}
           width={400}
           height={400}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

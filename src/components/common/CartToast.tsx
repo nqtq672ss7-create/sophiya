@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Check, ArrowRight, X } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
+import { formatBouquetAlt } from '../../utils/routes';
 
 interface CartToastProps {
   bouquet: Bouquet|null;
@@ -63,7 +64,7 @@ export const CartToast: React.FC<CartToastProps> = ({
         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border border-[#E5DDD9] bg-[#FAF7F5] shrink-0">
           <img
             src={bouquet.image}
-            alt={bouquet.title}
+            alt={formatBouquetAlt(bouquet.title)}
             className="w-full h-full object-cover"
             loading="lazy"
           />

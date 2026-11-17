@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, CheckCircle, ShieldCheck, QrCode, ExternalLink, ArrowRight, Smartphone, Building2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
+import { X, CheckCircle, ShieldCheck, ExternalLink, Smartphone } from 'lucide-react';
 
 interface SberPaymentModalProps {
   isOpen: boolean;
@@ -23,14 +24,32 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
   onPaymentSuccess,
 }) => {
   const [isPaid, setIsPaid] = useState(false);
-
-  if (!isOpen) return null;
+  const [sberQrCodeUrl, setSberQrCodeUrl] = useState<string>('');
 
   // Sberbank standard QR data format for settlements (ГОСТ Р 56042-2014)
   // ST00012|Name=ИП ОБРУЧНИКОВ ДМИТРИЙ ВЛАДИМИРОВИЧ|PersonalAcc=40802810762000090051|BankName=ПАО СБЕРБАНК|BIC=049205603|CorrespAcc=30101810600000000603|PayeeINN=165115143005|Sum=...|Purpose=Оплата заказа цветов №...
   const sberQrPayload = `ST00012|Name=ИП ОБРУЧНИКОВ ДМИТРИЙ ВЛАДИМИРОВИЧ|PersonalAcc=40802810762000090051|BankName=ОТДЕЛЕНИЕ "БАНК ТАТАРСТАН" N8610 ПАО СБЕРБАНК|BIC=049205603|CorrespAcc=30101810600000000603|PayeeINN=165115143005|Sum=${totalAmount * 100}|Purpose=Заказ цветов ${orderNumber} в салоне София`;
 
-  const sberQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(sberQrPayload)}&color=21-128-61`;
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    QRCode.toDataURL(sberQrPayload, {
+      width: 240,
+      margin: 2,
+      color: { dark: '#15803d', light: '#ffffff' },
+    })
+      .then((dataUrl) => {
+        if (!cancelled) setSberQrCodeUrl(dataUrl);
+      })
+      .catch(() => {
+        if (!cancelled) setSberQrCodeUrl('');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, sberQrPayload]);
+
+  if (!isOpen) return null;
 
   const handleConfirmPayment = () => {
     setIsPaid(true);
@@ -93,11 +112,17 @@ export const SberPaymentModal: React.FC<SberPaymentModalProps> = ({
         {/* SberPay / SBP QR Code */}
         <div className="bg-white rounded-xl p-5 border border-[#E5DDD9] shadow-sm text-center space-y-4">
           <div className="inline-block p-3 bg-emerald-50/50 rounded-xl border border-emerald-200/60 shadow-inner">
-            <img
-              src={sberQrCodeUrl}
-              alt="QR-код для оплаты через Сбербанк или СБП"
-              className="w-48 h-48 mx-auto rounded-xl object-contain"
-            />
+            {sberQrCodeUrl ? (
+              <img
+                src={sberQrCodeUrl}
+                alt="QR-код для оплаты через Сбербанк или СБП"
+                className="w-48 h-48 mx-auto rounded-xl object-contain"
+              />
+            ) : (
+              <div className="w-48 h-48 mx-auto rounded-xl bg-white flex items-center justify-center text-xs text-emerald-700">
+                Генерация QR-кода...
+              </div>
+            )}
           </div>
 
           <div className="space-y-1">

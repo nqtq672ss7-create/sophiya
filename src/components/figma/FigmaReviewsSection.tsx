@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, lazy, Suspense } from 'react';
 import {
   Star,
   MessageSquare,
@@ -7,8 +7,11 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useReviews } from '../../context/ReviewsContext';
-import { LeaveReviewModal } from '../reviews/LeaveReviewModal';
 import { YandexIcon } from '../common/YandexIcon';
+
+const LeaveReviewModal = lazy(() =>
+  import('../reviews/LeaveReviewModal').then((m) => ({ default: m.LeaveReviewModal }))
+);
 
 export const FigmaReviewsSection: React.FC = () => {
   const { publishedReviews } = useReviews();
@@ -195,10 +198,14 @@ export const FigmaReviewsSection: React.FC = () => {
       </div>
 
       {/* Direct Review Modal */}
-      <LeaveReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-      />
+      {isReviewModalOpen && (
+        <Suspense fallback={null}>
+          <LeaveReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => setIsReviewModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </section>
   );
 };

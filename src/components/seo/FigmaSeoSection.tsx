@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, ArrowRight, Plus, Minus } from 'lucide-react';
+import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, Plus, Minus, Phone, CheckCircle2 } from 'lucide-react';
 import { SeoRoute, getRouteByPath } from '../../utils/routes';
 import { SALON_MAX_URL } from '../../config/contacts';
 
@@ -10,6 +10,12 @@ interface FigmaSeoSectionProps {
 export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: propRoute }) => {
   const [pathname, setPathname] = useState(() => (typeof window !== 'undefined' ? window.location.pathname : '/'));
   const [openAccordion, setOpenAccordion] = useState<number>(0);
+  const [cbName, setCbName] = useState('');
+  const [cbPhone, setCbPhone] = useState('');
+  const [cbComment, setCbComment] = useState('');
+  const [cbAgreed, setCbAgreed] = useState(true);
+  const [cbStatus, setCbStatus] = useState<'idle'|'sent'|'error'>('idle');
+  const [cbError, setCbError] = useState('');
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -30,6 +36,31 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
   const currentRoute = propRoute || getRouteByPath(pathname);
   const isDeliveryPage = currentRoute?.slug === 'dostavka';
   const isOccasionPage = currentRoute?.pageType === 'occasion';
+  const isCategorySubpage = currentRoute?.pageType === 'category' && currentRoute.path !== '/';
+  const isInfoPage = currentRoute?.pageType === 'info' && !isDeliveryPage;
+
+  const handleCallbackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const digits = cbPhone.replace(/\D/g, '');
+    if (digits.length < 10) {
+      setCbStatus('error');
+      setCbError('Укажите корректный номер телефона для обратного звонка.');
+      return;
+    }
+    if (!cbAgreed) {
+      setCbStatus('error');
+      setCbError('Подтвердите согласие на обработку персональных данных.');
+      return;
+    }
+    setCbError('');
+    setCbStatus('sent');
+    try {
+      const summary = `Заявка на обратный звонок: ${cbName.trim() || 'Клиент'}, тел: ${cbPhone.trim()}${cbComment.trim() ? `, комментарий: ${cbComment.trim()}` : ''}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(summary).catch(() => {});
+      }
+    } catch {}
+  };
 
   const featureHighlights = [
     {
@@ -161,13 +192,13 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
         </div>
       )}
 
-      {/* 3. Main Narrative: Occasion Page Context */}
-      {isOccasionPage && currentRoute && (
+      {/* 3. Main Narrative: Category Subpage or Occasion Page Context */}
+      {(isOccasionPage || isCategorySubpage) && currentRoute && (
         <div className="space-y-6 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm mb-12">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Повод: {currentRoute.breadcrumbLabel}</span>
+              {isOccasionPage ? <Calendar className="w-3.5 h-3.5" /> : <Flower2 className="w-3.5 h-3.5" />}
+              <span>{isOccasionPage ? `Повод: ${currentRoute.breadcrumbLabel}` : currentRoute.breadcrumbLabel}</span>
             </div>
             <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
               {currentRoute.introHeading}
@@ -182,7 +213,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
       )}
 
       {/* 4. Comprehensive 3-Part Homepage SEO Narrative (~400 words) — Redesigned Luxury Editorial Grid */}
-      {!isDeliveryPage && !isOccasionPage && (
+      {!isDeliveryPage && !isOccasionPage && !isCategorySubpage && !isInfoPage && (
         <div className="space-y-10 mb-12">
           {/* Header block with salon NAP */}
           <div className="max-w-3xl space-y-3">
@@ -406,6 +437,133 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
           </div>
         </div>
       )}
+
+      {/* 5. Quick Callback / Bouquet Request Form */}
+      <div
+        id="quick-request"
+        className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 shadow-sm mt-8"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div className="lg:col-span-5 space-y-2.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
+              <Phone className="w-3.5 h-3.5" />
+              <span>Быстрая заявка флористу</span>
+            </div>
+            <h2 className="font-sans text-xl sm:text-2xl text-[#1C1215] font-semibold leading-snug">
+              Подобрать букет или заказать обратный звонок
+            </h2>
+            <p className="text-xs sm:text-sm text-[#5C454C] leading-relaxed">
+              Оставьте номер телефона и пожелания по поводу или бюджету — флорист салона «София» перезвонит за 5–10 минут и предложит свежие цветы из наличия.
+            </p>
+          </div>
+
+          <div className="lg:col-span-7">
+            {cbStatus === 'sent' ? (
+              <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 space-y-3">
+                <div className="flex items-center gap-2 text-emerald-800 font-semibold text-sm">
+                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  <span>Заявка сформирована!</span>
+                </div>
+                <p className="text-xs text-emerald-900/85 leading-relaxed">
+                  Для моментального ответа флориста нажмите «Написать в MAX» (текст заявки скопирован в буфер обмена) или позвоните по номеру{' '}
+                  <a href="tel:+79172563235" className="font-semibold underline">
+                    +7 (917) 256-32-35
+                  </a>.
+                </p>
+                <div className="flex flex-wrap gap-2.5">
+                  <a
+                    href={SALON_MAX_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white text-xs font-semibold transition-colors"
+                  >
+                    Написать в MAX
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCbStatus('idle');
+                      setCbComment('');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-white border border-emerald-300 text-emerald-900 text-xs font-medium cursor-pointer"
+                  >
+                    Отправить ещё одну заявку
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleCallbackSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="cb-name" className="block text-[11px] font-medium text-[#5C454C] mb-1">
+                      Ваше имя
+                    </label>
+                    <input
+                      id="cb-name"
+                      type="text"
+                      value={cbName}
+                      onChange={(e) => setCbName(e.target.value)}
+                      placeholder="Например, Анна"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] text-xs sm:text-sm text-[#1C1215] focus:outline-none focus:border-[#922E3D]"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="cb-phone" className="block text-[11px] font-medium text-[#5C454C] mb-1">
+                      Телефон <span className="text-[#922E3D]">*</span>
+                    </label>
+                    <input
+                      id="cb-phone"
+                      type="tel"
+                      required
+                      value={cbPhone}
+                      onChange={(e) => setCbPhone(e.target.value)}
+                      placeholder="+7 (917) ___-__-__"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] text-xs sm:text-sm text-[#1C1215] focus:outline-none focus:border-[#922E3D]"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="cb-comment" className="block text-[11px] font-medium text-[#5C454C] mb-1">
+                    Повод, бюджет или пожелания по цветам
+                  </label>
+                  <input
+                    id="cb-comment"
+                    type="text"
+                    value={cbComment}
+                    onChange={(e) => setCbComment(e.target.value)}
+                    placeholder="Например: розы до 4 000 ₽ на день рождения к 18:00"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] text-xs sm:text-sm text-[#1C1215] focus:outline-none focus:border-[#922E3D]"
+                  />
+                </div>
+                {cbError && (
+                  <p className="text-xs text-[#922E3D] font-medium">{cbError}</p>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                  <label className="inline-flex items-start gap-2 text-[11px] text-[#5C454C] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cbAgreed}
+                      onChange={(e) => setCbAgreed(e.target.checked)}
+                      className="mt-0.5 accent-[#922E3D]"
+                    />
+                    <span>
+                      Согласен с{' '}
+                      <a href="/privacy/" className="text-[#922E3D] underline">
+                        политикой 152-ФЗ
+                      </a>
+                    </span>
+                  </label>
+                  <button
+                    className="px-6 py-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer active:scale-95 shrink-0"
+                  >
+                    Заказать звонок флориста
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
     </section>
   );
 };

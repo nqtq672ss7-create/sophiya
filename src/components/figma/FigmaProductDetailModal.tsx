@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, ShoppingCart, Check, X, Clock, MapPin } from
 import { Bouquet } from '../../types/figma-app';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
+import { formatBouquetAlt } from '../../utils/routes';
 
 interface FigmaProductDetailModalProps {
   bouquet: Bouquet|null;
@@ -52,7 +53,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
         >
           <img
             src={photos[activePhoto] || bouquet.image}
-            alt={bouquet.title}
+            alt={formatBouquetAlt(bouquet.title)}
             className="w-full h-full object-cover transition-opacity duration-300"
           />
 

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Phone, MapPin, Clock, MessageSquare, Lock, ExternalLink } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
-import { RequisitesModal } from '../payment/RequisitesModal';
 import { YandexIcon } from '../common/YandexIcon';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
+
+const RequisitesModal = lazy(() =>
+  import('../payment/RequisitesModal').then((m) => ({ default: m.RequisitesModal }))
+);
 
 interface FigmaFooterProps {
   onTabChange: (tab: FigmaTab) => void;
@@ -32,7 +35,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
   };
 
   const usefulLinks = [
-    { label: 'О салоне «София»', path: '/o-salone/' },
+    { label: 'О салоне', path: '/o-salone/' },
     { label: 'Условия доставки', path: '/dostavka/' },
     { label: 'Отзывы покупателей', path: '/otzyvy/' },
     { label: 'Блог о цветах', path: '/blog/' },
@@ -68,8 +71,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
     { label: 'На день рождения', path: '/na-den-rozhdeniya/' },
   ];
 
-  const qrUrl =
-    'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fxn----ctbjn3arftl7c8b.xn--p1ai&color=1C1215&bgcolor=FFFFFF&margin=6';
+  const qrUrl = '/qr-site.svg';
 
   return (
     <footer className="relative w-full overflow-hidden bg-[#121C19] text-white/85 font-sans border-t border-white/10 mt-20 pb-24 md:pb-10 pt-14">
@@ -297,27 +299,27 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs text-white/70">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <span className="font-medium text-white">© 2026 Салон цветов «София»</span>
-              <button
-                type="button"
-                onClick={() => onOpenLegal?.('privacy')}
+              <a
+                href="/privacy/"
+                onClick={(e) => handleLink(e, '/privacy/')}
                 className="hover:text-white transition-colors cursor-pointer"
               >
                 Политика 152-ФЗ
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenLegal?.('offer')}
+              </a>
+              <a
+                href="/offer/"
+                onClick={(e) => handleLink(e, '/offer/')}
                 className="hover:text-white transition-colors cursor-pointer"
               >
                 Публичная оферта
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenLegal?.('refund')}
+              </a>
+              <a
+                href="/vozvrat/"
+                onClick={(e) => handleLink(e, '/vozvrat/')}
                 className="hover:text-white transition-colors cursor-pointer"
               >
-                Правила возврата
-              </button>
+                Оплата, доставка и возврат
+              </a>
               <button
                 type="button"
                 onClick={() => onOpenLegal?.('cookie')}
@@ -373,10 +375,14 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
       </div>
 
       {/* Official Sberbank & Tax Requisites Modal */}
-      <RequisitesModal
-        isOpen={isRequisitesOpen}
-        onClose={() => setIsRequisitesOpen(false)}
-      />
+      {isRequisitesOpen && (
+        <Suspense fallback={null}>
+          <RequisitesModal
+            isOpen={isRequisitesOpen}
+            onClose={() => setIsRequisitesOpen(false)}
+          />
+        </Suspense>
+      )}
     </footer>
   );
 };

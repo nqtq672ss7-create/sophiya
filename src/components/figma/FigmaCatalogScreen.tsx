@@ -213,6 +213,28 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
         </div>
       </section>
 
+      {/* 3.5. Info / Legal Document Narrative Block */}
+      {currentRoute.pageType === 'info' && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 w-full">
+          <div className="space-y-5 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm">
+            <div className="space-y-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{currentRoute.breadcrumbLabel}</span>
+              </div>
+              <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
+                {currentRoute.introHeading}
+              </h2>
+            </div>
+            <div className="space-y-3 text-xs sm:text-sm text-[#5C454C] leading-relaxed max-w-4xl">
+              {currentRoute.introText.map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 4. Filter & Category Bar with Real Canonical Links */}
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-4 border-b border-[#E5DDD9]">

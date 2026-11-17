@@ -197,4 +197,26 @@
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
+
+  <!-- Правовые документы, оплата и возврат -->
+  <url>
+    <loc>https://xn----ctbjn3arftl7c8b.xn--p1ai/privacy/</loc>
+    <lastmod>2026-11-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://xn----ctbjn3arftl7c8b.xn--p1ai/offer/</loc>
+    <lastmod>2026-11-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://xn----ctbjn3arftl7c8b.xn--p1ai/vozvrat/</loc>
+    <lastmod>2026-11-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>

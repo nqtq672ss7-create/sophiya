@@ -1,16 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { FigmaSplashScreen } from './FigmaSplashScreen';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { FigmaCatalogScreen } from './FigmaCatalogScreen';
 import { FigmaBottomNav, FigmaTab } from './FigmaBottomNav';
-import { FigmaProductDetailModal } from './FigmaProductDetailModal';
-import { FigmaFilterModal } from './FigmaFilterModal';
-import { FigmaCartScreen } from './FigmaCartScreen';
-import { FigmaProfileScreen } from './FigmaProfileScreen';
 import { FigmaDesktopHeader } from './FigmaDesktopHeader';
 import { FigmaFooter } from './FigmaFooter';
-import { AuthModal } from '../auth/AuthModal';
-import { SalonAdminClientsModal } from '../admin/SalonAdminClientsModal';
-import { LegalModal, LegalDocTab } from '../legal/LegalModal';
+import type { LegalDocTab } from '../legal/LegalModal';
 import { CookieConsentBanner } from '../legal/CookieConsentBanner';
 import { CartToast } from '../common/CartToast';
 import { Bouquet, CartItem, FilterOptions } from '../../types/figma-app';
@@ -18,8 +11,33 @@ import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { getRouteByPath, SEO_ROUTES, SeoRoute, filterBouquetsForRoute } from '../../utils/routes';
 
+const FigmaSplashScreen = lazy(() =>
+  import('./FigmaSplashScreen').then((m) => ({ default: m.FigmaSplashScreen }))
+);
+const FigmaProductDetailModal = lazy(() =>
+  import('./FigmaProductDetailModal').then((m) => ({ default: m.FigmaProductDetailModal }))
+);
+const FigmaFilterModal = lazy(() =>
+  import('./FigmaFilterModal').then((m) => ({ default: m.FigmaFilterModal }))
+);
+const FigmaCartScreen = lazy(() =>
+  import('./FigmaCartScreen').then((m) => ({ default: m.FigmaCartScreen }))
+);
+const FigmaProfileScreen = lazy(() =>
+  import('./FigmaProfileScreen').then((m) => ({ default: m.FigmaProfileScreen }))
+);
+const AuthModal = lazy(() =>
+  import('../auth/AuthModal').then((m) => ({ default: m.AuthModal }))
+);
+const SalonAdminClientsModal = lazy(() =>
+  import('../admin/SalonAdminClientsModal').then((m) => ({ default: m.SalonAdminClientsModal }))
+);
+const LegalModal = lazy(() =>
+  import('../legal/LegalModal').then((m) => ({ default: m.LegalModal }))
+);
+
 export const FigmaAppShell: React.FC = () => {
-  const { customer, openAuthModal } = useAuth();
+  const { customer, openAuthModal, isAuthModalOpen } = useAuth();
   const { bouquets } = useCatalog();
 
   const initialPath = typeof window !== 'undefined' ? window.location.pathname : '/';
@@ -330,21 +348,37 @@ export const FigmaAppShell: React.FC = () => {
           )}
 
           {activeTab === 'cart' && (
-            <FigmaCartScreen
-              items={cartItems}
-              onUpdateQuantity={handleUpdateQuantity}
-              onRemoveItem={handleRemoveItem}
-              onExploreCatalog={() => handleNavigate('/')}
-              onClearCart={() => setCartItems([])}
-            />
+            <Suspense
+              fallback={
+                <div className="min-h-[50vh] flex items-center justify-center text-sm text-[#7C636B]">
+                  Загрузка корзины...
+                </div>
+              }
+            >
+              <FigmaCartScreen
+                items={cartItems}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemoveItem={handleRemoveItem}
+                onExploreCatalog={() => handleNavigate('/')}
+                onClearCart={() => setCartItems([])}
+              />
+            </Suspense>
           )}
 
           {activeTab === 'profile' && (
-            <FigmaProfileScreen
-              onOpenAuth={openAuthModal}
-              onOpenCrm={() => {}}
-              onGoToCatalog={() => handleNavigate('/')}
-            />
+            <Suspense
+              fallback={
+                <div className="min-h-[50vh] flex items-center justify-center text-sm text-[#7C636B]">
+                  Загрузка личного кабинета...
+                </div>
+              }
+            >
+              <FigmaProfileScreen
+                onOpenAuth={openAuthModal}
+                onOpenCrm={() => {}}
+                onGoToCatalog={() => handleNavigate('/')}
+              />
+            </Suspense>
           )}
         </div>
 
@@ -381,38 +415,62 @@ export const FigmaAppShell: React.FC = () => {
       />
 
       {/* Product Detail Modal */}
-      <FigmaProductDetailModal
-        bouquet={selectedBouquet}
-        onClose={() => setSelectedBouquet(null)}
-        onAddToCart={(b) => handleAddToCart(b)}
-        userDiscount={customer?.discountPercent || 0}
-      />
+      {selectedBouquet && (
+        <Suspense fallback={null}>
+          <FigmaProductDetailModal
+            bouquet={selectedBouquet}
+            onClose={() => setSelectedBouquet(null)}
+            onAddToCart={(b) => handleAddToCart(b)}
+            userDiscount={customer?.discountPercent || 0}
+          />
+        </Suspense>
+      )}
 
       {/* Filter Modal */}
-      <FigmaFilterModal
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        options={filters}
-        onApply={(newOpts) => setFilters(newOpts)}
-      />
+      {isFilterOpen && (
+        <Suspense fallback={null}>
+          <FigmaFilterModal
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            options={filters}
+            onApply={(newOpts) => setFilters(newOpts)}
+          />
+        </Suspense>
+      )}
 
       {/* Splash Screen */}
-      {showSplash && <FigmaSplashScreen onEnter={() => setShowSplash(false)} />}
+      {showSplash && (
+        <Suspense fallback={null}>
+          <FigmaSplashScreen onEnter={() => setShowSplash(false)} />
+        </Suspense>
+      )}
 
       {/* Global Modals: Auth & CRM */}
-      <AuthModal onOpenLegal={(tab) => setLegalTab(tab)} />
-      <SalonAdminClientsModal
-        isOpen={isAdminCrmOpen}
-        onClose={handleCloseAdminCrm}
-      />
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthModal onOpenLegal={(tab) => setLegalTab(tab)} />
+        </Suspense>
+      )}
+      {isAdminCrmOpen && (
+        <Suspense fallback={null}>
+          <SalonAdminClientsModal
+            isOpen={isAdminCrmOpen}
+            onClose={handleCloseAdminCrm}
+          />
+        </Suspense>
+      )}
 
       {/* Legal & Cookie Modals */}
-      <LegalModal
-        isOpen={Boolean(legalTab)}
-        activeTab={legalTab || 'privacy'}
-        onClose={() => setLegalTab(null)}
-        onTabChange={(tab) => setLegalTab(tab)}
-      />
+      {legalTab && (
+        <Suspense fallback={null}>
+          <LegalModal
+            isOpen={Boolean(legalTab)}
+            activeTab={legalTab || 'privacy'}
+            onClose={() => setLegalTab(null)}
+            onTabChange={(tab) => setLegalTab(tab)}
+          />
+        </Suspense>
+      )}
       <CookieConsentBanner onOpenCookiePolicy={() => setLegalTab('cookie')} />
     </div>
   );
