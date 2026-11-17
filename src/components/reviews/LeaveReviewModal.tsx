@@ -39,6 +39,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
   const [author, setAuthor] = useState('');
   const [bouquetTitle, setBouquetTitle] = useState(defaultBouquetTitle || '');
   const [comment, setComment] = useState('');
+  const [isPdAgreed, setIsPdAgreed] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -61,6 +62,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
   const handleClose = () => {
     setIsSubmitted(false);
     setComment('');
+    setIsPdAgreed(false);
     setError('');
     setErrorField('');
     onClose();
@@ -98,6 +100,11 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
 
     if (cleanComment.length < 5) {
       fail('Напишите хотя бы пару слов об отзыве, от 5 символов.', 'comment');
+      return;
+    }
+
+    if (!isPdAgreed) {
+      fail('Подтвердите согласие на обработку персональных данных.', 'pdAgreed');
       return;
     }
 
@@ -258,6 +265,35 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
                 className={`${FIELD_BASE} ${borderFor('comment')} resize-y leading-relaxed`}
               />
             </div>
+
+            <label className="flex items-start gap-2.5 text-xs text-[var(--muted)] leading-relaxed cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={isPdAgreed}
+                onChange={(e) => {
+                  setIsPdAgreed(e.target.checked);
+                  if (errorField === 'pdAgreed') {
+                    setError('');
+                    setErrorField('');
+                  }
+                }}
+                aria-invalid={errorField === 'pdAgreed'}
+                required
+                className={`mt-0.5 w-4 h-4 rounded border-[var(--line)] accent-[var(--accent)] shrink-0 cursor-pointer ${FOCUS_RING}`}
+              />
+              <span>
+                Я даю согласие на обработку персональных данных в соответствии с{' '}
+                <a
+                  href="/privacy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--accent)] hover:underline font-medium"
+                >
+                  Политикой конфиденциальности (152-ФЗ)
+                </a>
+                .
+              </span>
+            </label>
 
             {/* A button inside a form submits it by default. */}
             <button

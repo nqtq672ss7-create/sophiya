@@ -13,7 +13,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
   const [cbName, setCbName] = useState('');
   const [cbPhone, setCbPhone] = useState('');
   const [cbComment, setCbComment] = useState('');
-  const [cbAgreed, setCbAgreed] = useState(true);
+  const [cbAgreed, setCbAgreed] = useState(false);
   const [cbStatus, setCbStatus] = useState<'idle'|'sent'|'error'>('idle');
   const [cbError, setCbError] = useState('');
 
