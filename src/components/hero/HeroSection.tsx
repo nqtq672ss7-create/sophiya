@@ -27,7 +27,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           loop
           muted
           playsInline
-          poster="/hero-poster.jpg"
+          poster="/hero-poster.webp"
           className="absolute inset-0 w-full h-full object-cover opacity-80 transform scale-100 filter saturate-110"
         >
           <source src="/hero-bg.mp4" type="video/mp4" />

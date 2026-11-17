@@ -1,9 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Phone, Navigation } from 'lucide-react';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
 
 export const FigmaMapSection: React.FC = () => {
+  const [shouldLoadMap, setShouldLoadMap] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (shouldLoadMap) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoadMap(true);
+      return;
+    }
+    const el = mapContainerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [shouldLoadMap]);
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8 font-sans text-[#1C1215] select-none">
       <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm overflow-hidden">
@@ -88,18 +114,54 @@ export const FigmaMapSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Embedded Official Yandex Map Widget */}
-          <div className="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-xl overflow-hidden border border-[#E5DDD9] bg-[#FAF7F5] shadow-inner">
-            <iframe
-              src="https://yandex.ru/map-widget/v1/org/sofiya/105599949171"
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              allowFullScreen={true}
-              loading="lazy"
-              title="Салон цветов «София» на Яндекс Картах"
-              className="absolute inset-0 w-full h-full border-0 rounded-xl"
-            />
+          {/* Right Column: Embedded Official Yandex Map Widget (lazy-loaded on viewport/click) */}
+          <div
+            ref={mapContainerRef}
+            className="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-xl overflow-hidden border border-[#E5DDD9] bg-[#FAF7F5] shadow-inner"
+          >
+            {shouldLoadMap ? (
+              <iframe
+                src="https://yandex.ru/map-widget/v1/org/sofiya/105599949171"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                allowFullScreen={true}
+                loading="lazy"
+                title="Салон цветов «София» на Яндекс Картах"
+                className="absolute inset-0 w-full h-full border-0 rounded-xl"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#FAF7F5] space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
+                  <MapPin className="w-6 h-6" />
+                </div>
+                <div className="space-y-1 max-w-sm">
+                  <div className="text-sm sm:text-base font-semibold text-[#1C1215]">
+                    Салон цветов «София» на Яндекс Картах
+                  </div>
+                  <p className="text-xs text-[#5C454C]">
+                    г. Нижнекамск, пр. Шинников, д. 13В, ежедневно 08:00–21:00
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShouldLoadMap(true)}
+                    className="py-2.5 px-4 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-xs transition-colors shadow-sm cursor-pointer active:scale-95"
+                  >
+                    Показать интерактивную карту
+                  </button>
+                  <a
+                    href="https://yandex.ru/maps/org/sofiya/105599949171"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-2.5 px-4 rounded-xl bg-white hover:bg-[#EFE7E3] border border-[#E5DDD9] text-[#1C1215] font-medium text-xs transition-colors"
+                  >
+                    Открыть в Яндекс Картах
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

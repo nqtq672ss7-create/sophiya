@@ -75,6 +75,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             <img
               src="/logo-light.png"
               alt="Салон цветов София"
+              decoding="async"
               className="h-16 sm:h-20 w-auto object-contain group-active:scale-95 transition-transform"
             />
           </div>
@@ -142,9 +143,15 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
           style={{ backgroundColor: '#8E2433' }}
         >
           {/* Macro Rose Petals Texture Background */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-20 mix-blend-luminosity bg-cover bg-center"
-            style={{ backgroundImage: "url('/rose-petals-dark.jpg')" }}
+          <img
+            src="/rose-petals-dark.webp"
+            alt=""
+            aria-hidden="true"
+            width={1376}
+            height={768}
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-20 mix-blend-luminosity select-none"
           />
 
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
@@ -348,11 +355,13 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 md:grid-cols-3 lg:grid-cols-6">
-            {displayedBouquets.map((bouquet) => (
+            {displayedBouquets.map((bouquet, idx) => (
               <BouquetCard
                 key={bouquet.id}
                 bouquet={bouquet}
                 userDiscount={userDiscount}
+                isLcpPriority={idx === 0}
+                eager={idx < 4}
                 onSelectBouquet={onSelectBouquet}
                 onAddToCart={onAddToCart}
               />

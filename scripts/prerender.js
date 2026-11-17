@@ -935,11 +935,13 @@ function generatePreRenderedHtml(route) {
 
   let bouquetsCardsHtml = '';
   if (filteredBouquets.length > 0) {
-    bouquetsCardsHtml = filteredBouquets.map(b => {
+    bouquetsCardsHtml = filteredBouquets.map((b, idx) => {
       const flowersCount = b.characteristics?.flowersCount || b.flowersCount || 'Свежие цветы';
       const height = b.characteristics?.height || b.height || '45-55 см';
       const imageSrc = b.image || '/bouquet-placeholder.svg';
       const hasReal = b.hasRealPhoto ?? (imageSrc && !imageSrc.includes('placeholder'));
+      const imgLoadingAttr = idx < 4 ? '' : 'loading="lazy" ';
+      const imgPriorityAttr = idx === 0 ? 'fetchpriority="high" ' : '';
       return `
       <article class="bg-white rounded-xl border border-[#E5DDD9] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between" itemscope itemtype="https://schema.org/Product" id="product-${b.id}">
         <div class="relative overflow-hidden aspect-square bg-[#FAF7F5]">
@@ -948,7 +950,7 @@ function generatePreRenderedHtml(route) {
             alt="${formatBouquetAlt(b.title)}"
             width="400"
             height="400"
-            loading="lazy"
+            ${imgLoadingAttr}${imgPriorityAttr}decoding="async"
             class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             itemprop="image"
           />
@@ -1037,13 +1039,13 @@ function generatePreRenderedHtml(route) {
       <header class="w-full bg-[#FAF7F5]/95  border-b border-white/10 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between gap-4">
           <a href="/" class="flex items-center gap-3" title="Салон цветов «София» Нижнекамск">
-            <img src="/logo.png" alt="Салон цветов София" width="160" height="60" class="h-14 sm:h-18 w-auto object-contain" />
+            <img src="/logo.png" alt="Салон цветов София" width="160" height="60" decoding="async" class="h-14 sm:h-18 w-auto object-contain" />
           </a>
           <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
             <a href="/" class="hover:text-[#922E3D] text-[#3D2C31]">Каталог</a>
             <a href="/dostavka/" class="hover:text-[#922E3D] text-[#3D2C31]">Доставка</a>
-            <a href="/cart/" class="hover:text-[#922E3D] text-[#3D2C31]">Корзина</a>
-            <a href="/profile/" class="hover:text-[#922E3D] text-[#3D2C31]">Личный кабинет</a>
+            <a href="/o-salone/" class="hover:text-[#922E3D] text-[#3D2C31]">О салоне</a>
+            <a href="/kontakty/" class="hover:text-[#922E3D] text-[#3D2C31]">Контакты</a>
           </nav>
           <a href="tel:+79172563235" class="flex items-center gap-2 pl-3 pr-4 py-2 rounded-xl bg-[#922E3D] text-white text-xs font-semibold shadow hover:bg-[#611720]">
             <span></span>
@@ -1058,7 +1060,7 @@ function generatePreRenderedHtml(route) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 w-full">
         <div class="relative overflow-hidden rounded-xl text-white p-6 sm:p-8 lg:p-12 shadow-xl border border-white/20" style="background-color: #8E2433;">
           <!-- Macro Rose Petals Texture Background -->
-          <div class="absolute inset-0 pointer-events-none opacity-20 mix-blend-luminosity bg-cover bg-center" style="background-image: url('/rose-petals-dark.jpg');"></div>
+          <img src="/rose-petals-dark.webp" alt="" aria-hidden="true" width="1376" height="768" fetchpriority="high" decoding="async" class="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-20 mix-blend-luminosity select-none" />
 
           <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 lg:gap-8">
             <div class="max-w-2xl space-y-4">
@@ -1285,17 +1287,16 @@ function generatePreRenderedHtml(route) {
                 </a>
               </div>
             </div>
-            <div class="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-xl sm:rounded-xl overflow-hidden border border-white/10 bg-white/5">
-              <iframe
-                src="https://yandex.ru/map-widget/v1/org/sofiya/105599949171"
-                width="100%"
-                height="100%"
-                frameborder="0"
-                allowfullscreen="true"
-                loading="lazy"
-                title="Салон цветов «София» на Яндекс Картах"
-                class="w-full h-full min-h-[360px] sm:min-h-[420px] border-0 rounded-xl sm:rounded-xl"
-              ></iframe>
+            <div class="lg:col-span-7 relative min-h-[360px] sm:min-h-[420px] rounded-xl overflow-hidden border border-[#E5DDD9] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <div class="text-sm sm:text-base font-semibold text-[#1C1215]">
+                Салон цветов «София» на Яндекс Картах
+              </div>
+              <p class="text-xs text-[#5C454C]">
+                г. Нижнекамск, пр. Шинников, д. 13В, ежедневно 08:00–21:00
+              </p>
+              <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-2.5 px-5 rounded-xl bg-[#922E3D] text-white font-medium text-xs transition-colors">
+                Открыть на Яндекс Картах
+              </a>
             </div>
           </div>
         </div>
@@ -1306,13 +1307,13 @@ function generatePreRenderedHtml(route) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-white/10">
             <div class="space-y-4">
-              <img src="/logo-light.png" alt="Салон цветов София" width="140" height="50" class="h-12 w-auto object-contain" />
+              <img src="/logo-light.png" alt="Салон цветов София" width="140" height="50" loading="lazy" decoding="async" class="h-12 w-auto object-contain" />
               <p class="text-xs text-white/60 leading-relaxed font-light">
                 Салон цветов «София» в Нижнекамске. Авторская флористика, поставка свежих цветов каждый день.
               </p>
             </div>
             <div class="space-y-3">
-              <h4 class="font-sans font-medium text-lg text-white font-normal">Адрес и режим работы</h4>
+              <div class="font-sans font-medium text-lg text-white font-normal">Адрес и режим работы</div>
               <ul class="space-y-2 text-xs font-light text-white/70 list-none p-0">
                 <li> <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="hover:text-white underline decoration-white/30">г. Нижнекамск, пр. Шинников, 13В на Яндекс Картах</a></li>
                 <li> Ежедневно: 08:00 – 21:00</li>
@@ -1320,14 +1321,14 @@ function generatePreRenderedHtml(route) {
               </ul>
             </div>
             <div class="space-y-3">
-              <h4 class="font-sans font-medium text-lg text-white font-normal">Контакты</h4>
+              <div class="font-sans font-medium text-lg text-white font-normal">Контакты</div>
               <div class="space-y-2 text-xs font-light">
                 <a href="tel:+79172563235" class="block text-white hover:text-[#C5A880]"> +7 (917) 256-32-35</a>
                 <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="block text-emerald-400 hover:text-emerald-300"> MAX: +7 (917) 256-32-35</a>
               </div>
             </div>
             <div class="space-y-3">
-              <h4 class="font-sans font-medium text-lg text-white font-normal">Популярные разделы</h4>
+              <div class="font-sans font-medium text-lg text-white font-normal">Популярные разделы</div>
               <ul class="space-y-1.5 text-xs font-light text-white/70 list-none p-0">
                 <li><a href="/o-salone/" class="hover:text-white">О салоне</a></li>
                 <li><a href="/rozy/" class="hover:text-white">Розы в Нижнекамске</a></li>

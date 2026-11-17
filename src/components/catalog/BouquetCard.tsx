@@ -8,6 +8,8 @@ import { formatBouquetAlt } from '../../utils/routes';
 interface BouquetCardProps {
   bouquet: Bouquet;
   userDiscount?: number;
+  isLcpPriority?: boolean;
+  eager?: boolean;
   onSelectBouquet: (bouquet: Bouquet) => void;
   onAddToCart: (bouquet: Bouquet, e: React.MouseEvent) => void;
 }
@@ -15,6 +17,8 @@ interface BouquetCardProps {
 export const BouquetCard: React.FC<BouquetCardProps> = ({
   bouquet,
   userDiscount = 0,
+  isLcpPriority = false,
+  eager = false,
   onSelectBouquet,
   onAddToCart,
 }) => {
@@ -54,7 +58,9 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
           width={400}
           height={400}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
+          loading={eager || isLcpPriority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={isLcpPriority ? 'high' : undefined}
         />
 
         {/* Category Badge */}

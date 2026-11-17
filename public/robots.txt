@@ -5,18 +5,24 @@ Allow: /
 Disallow: /admin
 Disallow: /crm
 Disallow: /api/
+Disallow: /cart
+Disallow: /profile
 
 User-agent: Yandex
 Allow: /
 Disallow: /admin
 Disallow: /crm
 Disallow: /api/
+Disallow: /cart
+Disallow: /profile
 
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
 Disallow: /crm
 Disallow: /api/
+Disallow: /cart
+Disallow: /profile
 
 Host: https://xn----ctbjn3arftl7c8b.xn--p1ai
 Sitemap: https://xn----ctbjn3arftl7c8b.xn--p1ai/sitemap.xml

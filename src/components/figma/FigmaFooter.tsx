@@ -77,9 +77,11 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
     <footer className="relative w-full overflow-hidden bg-[#121C19] text-white/85 font-sans border-t border-white/10 mt-20 pb-24 md:pb-10 pt-14">
       {/* Atmospheric Botanical Floral Backdrop (Flowwow-inspired) */}
       <img
-        src="/rose-petals-dark.jpg"
+        src="/rose-petals-dark.webp"
         alt=""
         aria-hidden="true"
+        loading="lazy"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover opacity-25 pointer-events-none select-none"
       />
       <div
@@ -96,6 +98,8 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
               <img
                 src="/logo-light.png"
                 alt="Салон цветов София"
+                loading="lazy"
+                decoding="async"
                 className="h-12 w-auto object-contain"
               />
               <div>
@@ -154,7 +158,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {/* Useful Links */}
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3.5">Полезные ссылки</h4>
+                <div className="text-sm font-semibold text-white mb-3.5">Полезные ссылки</div>
                 <ul className="space-y-2 text-xs text-white/75 list-none p-0 m-0">
                   {usefulLinks.map((item) => (
                     <li key={item.path}>
@@ -182,7 +186,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
 
               {/* Delivery Districts (2 columns like Flowwow Cities) */}
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3.5">Районы доставки</h4>
+                <div className="text-sm font-semibold text-white mb-3.5">Районы доставки</div>
                 <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-white/75 list-none p-0 m-0">
                   {deliveryDistricts.map((district) => (
                     <li key={district}>
@@ -201,7 +205,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
 
             {/* Popular Categories (2 columns below, matching Flowwow layout) */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-3.5">Популярные категории</h4>
+              <div className="text-sm font-semibold text-white mb-3.5">Популярные категории</div>
               <ul className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs text-white/75 list-none p-0 m-0">
                 {popularCategories.map((cat) => (
                   <li key={cat.path}>
@@ -222,9 +226,9 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
           <div className="lg:col-span-3 flex flex-col lg:items-end">
             <div className="w-full max-w-[260px] space-y-3">
               <div>
-                <h4 className="text-sm font-semibold text-white leading-snug">
+                <div className="text-sm font-semibold text-white leading-snug">
                   Ещё удобнее заказывать с телефона!
-                </h4>
+                </div>
                 <p className="text-xs text-white/70 font-light mt-1 leading-relaxed">
                   Наведите камеру, чтобы открыть витрину салона и сохранить в закладки
                 </p>
@@ -239,9 +243,10 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                     height={144}
                     className="w-full h-full object-contain"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute w-7 h-7 rounded-lg bg-white p-1 shadow-sm flex items-center justify-center border border-[#E5DDD9]">
-                    <img src="/logo.png" alt="" className="w-full h-full object-contain" />
+                    <img src="/logo.png" alt="" loading="lazy" decoding="async" className="w-full h-full object-contain" />
                   </div>
                 </div>
 

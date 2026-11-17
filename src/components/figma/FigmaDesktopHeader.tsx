@@ -62,6 +62,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
           <img
             src="/logo.png"
             alt="Салон цветов София"
+            decoding="async"
             className="h-14 sm:h-18 lg:h-20 w-auto object-contain group-hover:opacity-90 transition-opacity"
           />
         </div>
