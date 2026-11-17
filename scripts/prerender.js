@@ -1283,7 +1283,7 @@ function generatePreRenderedHtml(route) {
                 <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#922E3D] text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Построить маршрут
                 </a>
-                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] font-medium text-xs sm:text-sm text-center inline-block transition-colors">
+                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 font-medium text-xs sm:text-sm text-center inline-block transition-colors">
                   Чат в MAX
                 </a>
               </div>

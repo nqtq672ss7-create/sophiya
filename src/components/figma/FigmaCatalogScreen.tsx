@@ -94,7 +94,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] shadow-md flex items-center justify-center active:scale-95 transition-colors"
+              className="w-10 h-10 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 shadow-md flex items-center justify-center active:scale-95 transition-colors"
               aria-label="Написать в MAX"
               title="Написать в MAX"
             >
@@ -336,7 +336,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] text-xs font-medium flex items-center justify-center gap-2 shadow transition-colors"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 text-xs font-medium flex items-center justify-center gap-2 shadow transition-colors"
               >
                 <MaxIcon className="w-4 h-4" />
                 <span>Написать в MAX</span>

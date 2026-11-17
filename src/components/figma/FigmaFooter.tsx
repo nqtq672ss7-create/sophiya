@@ -260,7 +260,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
                     href={SALON_MAX_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-lg bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-lg bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 flex items-center justify-center transition-colors"
                     title="Написать в MAX"
                     aria-label="MAX"
                   >
