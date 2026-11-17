@@ -326,6 +326,7 @@ export const FigmaAppShell: React.FC = () => {
           cartTotal={cartTotal}
           onSecretCrmTrigger={() => setIsAdminCrmOpen(true)}
           onNavigate={handleNavigate}
+          currentPath={currentRoute.path}
         />
       </div>
 

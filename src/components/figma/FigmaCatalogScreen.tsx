@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
+import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles, ShieldCheck, Truck, CreditCard, Camera, ArrowRight } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
 import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
@@ -35,6 +35,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   onNavigate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const isDeliveryPage = currentRoute.slug === 'dostavka';
 
   const CATEGORY_ITEMS = [
     { label: 'Все', path: '/', category: 'Все' },
@@ -220,8 +221,134 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
         </div>
       </section>
 
+      {/* 3.5. Dedicated Delivery & Payment Page (/dostavka/) */}
+      {isDeliveryPage && (
+        <section className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8 w-full space-y-6">
+          {/* Delivery Zones & Tariffs */}
+          <div className="bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
+                  <Truck className="w-3.5 h-3.5" />
+                  <span>Зоны и тарифы доставки</span>
+                </div>
+                <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
+                  Курьерская доставка по Нижнекамску
+                </h2>
+                <p className="text-xs sm:text-sm text-[#5C454C] max-w-2xl leading-relaxed">
+                  Доставляем ежедневно с 08:00 до 21:00 в вертикальных аквабоксах с водой. В холодное время года используем защитную термоупаковку.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2.5 shrink-0">
+                <a
+                  href="/"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onSelectCategory('Все');
+                    onNavigate('/');
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs sm:text-sm font-medium inline-flex items-center gap-2 transition-colors shadow-sm"
+                >
+                  <span>Перейти в каталог</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <a
+                  href={SALON_MAX_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 text-xs sm:text-sm font-medium inline-flex items-center gap-2 transition-colors"
+                >
+                  <MaxIcon className="w-4 h-4" />
+                  <span>Уточнить в MAX</span>
+                </a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              <div className="p-5 sm:p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 1: Центр и мкр.</span>
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">30–60 мин</span>
+                </div>
+                <div className="text-xl font-bold text-[#1C1215]">
+                  300 ₽ <span className="text-xs font-normal text-[#7C636B]">(бесплатно от 4 500 ₽)</span>
+                </div>
+                <p className="text-xs text-[#5C454C] leading-relaxed">
+                  Пр. Шинников, Мира, Строителей, Сююмбике, Химиков, ул. Баки Урманче, Чулман, Табеева и все жилые микрорайоны.
+                </p>
+              </div>
+
+              <div className="p-5 sm:p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 2: Пригород</span>
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#922E3D]/10 text-[#922E3D]">45–75 мин</span>
+                </div>
+                <div className="text-xl font-bold text-[#1C1215]">450 ₽</div>
+                <p className="text-xs text-[#5C454C] leading-relaxed">
+                  Красный Ключ, Большое и Нижнее Афанасово, Дмитриевка, Ильинка. Бережное вручение получателю лично в руки.
+                </p>
+              </div>
+
+              <div className="p-5 sm:p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9] space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 3: Промзона</span>
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
+                </div>
+                <div className="text-xl font-bold text-[#1C1215]">500 ₽</div>
+                <p className="text-xs text-[#5C454C] leading-relaxed">
+                  БСИ, проходные ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК — доставим к окончанию смены или к мероприятию.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Service Conditions: Pickup, Photo Control, Hours, Payment */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl border border-[#E5DDD9] p-5 shadow-sm space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#1C1215]">Самовывоз — бесплатно</h3>
+              <p className="text-xs text-[#5C454C] leading-relaxed">
+                Салон на пр. Шинников, 13В открыт ежедневно с 08:00 до 21:00. Соберём букет к вашему приезду.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-[#E5DDD9] p-5 shadow-sm space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
+                <Camera className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#1C1215]">Фотоотчёт в MAX до выезда</h3>
+              <p className="text-xs text-[#5C454C] leading-relaxed">
+                Перед передачей курьеру флорист отправляет реальное фото собранной композиции на согласование.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-[#E5DDD9] p-5 shadow-sm space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
+                <Clock className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#1C1215]">Срочно от 30 минут</h3>
+              <p className="text-xs text-[#5C454C] leading-relaxed">
+                Также доставляем к точному времени или инкогнито — без звонка получателю, по согласованию с вами.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-[#E5DDD9] p-5 shadow-sm space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-[#922E3D]/10 text-[#922E3D] flex items-center justify-center">
+                <CreditCard className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#1C1215]">Удобная оплата</h3>
+              <p className="text-xs text-[#5C454C] leading-relaxed">
+                Онлайн картой или по СБП, наличными/картой в салоне, а также по счёту для корпоративных клиентов.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 3.5. Info / Legal Document Narrative Block */}
-      {currentRoute.pageType === 'info' && (
+      {currentRoute.pageType === 'info' && !isDeliveryPage && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 w-full">
           <div className="space-y-5 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm">
             <div className="space-y-2.5">
@@ -242,6 +369,8 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
         </section>
       )}
 
+      {!isDeliveryPage && (
+        <>
       {/* 4. Filter & Category Bar with Real Canonical Links */}
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-4 border-b border-[#E5DDD9]">
@@ -371,12 +500,14 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       </div>
         );
       })()}
+        </>
+      )}
 
       {/* 7. Rotating Reviews Section */}
       <FigmaReviewsSection />
 
       {/* 8. Local SEO & Trust Features Section */}
-      <FigmaSeoSection />
+      <FigmaSeoSection currentRoute={currentRoute} />
 
       {/* 9. Interactive Salon Map Section (Yandex Maps) */}
       <FigmaMapSection />

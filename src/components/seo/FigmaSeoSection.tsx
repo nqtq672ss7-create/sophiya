@@ -139,59 +139,6 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
         ))}
       </div>
 
-      {/* 2. Main Narrative: Delivery Page Context */}
-      {isDeliveryPage && (
-        <div className="space-y-8 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm mb-12">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#922E3D]/10 text-[#922E3D] text-xs font-semibold">
-              <Truck className="w-3.5 h-3.5" />
-              <span>Зоны и тарифы доставки в Нижнекамске</span>
-            </div>
-            <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold leading-tight">
-              Курьерская доставка цветов по районам Нижнекамска
-            </h2>
-            <p className="text-xs sm:text-sm text-[#5C454C] leading-relaxed max-w-3xl">
-              Собственная служба доставки салона «София» привозит цветы с 08:00 до 21:00 без выходных. Все композиции транспортируются в вертикальном положении в аквабоксах с водой, сохраняя свежесть срезки. Зимой используется дополнительная термозащита.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            <div className="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9]/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 1: Центр</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">30–60 мин</span>
-              </div>
-              <h3 className="text-lg font-bold text-[#1C1215]">300 ₽ <span className="text-xs font-normal text-[#7C636B]">(бесплатно от 4 500 ₽)</span></h3>
-              <p className="text-xs text-[#5C454C] leading-relaxed">
-                Пр. Шинников, пр. Мира, пр. Строителей, пр. Сююмбике, пр. Химиков, ул. Баки Урманче, ул. Чулман, ул. Табеева.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9]/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 2: Пригород</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">45–75 мин</span>
-              </div>
-              <h3 className="text-lg font-bold text-[#1C1215]">450 ₽</h3>
-              <p className="text-xs text-[#5C454C] leading-relaxed">
-                Посёлок Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка. Вручение букета лично в руки.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-[#FAF7F5] border border-[#E5DDD9]/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 3: Промзона</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
-              </div>
-              <h3 className="text-lg font-bold text-[#1C1215]">500 ₽</h3>
-              <p className="text-xs text-[#5C454C] leading-relaxed">
-                БСИ, проходные заводов ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК точно к окончанию смены или мероприятию.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 3. Main Narrative: Category Subpage or Occasion Page Context */}
       {(isOccasionPage || isCategorySubpage) && currentRoute && (
         <div className="space-y-6 bg-white rounded-xl border border-[#E5DDD9] p-6 sm:p-8 lg:p-10 shadow-sm mb-12">

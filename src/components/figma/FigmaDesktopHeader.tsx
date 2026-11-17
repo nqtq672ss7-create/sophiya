@@ -12,6 +12,7 @@ interface FigmaDesktopHeaderProps {
   cartTotal?: number;
   onSecretCrmTrigger?: () => void;
   onNavigate?: (path: string, options?: { tab?: FigmaTab }) => void;
+  currentPath?: string;
 }
 
 export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
@@ -21,7 +22,10 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
   cartTotal = 0,
   onSecretCrmTrigger,
   onNavigate,
+  currentPath,
 }) => {
+  const isDeliveryActive = activeTab === 'catalog' && currentPath === '/dostavka/';
+  const isCatalogActive = activeTab === 'catalog' && !isDeliveryActive;
   const { customer } = useAuth();
   const [logoClicks, setLogoClicks] = useState(0);
 
@@ -73,13 +77,13 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             href="/"
             onClick={(e) => handleLinkClick(e, '/', 'catalog')}
             className={`transition-colors relative py-1 ${
-              activeTab === 'catalog'
+              isCatalogActive
                 ? 'text-[#922E3D] font-semibold'
                 : 'text-[#5C454C] hover:text-[#922E3D]'
             }`}
           >
             Каталог
-            {activeTab === 'catalog' && (
+            {isCatalogActive && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
             )}
           </a>
@@ -87,9 +91,16 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
           <a
             href="/dostavka/"
             onClick={(e) => handleLinkClick(e, '/dostavka/')}
-            className="transition-colors relative py-1 text-[#5C454C] hover:text-[#922E3D]"
+            className={`transition-colors relative py-1 ${
+              isDeliveryActive
+                ? 'text-[#922E3D] font-semibold'
+                : 'text-[#5C454C] hover:text-[#922E3D]'
+            }`}
           >
             Доставка
+            {isDeliveryActive && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
+            )}
           </a>
 
           <a
