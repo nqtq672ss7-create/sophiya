@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
@@ -10,6 +10,8 @@ interface BouquetCardProps {
   userDiscount?: number;
   isLcpPriority?: boolean;
   eager?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (bouquetId: string, e: React.MouseEvent) => void;
   onSelectBouquet: (bouquet: Bouquet) => void;
   onAddToCart: (bouquet: Bouquet, e: React.MouseEvent) => void;
 }
@@ -19,15 +21,35 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
   userDiscount = 0,
   isLcpPriority = false,
   eager = false,
+  isFavorite = false,
+  onToggleFavorite,
   onSelectBouquet,
   onAddToCart,
 }) => {
-  const photos = (bouquet.images && bouquet.images.length > 0 ? bouquet.images : [bouquet.image]).slice(0, 3);
+  const photos = (
+    bouquet.images && bouquet.images.length > 0 ? bouquet.images : [bouquet.image]
+  ).slice(0, 3);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [localFavorite, setLocalFavorite] = useState(false);
 
-  const discountedPrice = userDiscount > 0
-    ? Math.round(bouquet.price * (1 - userDiscount / 100))
-    : bouquet.price;
+  const liked = onToggleFavorite ? isFavorite : localFavorite;
+
+  const finalPrice =
+    userDiscount > 0
+      ? Math.round(bouquet.price * (1 - userDiscount / 100))
+      : bouquet.price;
+
+  const comparePrice =
+    bouquet.oldPrice && bouquet.oldPrice > finalPrice
+      ? bouquet.oldPrice
+      : userDiscount > 0 && bouquet.price > finalPrice
+        ? bouquet.price
+        : undefined;
+
+  const discountPct =
+    comparePrice && comparePrice > finalPrice
+      ? Math.round(((comparePrice - finalPrice) / comparePrice) * 100)
+      : 0;
 
   const handlePrevPhoto = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -44,14 +66,23 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
     setActivePhoto(idx);
   };
 
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite(bouquet.id, e);
+    } else {
+      setLocalFavorite((prev) => !prev);
+    }
+  };
+
   return (
     <article
       onClick={() => onSelectBouquet(bouquet)}
-      className="bg-white rounded-xl border border-[#E5DDD9] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between group cursor-pointer"
+      className="bg-white rounded-xl p-2 sm:p-2.5 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between group cursor-pointer border border-[#E5DDD9]/60"
       id={`product-${bouquet.id}`}
     >
-      {/* Compact Image Area */}
-      <div className="relative overflow-hidden aspect-square bg-[#FAF7F5] select-none">
+      {/* Clean Photo Area */}
+      <div className="relative overflow-hidden aspect-square rounded-xl bg-[#FAF7F5] select-none">
         <img
           src={photos[activePhoto] || bouquet.image}
           alt={formatBouquetAlt(bouquet.title)}
@@ -63,12 +94,27 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
           fetchPriority={isLcpPriority ? 'high' : undefined}
         />
 
-        {/* Category Badge */}
-        {bouquet.category && bouquet.category !== 'Все' && (
-          <span className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-2 py-0.5 rounded-md bg-[#1C1215]/85 text-[9px] sm:text-[10px] text-white/95 font-medium select-none">
-            {bouquet.category}
+        {/* Discount Badge (only when oldPrice > price or userDiscount > 0) */}
+        {discountPct > 0 && (
+          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-[#922E3D] text-white text-[11px] font-bold shadow-sm select-none">
+            -{discountPct}%
           </span>
         )}
+
+        {/* Favorite / Like Button */}
+        <button
+          type="button"
+          onClick={handleLikeClick}
+          className={`absolute top-2 right-2 w-8 h-8 rounded-xl flex items-center justify-center shadow-sm transition-colors cursor-pointer ${
+            liked
+              ? 'bg-[#922E3D] text-white'
+              : 'bg-white/90 hover:bg-white text-[#5C454C] hover:text-[#922E3D]'
+          }`}
+          title={liked ? 'Убрать из избранного' : 'Добавить в избранное'}
+          aria-label={liked ? 'Убрать из избранного' : 'Добавить в избранное'}
+        >
+          <Heart className={`w-4 h-4 ${liked ? 'fill-white' : ''}`} />
+        </button>
 
         {/* Multi-photo Navigation Arrows */}
         {photos.length > 1 && (
@@ -76,7 +122,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
             <button
               type="button"
               onClick={handlePrevPhoto}
-              className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/55 hover:bg-black/75 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               aria-label="Предыдущее фото"
             >
               <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -84,7 +130,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
             <button
               type="button"
               onClick={handleNextPhoto}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/60 hover:bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/55 hover:bg-black/75 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               aria-label="Следующее фото"
             >
               <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -94,7 +140,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
 
         {/* Dots Indicator */}
         {photos.length > 1 && (
-          <div className="absolute bottom-1.5 sm:bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 sm:gap-1.5 bg-black/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/55 px-2 py-0.5 rounded-md">
             {photos.map((_, dotIdx) => (
               <button
                 key={dotIdx}
@@ -112,49 +158,33 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
         )}
       </div>
 
-      {/* Info Container */}
-      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between">
-        <div>
-          <h3 className="font-sans text-xs sm:text-sm text-[#1C1215] font-semibold leading-snug group-hover:text-[#922E3D] transition-colors mb-1 line-clamp-2">
-            {bouquet.title}
-          </h3>
+      {/* Info & Action Container */}
+      <div className="px-1 pt-2.5 pb-1 flex-1 flex flex-col justify-between gap-2.5">
+        <h3 className="font-sans text-xs sm:text-sm text-[#1C1215] font-medium leading-snug group-hover:text-[#922E3D] transition-colors line-clamp-2 min-h-[2.4em]">
+          {bouquet.title}
+        </h3>
 
-          <div className="hidden sm:block mb-2.5">
-            <p className="text-[11px] text-[#5C454C] font-light line-clamp-2 leading-relaxed">
-              {bouquet.description}
-            </p>
-          </div>
-        </div>
-
-        {/* Price & Action Row */}
-        <div>
-          <div className="flex items-baseline justify-between pt-1.5 sm:pt-2 border-t border-[#E5DDD9] mb-2 sm:mb-2.5">
-            <div>
-              {userDiscount > 0 ? (
-                <div className="flex items-baseline gap-1 sm:gap-1.5">
-                  <span className="font-sans text-sm sm:text-base lg:text-lg font-bold text-[#922E3D]">
-                    {discountedPrice.toLocaleString('ru-RU')} ₽
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-[#7C636B] line-through">
-                    {bouquet.price.toLocaleString('ru-RU')} ₽
-                  </span>
-                </div>
-              ) : (
-                <span className="font-sans text-sm sm:text-base lg:text-lg font-bold text-[#922E3D]">
-                  {bouquet.price.toLocaleString('ru-RU')} ₽
-                </span>
-              )}
-            </div>
+        <div className="space-y-2">
+          {/* Price Row (New Price + Crossed-out Old Price) */}
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="font-sans text-sm sm:text-base lg:text-lg font-bold text-[#1C1215]">
+              {finalPrice.toLocaleString('ru-RU')} ₽
+            </span>
+            {comparePrice && (
+              <span className="text-xs text-[#7C636B] line-through">
+                {comparePrice.toLocaleString('ru-RU')} ₽
+              </span>
+            )}
           </div>
 
-          {/* Action: Cart Button + WhatsApp Icon Button */}
+          {/* Action: Cart Button + MAX Icon */}
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={(e) => onAddToCart(bouquet, e)}
-              className="flex-1 py-1.5 sm:py-2 px-2 sm:px-2.5 rounded-lg sm:rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-colors shadow-sm active:scale-95 cursor-pointer"
+              className="flex-1 py-2 px-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white font-medium text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm active:scale-95 cursor-pointer"
             >
-              <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">В корзину</span>
             </button>
 
@@ -163,7 +193,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
               title="Написать в MAX"
               aria-label="Написать в MAX"
             >

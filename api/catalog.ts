@@ -110,13 +110,22 @@ function sanitizeSingleBouquet(item: any, fallbackId?: string) {
       : fallbackId || `custom_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const rawPrice = typeof item.price === 'string' ? item.price.replace(/\s+/g, '') : item.price;
   const price = Number(rawPrice) || 0;
-
-  return {
+  const rawOldPrice =
+    typeof item.oldPrice === 'string' ? item.oldPrice.replace(/\s+/g, '') : item.oldPrice;
+  const parsedOldPrice = Number(rawOldPrice);
+  const sanitized: any = {
     ...item,
     id,
     title,
     price,
   };
+  if (Number.isFinite(parsedOldPrice) && parsedOldPrice > price) {
+    sanitized.oldPrice = parsedOldPrice;
+  } else {
+    delete sanitized.oldPrice;
+  }
+
+  return sanitized;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -205,6 +214,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   ? updates.price.replace(/\s+/g, '')
                   : updates.price;
               merged.price = Number(rawPrice) || 0;
+            }
+            if (updates.oldPrice !== undefined) {
+              const rawOld =
+                typeof updates.oldPrice === 'string'
+                  ? updates.oldPrice.replace(/\s+/g, '')
+                  : updates.oldPrice;
+              const parsedOld = Number(rawOld);
+              if (Number.isFinite(parsedOld) && parsedOld > merged.price) {
+                merged.oldPrice = parsedOld;
+              } else {
+                delete merged.oldPrice;
+              }
             }
             if (updates.title) merged.title = String(updates.title).trim();
             return merged;

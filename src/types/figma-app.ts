@@ -32,6 +32,7 @@ export interface Bouquet {
   id: string;
   title: string;
   price: number;
+  oldPrice?: number;
   category: BouquetCategory;
   color: BouquetColor;
   inStock: boolean;

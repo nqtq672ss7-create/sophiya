@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles, ShieldCheck, Truck, CreditCard, Camera, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Phone, SlidersHorizontal, ShoppingCart, Search, ChevronRight, MessageSquare, Clock, MapPin, Sparkles, ShieldCheck, Truck, CreditCard, Camera, ArrowRight, Heart } from 'lucide-react';
 import { Bouquet } from '../../types/figma-app';
 import { FigmaReviewsSection } from './FigmaReviewsSection';
 import { FigmaSeoSection } from '../seo/FigmaSeoSection';
@@ -34,8 +34,35 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   currentRoute,
   onNavigate,
 }) => {
+  const PAGE_SIZE = 12;
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [onlyFavorites, setOnlyFavorites] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('sophiya_favorites');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const isDeliveryPage = currentRoute.slug === 'dostavka';
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeCategory, searchQuery, onlyFavorites, currentRoute.path]);
+
+  const handleToggleFavorite = (bouquetId: string) => {
+    setFavoriteIds((prev) => {
+      const next = prev.includes(bouquetId)
+        ? prev.filter((id) => id !== bouquetId)
+        : [...prev, bouquetId];
+      try {
+        localStorage.setItem('sophiya_favorites', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const CATEGORY_ITEMS = [
     { label: 'Все', path: '/', category: 'Все' },
@@ -54,6 +81,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
   ];
 
   const displayedBouquets = bouquets.filter((b) => {
+    if (onlyFavorites && !favoriteIds.includes(b.id)) return false;
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -62,6 +90,9 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
       b.characteristics.flowersCount.toLowerCase().includes(query)
     );
   });
+
+  const visibleBouquets = displayedBouquets.slice(0, visibleCount);
+  const remainingCount = Math.max(0, displayedBouquets.length - visibleCount);
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-[#1C1215] font-sans">
@@ -417,6 +448,24 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
 
             <button
+              onClick={() => setOnlyFavorites((prev) => !prev)}
+              className={`px-3.5 py-2 rounded-xl border transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-sm active:scale-95 ${
+                onlyFavorites
+                  ? 'bg-[#922E3D] text-white border-[#922E3D]'
+                  : 'bg-white border-[#E5DDD9] text-[#5C454C] hover:text-[#922E3D] hover:border-[#922E3D]'
+              }`}
+              title="Показать избранные букеты"
+            >
+              <Heart className={`w-3.5 h-3.5 ${onlyFavorites ? 'fill-white' : ''}`} />
+              <span className="hidden sm:inline">Избранное</span>
+              {favoriteIds.length > 0 && (
+                <span className={`text-[11px] font-bold ${onlyFavorites ? 'text-white/90' : 'text-[#922E3D]'}`}>
+                  {favoriteIds.length}
+                </span>
+              )}
+            </button>
+
+            <button
               onClick={onOpenFilter}
               className="px-4 py-2 rounded-xl bg-white border border-[#E5DDD9] text-[#5C454C] hover:text-[#922E3D] hover:border-[#922E3D] transition-colors flex items-center gap-1.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer shadow-sm active:scale-95"
               title="Открыть фильтры"
@@ -483,19 +532,35 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 md:grid-cols-3 lg:grid-cols-6">
-            {displayedBouquets.map((bouquet, idx) => (
-              <BouquetCard
-                key={bouquet.id}
-                bouquet={bouquet}
-                userDiscount={userDiscount}
-                isLcpPriority={idx === 0}
-                eager={idx < 4}
-                onSelectBouquet={onSelectBouquet}
-                onAddToCart={onAddToCart}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {visibleBouquets.map((bouquet, idx) => (
+                <BouquetCard
+                  key={bouquet.id}
+                  bouquet={bouquet}
+                  userDiscount={userDiscount}
+                  isLcpPriority={idx === 0}
+                  eager={idx < 4}
+                  isFavorite={favoriteIds.includes(bouquet.id)}
+                  onToggleFavorite={handleToggleFavorite}
+                  onSelectBouquet={onSelectBouquet}
+                  onAddToCart={onAddToCart}
+                />
+              ))}
+            </div>
+
+            {remainingCount > 0 && (
+              <div className="pt-8 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
+                  className="w-full max-w-md py-3.5 px-6 rounded-xl bg-white hover:bg-[#EFE7E3] border border-[#E5DDD9] text-[#1C1215] text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer active:scale-95"
+                >
+                  Показать ещё ({Math.min(PAGE_SIZE, remainingCount)} из {remainingCount})
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
         );

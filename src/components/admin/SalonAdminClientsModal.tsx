@@ -231,6 +231,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   // New Bouquet Form State
   const [newTitle, setNewTitle] = useState('');
   const [newPrice, setNewPrice] = useState<number|''>('');
+  const [newOldPrice, setNewOldPrice] = useState<number|''>('');
   const [newCategory, setNewCategory] = useState<'Монобукеты'|'Авторские'|'Коробки'|'Корзины'>('Авторские');
   const [newColor, setNewColor] = useState('Розовый');
   const [newHeight, setNewHeight] = useState('50 см');
@@ -247,6 +248,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [editingBouquet, setEditingBouquet] = useState<Bouquet|null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editPrice, setEditPrice] = useState<number|''>('');
+  const [editOldPrice, setEditOldPrice] = useState<number|''>('');
   const [editCategory, setEditCategory] = useState<'Монобукеты'|'Авторские'|'Коробки'|'Корзины'>('Авторские');
   const [editColor, setEditColor] = useState('Розовый');
   const [editHeight, setEditHeight] = useState('50 см');
@@ -368,6 +370,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setEditingBouquet(b);
     setEditTitle(b.title);
     setEditPrice(b.price);
+    setEditOldPrice(b.oldPrice && b.oldPrice > b.price ? b.oldPrice : '');
     setEditCategory((b.category as any) || 'Авторские');
     setEditColor((b.color as any) || 'Розовый');
     setEditHeight(b.characteristics?.height || '50 см');
@@ -558,6 +561,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       await addBouquet({
         title: newTitle.trim(),
         price: Number(newPrice),
+        ...(newOldPrice && Number(newOldPrice) > Number(newPrice)
+          ? { oldPrice: Number(newOldPrice) }
+          : {}),
         category: newCategory,
         color: newColor,
         inStock: true,
@@ -576,6 +582,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       // Reset Form
       setNewTitle('');
       setNewPrice('');
+      setNewOldPrice('');
       setNewComposition('');
       setNewDescription('');
       setNewImages(['/bouquet-1.jpg']);
@@ -663,6 +670,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       await updateBouquet(editingBouquet.id, {
         title: editTitle.trim(),
         price: Number(editPrice),
+        oldPrice:
+          editOldPrice && Number(editOldPrice) > Number(editPrice)
+            ? Number(editOldPrice)
+            : 0,
         category: editCategory,
         color: editColor,
         image: mainImg,
@@ -999,13 +1010,31 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Стоимость (₽) *</label>
+                    <label className="block text-[11px] text-white/70 mb-1">Новая / текущая цена (₽) *</label>
                     <input
                       type="number"
                       required
                       value={newPrice}
                       onChange={(e) => setNewPrice(Number(e.target.value) || '')}
                       placeholder="12 500"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1">
+                      Старая цена (₽, для скидки)
+                      {newOldPrice && newPrice && Number(newOldPrice) > Number(newPrice) && (
+                        <span className="ml-1.5 text-emerald-300 font-semibold">
+                          -{Math.round(((Number(newOldPrice) - Number(newPrice)) / Number(newOldPrice)) * 100)}%
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      value={newOldPrice}
+                      onChange={(e) => setNewOldPrice(Number(e.target.value) || '')}
+                      placeholder="Например: 15 000"
                       className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
                     />
                   </div>
@@ -1198,7 +1227,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] text-[#C5A880] mb-1 font-semibold">Стоимость (₽) *</label>
+                    <label className="block text-[11px] text-[#C5A880] mb-1 font-semibold">Новая / текущая цена (₽) *</label>
                     <input
                       type="number"
                       required
@@ -1206,6 +1235,24 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       onChange={(e) => setEditPrice(Number(e.target.value) || '')}
                       placeholder="9500"
                       className="w-full px-3 py-2 bg-white/15 border border-[#C5A880]/60 rounded-xl text-sm font-semibold text-[#FAF7F5] focus:outline-none focus:border-[#C5A880]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-white/70 mb-1 font-medium">
+                      Старая цена (₽, для скидки)
+                      {editOldPrice && editPrice && Number(editOldPrice) > Number(editPrice) && (
+                        <span className="ml-1.5 text-emerald-300 font-semibold">
+                          -{Math.round(((Number(editOldPrice) - Number(editPrice)) / Number(editOldPrice)) * 100)}%
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      value={editOldPrice}
+                      onChange={(e) => setEditOldPrice(Number(e.target.value) || '')}
+                      placeholder="Оставьте пустым, если без скидки"
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
                     />
                   </div>
 
