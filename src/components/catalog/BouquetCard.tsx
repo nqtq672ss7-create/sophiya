@@ -163,7 +163,7 @@ export const BouquetCard: React.FC<BouquetCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
               title="Написать в MAX"
               aria-label="Написать в MAX"
             >

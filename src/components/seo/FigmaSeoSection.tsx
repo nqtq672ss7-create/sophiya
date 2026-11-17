@@ -475,7 +475,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                     href={SALON_MAX_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white text-xs font-semibold transition-colors"
+                    className="px-4 py-2 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] text-xs font-semibold transition-colors"
                   >
                     Написать в MAX
                   </a>

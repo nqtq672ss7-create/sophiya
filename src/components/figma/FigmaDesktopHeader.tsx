@@ -149,7 +149,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
               href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white transition-colors flex items-center justify-center active:scale-95 shadow-sm"
+              className="w-10 h-10 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] transition-colors flex items-center justify-center active:scale-95 shadow-sm"
               title="Написать в MAX"
               aria-label="Написать в MAX"
             >

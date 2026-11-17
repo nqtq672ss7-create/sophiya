@@ -106,7 +106,7 @@ export const FigmaMapSection: React.FC = () => {
                 href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-3 px-4 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white font-medium text-xs sm:text-sm text-center flex items-center justify-center gap-2 transition-colors shadow-sm active:scale-95"
+                className="py-3 px-4 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] font-medium text-xs sm:text-sm text-center flex items-center justify-center gap-2 transition-colors shadow-sm active:scale-95"
               >
                 <MaxIcon className="w-4 h-4" />
                 <span>Чат в MAX</span>

@@ -251,7 +251,7 @@ export const FigmaProductDetailModal: React.FC<FigmaProductDetailModalProps> = (
               href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-12 h-12 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
+              className="w-12 h-12 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] flex items-center justify-center transition-colors shadow-sm active:scale-95 shrink-0"
               title="Задать вопрос или заказать в MAX"
               aria-label="Заказать в MAX"
             >

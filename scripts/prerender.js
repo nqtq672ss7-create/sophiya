@@ -1099,7 +1099,7 @@ function generatePreRenderedHtml(route) {
               <p class="text-xs text-[#FAF0F2]/85 font-light leading-relaxed">
                 Индивидуальная сборка или подбор сортов по фото в MAX
               </p>
-              <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md">
+              <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-[#E5C398]/45 font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md">
                 <span>Написать в MAX</span>
               </a>
             </div>
@@ -1283,7 +1283,7 @@ function generatePreRenderedHtml(route) {
                 <a href="https://yandex.ru/maps/org/sofiya/105599949171" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#922E3D] text-white font-medium text-xs sm:text-sm text-center inline-block">
                   Построить маршрут
                 </a>
-                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-emerald-600 text-white font-medium text-xs sm:text-sm text-center inline-block">
+                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="py-3 px-5 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] font-medium text-xs sm:text-sm text-center inline-block transition-colors">
                   Чат в MAX
                 </a>
               </div>
@@ -1325,7 +1325,7 @@ function generatePreRenderedHtml(route) {
               <div class="font-sans font-medium text-lg text-white font-normal">Контакты</div>
               <div class="space-y-2 text-xs font-light">
                 <a href="tel:+79172563235" class="block text-white hover:text-[#C5A880]"> +7 (917) 256-32-35</a>
-                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="block text-emerald-400 hover:text-emerald-300"> MAX: +7 (917) 256-32-35</a>
+                <a href="https://max.ru/u/f9LHodD0cOKG3_iDtqDpdmSTjHzJbBZW3_A7Z5AqjsHJp3XnDn_JixYJu6c" target="_blank" rel="noopener noreferrer" class="block text-[#E5C398] hover:text-white transition-colors"> MAX: +7 (917) 256-32-35</a>
               </div>
             </div>
             <div class="space-y-3">

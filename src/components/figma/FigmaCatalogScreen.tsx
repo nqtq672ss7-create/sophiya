@@ -94,7 +94,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-[#5B4BFF] text-white shadow-md flex items-center justify-center hover:bg-[#4636E3] active:scale-95 transition-colors"
+              className="w-10 h-10 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] shadow-md flex items-center justify-center active:scale-95 transition-colors"
               aria-label="Написать в MAX"
               title="Написать в MAX"
             >
@@ -210,7 +210,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-2.5 px-4 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md active:scale-95"
+                className="w-full py-2.5 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-[#E5C398]/45 font-medium text-xs transition-colors flex items-center justify-center gap-2 shadow-md active:scale-95"
               >
                 <MaxIcon className="w-4 h-4" />
                 <span>Написать в MAX</span>
@@ -336,7 +336,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                 href={SALON_MAX_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#5B4BFF] hover:bg-[#4636E3] text-white text-xs font-medium flex items-center justify-center gap-2 shadow"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#1C1215] hover:bg-[#3A252C] text-white border border-[#1C1215] text-xs font-medium flex items-center justify-center gap-2 shadow transition-colors"
               >
                 <MaxIcon className="w-4 h-4" />
                 <span>Написать в MAX</span>
