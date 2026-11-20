@@ -317,7 +317,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [formOldPrice, setFormOldPrice] = useState('');
   const [formCategory, setFormCategory] = useState<string>(EDITABLE_CATEGORIES[0]);
   const [formColor, setFormColor] = useState<BouquetColor>('Розовый');
-  const [formImage, setFormImage] = useState('/bouquet-1.jpg');
+  const [formImages, setFormImages] = useState<string[]>(['/bouquet-1.jpg']);
+  const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [formStock, setFormStock] = useState('5');
   const [formDescription, setFormDescription] = useState('');
   const [formRecipe, setFormRecipe] = useState<RecipeItem[]>([
@@ -395,7 +396,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setFormOldPrice('');
     setFormCategory(EDITABLE_CATEGORIES[0]);
     setFormColor('Розовый');
-    setFormImage('/bouquet-1.jpg');
+    setFormImages([]);
+    setFormPhotoUrl('');
     setFormStock('5');
     setFormDescription('');
     setFormRecipe([{ name: 'Роза Эквадор', qty: '5 шт.' }]);
@@ -410,7 +412,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setFormOldPrice(b.oldPrice ? String(b.oldPrice) : '');
     setFormCategory(b.category);
     setFormColor(b.color || 'Розовый');
-    setFormImage(b.image || '/bouquet-1.jpg');
+    const existing = b.images && b.images.length > 0 ? b.images : b.image ? [b.image] : [];
+    setFormImages(existing.filter(Boolean).slice(0, 3));
+    setFormPhotoUrl('');
     setFormStock(String(getStockCount(b)));
     setFormDescription(b.description || '');
     const savedRecipe = recipesMap[b.id];
@@ -422,15 +426,53 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+
+    const remainingSlots = 3 - formImages.length;
+    if (remainingSlots <= 0) {
+      showToast('err', 'Можно добавить максимум 3 фото');
+      return;
+    }
+
+    const filesToProcess = files.slice(0, remainingSlots);
     try {
-      const compressed = await compressImageFile(file);
-      setFormImage(compressed);
-      showToast('ok', 'Фото сжато и готово к сохранению');
+      const compressedList = await Promise.all(filesToProcess.map((file) => compressImageFile(file)));
+      setFormImages((prev) => [...prev, ...compressedList].slice(0, 3));
+      if (files.length > remainingSlots) {
+        showToast('ok', `Добавлено ${compressedList.length} фото (лимит — 3 фото на букет)`);
+      } else {
+        showToast('ok', compressedList.length > 1 ? `Добавлено ${compressedList.length} фото` : 'Фото сжато и добавлено');
+      }
     } catch {
       showToast('err', 'Не удалось загрузить фото');
     }
+  };
+
+  const handleAddPhotoUrl = () => {
+    const url = formPhotoUrl.trim();
+    if (!url) return;
+    if (formImages.length >= 3) {
+      showToast('err', 'Можно добавить максимум 3 фото');
+      return;
+    }
+    setFormImages((prev) => [...prev, url].slice(0, 3));
+    setFormPhotoUrl('');
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setFormImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMakePrimaryPhoto = (index: number) => {
+    if (index === 0) return;
+    setFormImages((prev) => {
+      const next = [...prev];
+      const [picked] = next.splice(index, 1);
+      if (picked) next.unshift(picked);
+      return next;
+    });
   };
 
   const handleSaveBouquet = async (e: React.FormEvent) => {
@@ -438,6 +480,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     if (!formTitle.trim() || !formPrice || isSavingBouquet) return;
     setIsSavingBouquet(true);
     const parsedStock = Math.max(0, parseInt(formStock, 10) || 0);
+    const cleanImages = formImages.map((img) => img.trim()).filter(Boolean).slice(0, 3);
+    const finalImages = cleanImages.length > 0 ? cleanImages : ['/bouquet-1.jpg'];
+    const primaryImage = finalImages[0];
     const recipeSummary = formRecipe
       .filter((r) => r.name.trim())
       .map((r) => `${r.name.trim()} (${r.qty.trim() || '1 шт.'})`)
@@ -452,8 +497,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           category: formCategory,
           color: formColor,
           inStock: parsedStock > 0,
-          image: formImage,
-          images: [formImage],
+          image: primaryImage,
+          images: finalImages,
           description: formDescription.trim() || 'Авторская флористическая композиция.',
           characteristics: {
             height: editingBouquet.characteristics?.height || '50 см',
@@ -478,9 +523,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           category: formCategory,
           color: formColor,
           inStock: parsedStock > 0,
-          image: formImage,
-          images: [formImage],
-          hasRealPhoto: true,
+          image: primaryImage,
+          images: finalImages,
+          hasRealPhoto: cleanImages.length > 0,
           description: formDescription.trim() || 'Авторская флористическая композиция.',
           characteristics: {
             height: '50 см',
@@ -1370,21 +1415,106 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#1B1215] border border-[#35242A]">
-                <img src={formImage} alt="Превью" className="w-14 h-14 rounded-xl object-cover" />
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold cursor-pointer">
-                    <ImageIcon className="w-3.5 h-3.5" /> Загрузить фото
-                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                  </label>
-                  <input
-                    type="text"
-                    value={formImage}
-                    onChange={(e) => setFormImage(e.target.value)}
-                    placeholder="или URL картинки"
-                    className="w-full h-8 px-2.5 rounded-lg bg-[#271B1F] border border-[#3A292E] text-xs text-white"
-                  />
+              <div className="p-2.5 rounded-xl bg-[#1B1215] border border-[#35242A] space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-[#E9DDE1]">
+                    Фото букета ({formImages.length}/3)
+                  </span>
+                  {formImages.length < 3 && (
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2C1E23] hover:bg-[#38272D] border border-[#3D2B31] text-xs font-semibold cursor-pointer transition-colors">
+                      <ImageIcon className="w-3.5 h-3.5" /> Выбрать фото (до 3)
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                      />
+                    </label>
+                  )}
                 </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[0, 1, 2].map((slotIdx) => {
+                    const photo = formImages[slotIdx];
+                    if (photo) {
+                      return (
+                        <div
+                          key={`${slotIdx}-${photo.slice(0, 24)}`}
+                          className="relative aspect-square rounded-xl overflow-hidden border border-[#3D2B31] bg-[#271B1F]"
+                        >
+                          <img
+                            src={photo}
+                            alt={`Фото ${slotIdx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePhoto(slotIdx)}
+                            aria-label={`Удалить фото ${slotIdx + 1}`}
+                            className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/70 hover:bg-black text-white flex items-center justify-center transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                          {slotIdx === 0 ? (
+                            <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-[#922E3D] text-[10px] font-semibold text-white">
+                              Главное
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleMakePrimaryPhoto(slotIdx)}
+                              className="absolute bottom-1 left-1 right-1 py-0.5 rounded bg-black/70 hover:bg-[#922E3D] text-[10px] font-medium text-white truncate px-1 transition-colors"
+                            >
+                              Сделать главным
+                            </button>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <label
+                        key={`empty-${slotIdx}`}
+                        className="aspect-square rounded-xl border border-dashed border-[#4A343C] bg-[#24181C] hover:border-[#922E3D] flex flex-col items-center justify-center gap-1 text-[#BFAEB4] hover:text-white cursor-pointer transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span className="text-[11px]">Фото {slotIdx + 1}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handlePhotoUpload}
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {formImages.length < 3 && (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={formPhotoUrl}
+                      onChange={(e) => setFormPhotoUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddPhotoUrl();
+                        }
+                      }}
+                      placeholder="или вставьте URL картинки"
+                      className="flex-1 min-w-0 h-8 px-2.5 rounded-lg bg-[#271B1F] border border-[#3A292E] text-xs text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddPhotoUrl}
+                      className="h-8 px-2.5 rounded-lg bg-[#2C1E23] hover:bg-[#38272D] border border-[#3D2B31] text-xs font-medium text-white shrink-0"
+                    >
+                      Добавить
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div>
