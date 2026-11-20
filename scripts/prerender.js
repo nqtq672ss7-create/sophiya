@@ -1664,6 +1664,19 @@ async function runPrerender() {
   baseHtml = baseHtml.replace(/<meta name="geo\..*?>\s*/gi, '');
   baseHtml = baseHtml.replace(/<meta name="ICBM".*?>\s*/gi, '');
 
+  // Inject materialized live catalog snapshot so first paint has all live bouquets instead of old 37-item fallback
+  const lightweightCatalog = activeBouquets.map((b) => ({
+    ...b,
+    images: Array.isArray(b.images)
+      ? b.images.filter((img) => typeof img === 'string' && !img.startsWith('data:image/'))
+      : b.images,
+  }));
+  const safeCatalogJson = JSON.stringify(lightweightCatalog).replace(/</g, '\\u003c');
+  baseHtml = baseHtml.replace(
+    '</head>',
+    `<script>window.__INITIAL_CATALOG__=${safeCatalogJson};</script>\n</head>`
+  );
+
   let generatedCount = 0;
 
   for (const route of ROUTES) {

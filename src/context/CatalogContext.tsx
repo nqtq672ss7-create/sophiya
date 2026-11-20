@@ -36,12 +36,65 @@ function isStaleDemoCache(items: Bouquet[]): boolean {
   return hasOnlyLegacyDemoIds && BOUQUETS_CATALOG.length > items.length;
 }
 
+const IDB_NAME = 'sophiya_catalog_db';
+const IDB_STORE = 'catalog';
+const IDB_KEY = 'live_v1';
+
+function openCatalogDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !('indexedDB' in window)) {
+      reject(new Error('IndexedDB unavailable'));
+      return;
+    }
+    const req = window.indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbGetCatalog(): Promise<Bouquet[]|null> {
+  try {
+    const db = await openCatalogDb();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const store = tx.objectStore(IDB_STORE);
+      const req = store.get(IDB_KEY);
+      req.onsuccess = () => {
+        const val = req.result;
+        resolve(Array.isArray(val) && val.length > 0 ? val : null);
+      };
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function idbSetCatalog(items: Bouquet[]): Promise<void> {
+  try {
+    const db = await openCatalogDb();
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(items, IDB_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch {}
+}
+
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date|null>(null);
+  const hasRemoteSyncRef = React.useRef<boolean>(false);
 
-  // Initial state: clears legacy keys and falls back to live 37-bouquet snapshot if cache is stale/empty
+  // Initial state: localStorage -> SSR-injected __INITIAL_CATALOG__ -> static BOUQUETS_CATALOG fallback
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -53,6 +106,10 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             return parsed;
           }
         }
+        const ssrCatalog = (window as unknown as { __INITIAL_CATALOG__?: Bouquet[] }).__INITIAL_CATALOG__;
+        if (Array.isArray(ssrCatalog) && ssrCatalog.length > 0) {
+          return ssrCatalog;
+        }
       }
     } catch (e) {
       console.warn('Storage init fallback:', e);
@@ -61,6 +118,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const saveToStorage = (items: Bouquet[]) => {
+    void idbSetCatalog(items);
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
@@ -71,7 +129,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
       } catch {
-        console.warn('localStorage quota exceeded, keeping catalog in memory:', e);
+        // Remove stale localStorage snapshot so __INITIAL_CATALOG__ / IndexedDB takes precedence on next load
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {}
+        console.warn('localStorage quota exceeded, persisted catalog in IndexedDB:', e);
       }
     }
   };
@@ -178,6 +240,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const remote = await res.json();
         if (Array.isArray(remote) && remote.length > 0) {
           // Cloud is the single absolute truth for all devices
+          hasRemoteSyncRef.current = true;
           setBouquets(remote);
           saveToStorage(remote);
           setLastSyncedAt(new Date());
@@ -193,6 +256,12 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Fetch on mount AND whenever the user switches back to this tab/window
   useEffect(() => {
+    let active = true;
+    idbGetCatalog().then((cached) => {
+      if (active && cached && !hasRemoteSyncRef.current && !isStaleDemoCache(cached)) {
+        setBouquets(cached);
+      }
+    });
     refreshCatalog();
 
     const onFocus = () => {
@@ -207,6 +276,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
+      active = false;
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
