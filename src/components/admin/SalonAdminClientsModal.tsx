@@ -49,10 +49,10 @@ const ORDER_STATUS_META: Record<
   AdminOrder['orderStatus'],
   { label: string; next: AdminOrder['orderStatus']|null; nextLabel: string|null; badge: string }
 > = {
-  new: { label: 'Новый', next: 'assembling', nextLabel: 'В сборку', badge: 'bg-[#922E3D]/35 text-[#F6B6C0]' },
-  assembling: { label: 'Сборка', next: 'in_transit', nextLabel: 'В путь', badge: 'bg-amber-500/20 text-amber-300' },
-  in_transit: { label: 'В пути', next: 'delivered', nextLabel: 'Доставлен', badge: 'bg-sky-500/20 text-sky-300' },
-  delivered: { label: 'Доставлен', next: null, nextLabel: null, badge: 'bg-emerald-500/20 text-emerald-300' },
+  new: { label: 'Новый', next: 'assembling', nextLabel: 'В сборку', badge: 'bg-[#922E3D]/15 text-[#922E3D]' },
+  assembling: { label: 'Сборка', next: 'in_transit', nextLabel: 'В путь', badge: 'bg-amber-100 text-amber-700' },
+  in_transit: { label: 'В пути', next: 'delivered', nextLabel: 'Доставлен', badge: 'bg-sky-100 text-sky-700' },
+  delivered: { label: 'Доставлен', next: null, nextLabel: null, badge: 'bg-emerald-100 text-emerald-700' },
 };
 
 const COLORS: BouquetColor[] = ['Розовый', 'Красный', 'Белый', 'Бордовый', 'Персиковый'];
@@ -631,10 +631,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   if (!isUnlocked) {
     return (
       <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-[#1C1215] border border-[#3A282E] rounded-xl p-6 text-[#F7EFF2] shadow-2xl relative">
+        <div className="w-full max-w-sm bg-[#FAF7F5] border border-[#E6DCDE] rounded-xl p-6 text-[#1C1215] shadow-2xl relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-[#271B1F] border border-[#3A282E] flex items-center justify-center text-[#C9B7BD] hover:text-white"
+            className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-white border border-[#E6DCDE] flex items-center justify-center text-[#634F55] hover:text-[#1C1215]"
             aria-label="Закрыть"
           >
             <X className="w-4 h-4" />
@@ -653,7 +653,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               onChange={(e) => setPinInput(e.target.value)}
               placeholder="Пароль доступа"
               autoFocus
-              className="w-full h-11 px-4 rounded-xl bg-[#271B1F] border border-[#3F2C32] text-sm text-white focus:outline-none focus:border-[#922E3D]"
+              className="w-full h-11 px-4 rounded-xl bg-white border border-[#DFD2D5] text-sm text-[#1C1215] focus:outline-none focus:border-[#922E3D]"
             />
             {pinError && <div className="text-xs text-rose-400">{pinError}</div>}
             <button
@@ -683,14 +683,14 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   // ===========================================================================
   return (
     <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center lg:p-5">
-      <div className="w-full h-full lg:max-w-6xl lg:h-[90vh] bg-[#1C1215] text-[#F7EFF2] lg:rounded-xl lg:border lg:border-[#3A282E] flex flex-col lg:flex-row overflow-hidden relative shadow-2xl">
+      <div className="w-full h-full lg:max-w-6xl lg:h-[90vh] bg-[#FAF7F5] text-[#1C1215] lg:rounded-xl lg:border lg:border-[#E6DCDE] flex flex-col lg:flex-row overflow-hidden relative shadow-2xl">
         {/* Toast */}
         {toast && (
           <div
             className={`absolute top-4 right-4 left-4 lg:left-auto lg:w-96 z-50 px-4 py-3 rounded-xl border text-xs font-semibold shadow-xl ${
               toast.type === 'ok'
-                ? 'bg-[#24191D] border-emerald-500/50 text-emerald-300'
-                : 'bg-[#2B171C] border-rose-500/60 text-rose-200'
+                ? 'bg-[#F3ECE9] border-emerald-500/50 text-emerald-700'
+                : 'bg-rose-50 border-rose-500/60 text-rose-800'
             }`}
           >
             {toast.text}
@@ -698,9 +698,9 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         )}
 
         {/* DESKTOP SIDEBAR */}
-        <aside className="hidden lg:flex w-64 shrink-0 bg-[#160E11] border-r border-[#2F2025] flex-col p-4 justify-between">
+        <aside className="hidden lg:flex w-64 shrink-0 bg-white border-r border-[#E8DFE1] flex-col p-4 justify-between">
           <div>
-            <div className="flex items-center gap-3 px-2 pb-5 border-b border-[#2F2025]">
+            <div className="flex items-center gap-3 px-2 pb-5 border-b border-[#E8DFE1]">
               <div className="w-9 h-9 rounded-xl bg-[#922E3D] flex items-center justify-center font-extrabold text-white">
                 S
               </div>
@@ -722,7 +722,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                     activeTab === item.id
                       ? 'bg-[#922E3D] text-white'
-                      : 'text-[#B5A3A9] hover:bg-[#24191D] hover:text-white'
+                      : 'text-[#6E5A60] hover:bg-[#F3ECE9] hover:text-[#1C1215]'
                   }`}
                 >
                   <span className="flex items-center gap-2.5">
@@ -739,17 +739,17 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             </nav>
           </div>
 
-          <div className="space-y-2 pt-4 border-t border-[#2F2025]">
+          <div className="space-y-2 pt-4 border-t border-[#E8DFE1]">
             <button
               onClick={handleLock}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-[#25191D] border border-[#3A282E] text-[#E8A8B3] hover:bg-[#322026]"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-white border border-[#E6DCDE] text-[#922E3D] hover:bg-[#EAE0DE]"
             >
               <LogOut className="w-4 h-4" />
               Выйти из админки
             </button>
             <button
               onClick={onClose}
-              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-[#25191D] border border-[#3A282E] text-[#C9B7BD] hover:text-white"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-white border border-[#E6DCDE] text-[#634F55] hover:text-[#1C1215]"
             >
               <X className="w-4 h-4" />
               Закрыть окно
@@ -760,7 +760,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         {/* MAIN AREA */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* TOP BAR */}
-          <header className="px-4 py-3 border-b border-[#2F2025] flex items-center justify-between gap-2 shrink-0 bg-[#1C1215]">
+          <header className="px-4 py-3 border-b border-[#E8DFE1] flex items-center justify-between gap-2 shrink-0 bg-[#FAF7F5]">
             <div className="flex items-center gap-2.5 lg:hidden">
               <div className="w-8 h-8 rounded-xl bg-[#922E3D] flex items-center justify-center font-extrabold text-sm text-white">
                 S
@@ -794,7 +794,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     className={`h-9 px-3 rounded-xl text-xs font-semibold border transition-colors ${
                       bulkMode
                         ? 'bg-[#922E3D] border-[#B44253] text-white'
-                        : 'bg-[#271B1F] border-[#3A282E] text-[#E8D9DE]'
+                        : 'bg-white border-[#E6DCDE] text-[#3B2A30]'
                     }`}
                   >
                     {bulkMode ? 'Готово' : 'Выбрать'}
@@ -805,7 +805,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               {activeTab === 'reviews' && (
                 <button
                   onClick={() => setIsAddReviewOpen(true)}
-                  className="h-9 px-3 rounded-xl bg-[#271B1F] border border-[#3A282E] text-xs font-semibold text-[#E8D9DE] hover:border-[#922E3D]"
+                  className="h-9 px-3 rounded-xl bg-white border border-[#E6DCDE] text-xs font-semibold text-[#3B2A30] hover:border-[#922E3D]"
                 >
                   + Отзыв
                 </button>
@@ -814,14 +814,14 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               <button
                 onClick={handleLock}
                 title="Выйти из админ-панели"
-                className="lg:hidden h-9 w-9 rounded-xl bg-[#271B1F] border border-[#3A282E] flex items-center justify-center text-[#E8A8B3]"
+                className="lg:hidden h-9 w-9 rounded-xl bg-white border border-[#E6DCDE] flex items-center justify-center text-[#922E3D]"
               >
                 <LogOut className="w-4 h-4" />
               </button>
               <button
                 onClick={onClose}
                 title="Закрыть"
-                className="h-9 w-9 rounded-xl bg-[#271B1F] border border-[#3A282E] flex items-center justify-center text-[#C9B7BD] hover:text-white"
+                className="h-9 w-9 rounded-xl bg-white border border-[#E6DCDE] flex items-center justify-center text-[#634F55] hover:text-[#1C1215]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -830,16 +830,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
           {/* SEARCH & CHIPS */}
           {activeTab !== 'more' && (
-            <div className="px-4 pt-3 pb-2 space-y-2.5 shrink-0 bg-[#1C1215]">
+            <div className="px-4 pt-3 pb-2 space-y-2.5 shrink-0 bg-[#FAF7F5]">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-[#8F7D83] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-[#8C787F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Поиск..."
-                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-[#271B1F] border border-[#3A292E] text-sm text-white placeholder:text-[#8F7D83] focus:outline-none focus:border-[#922E3D]"
+                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-white border border-[#E2D6D9] text-sm text-[#1C1215] placeholder:text-[#8C787F] focus:outline-none focus:border-[#922E3D]"
                   />
                 </div>
                 {activeTab === 'catalog' && (
@@ -847,8 +847,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     onClick={() => setIsFilterOpen(true)}
                     className={`h-10 px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 shrink-0 ${
                       sortBy !== 'default'
-                        ? 'bg-[#922E3D]/25 border-[#922E3D] text-white'
-                        : 'bg-[#271B1F] border-[#3A292E] text-[#E8D9DE]'
+                        ? 'bg-[#922E3D]/12 border-[#922E3D] text-[#922E3D]'
+                        : 'bg-white border-[#E2D6D9] text-[#3B2A30]'
                     }`}
                   >
                     <SlidersHorizontal className="w-4 h-4" /> Фильтр
@@ -871,7 +871,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${
                         chipFilter === id
                           ? 'bg-[#922E3D] border-[#B44253] text-white'
-                          : 'bg-[#25191D] border-[#3A292E] text-[#C9B7BD]'
+                          : 'bg-white border-[#E2D6D9] text-[#634F55]'
                       }`}
                     >
                       {label}
@@ -895,8 +895,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       key={b.id}
                       className={`rounded-xl p-3 border transition-colors flex flex-col justify-between ${
                         isSel
-                          ? 'bg-[#2D1C22] border-[#922E3D]'
-                          : 'bg-[#25191D] border-[#37252B]'
+                          ? 'bg-[#FDF4F5] border-[#922E3D]'
+                          : 'bg-white border-[#E6DCDE]'
                       } ${!b.inStock ? 'opacity-75' : ''}`}
                     >
                       <div
@@ -914,7 +914,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         {bulkMode && (
                           <div
                             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
-                              isSel ? 'bg-[#922E3D] border-[#922E3D] text-white' : 'border-[#5B434B]'
+                              isSel ? 'bg-[#922E3D] border-[#922E3D] text-white' : 'border-[#CFC0C4]'
                             }`}
                           >
                             {isSel && <Check className="w-3.5 h-3.5" />}
@@ -923,7 +923,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         <img
                           src={b.image || '/bouquet-1.jpg'}
                           alt={b.title}
-                          className="w-14 h-14 rounded-xl object-cover shrink-0 bg-[#160E11]"
+                          className="w-14 h-14 rounded-xl object-cover shrink-0 bg-white"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-bold truncate">{b.title}</div>
@@ -937,10 +937,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                             <span
                               className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
                                 !b.inStock || cnt === 0
-                                  ? 'bg-rose-500/20 text-rose-300'
+                                  ? 'bg-rose-500/20 text-rose-700'
                                   : cnt <= 2
-                                  ? 'bg-amber-500/20 text-amber-300'
-                                  : 'bg-emerald-500/20 text-emerald-300'
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-emerald-100 text-emerald-700'
                               }`}
                             >
                               {!b.inStock || cnt === 0 ? 'Нет в наличии' : `В наличии, ${cnt} шт.`}
@@ -967,10 +967,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
                       {!bulkMode && (
                         <div className="flex flex-wrap items-center justify-between mt-2.5 pt-2.5 border-t border-[#352329] gap-2">
-                          <div className="inline-flex items-center gap-1 bg-[#1C1215] border border-[#3D2B31] rounded-lg px-1 py-0.5 shrink-0">
+                          <div className="inline-flex items-center gap-1 bg-[#FAF7F5] border border-[#DFD2D5] rounded-lg px-1 py-0.5 shrink-0">
                             <button
                               onClick={() => updateStockCount(b, cnt - 1)}
-                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold flex items-center justify-center"
+                              className="w-6 h-6 rounded bg-[#EDE5E3] text-[#1C1215] text-xs font-bold flex items-center justify-center"
                             >
                               −
                             </button>
@@ -979,7 +979,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                             </span>
                             <button
                               onClick={() => updateStockCount(b, cnt + 1)}
-                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold flex items-center justify-center"
+                              className="w-6 h-6 rounded bg-[#EDE5E3] text-[#1C1215] text-xs font-bold flex items-center justify-center"
                             >
                               +
                             </button>
@@ -989,7 +989,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                               <button
                                 onClick={() => updateStockCount(b, 0)}
                                 title="Убрать с витрины"
-                                className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold text-[#E8D9DE] whitespace-nowrap"
+                                className="h-7 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-[11px] font-semibold text-[#3B2A30] whitespace-nowrap"
                               >
                                 Скрыть
                               </button>
@@ -997,14 +997,14 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                               <button
                                 onClick={() => updateStockCount(b, Math.max(1, cnt || 5))}
                                 title="Вернуть в наличие"
-                                className="h-7 px-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-300 whitespace-nowrap"
+                                className="h-7 px-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-700 whitespace-nowrap"
                               >
                                 На витрину
                               </button>
                             )}
                             <button
                               onClick={() => openEditForm(b)}
-                              className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#5A3842] text-[11px] font-semibold text-white inline-flex items-center gap-1 whitespace-nowrap"
+                              className="h-7 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFC8CD] text-[11px] font-semibold text-[#1C1215] inline-flex items-center gap-1 whitespace-nowrap"
                             >
                               <Pencil className="w-3 h-3 shrink-0" /> Изменить
                             </button>
@@ -1021,7 +1021,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             {activeTab === 'orders' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {filteredOrders.length === 0 ? (
-                  <div className="col-span-full text-center py-12 px-4 rounded-xl bg-[#25191D] border border-[#37252B] space-y-1.5">
+                  <div className="col-span-full text-center py-12 px-4 rounded-xl bg-white border border-[#E6DCDE] space-y-1.5">
                     <ShoppingBag className="w-7 h-7 text-[#922E3D] mx-auto" />
                     <div className="text-sm font-bold">Заказов пока нет</div>
                     <div className="text-xs text-[#A8949A]">
@@ -1033,7 +1033,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   const st = ORDER_STATUS_META[o.orderStatus];
                   const cleanPhone = o.phone.replace(/\D/g, '');
                   return (
-                    <div key={o.id} className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2">
+                    <div key={o.id} className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-extrabold">{o.orderNumber}</span>
@@ -1044,8 +1044,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         <span
                           className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
                             o.photoReportUrl
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : 'bg-white/10 text-[#C9B7BD]'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-white/10 text-[#634F55]'
                           }`}
                         >
                           {o.photoReportUrl ? 'Фотоотчёт ✓' : 'Без фото'}
@@ -1059,18 +1059,18 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         <span className="text-[#D7C7CD]">
                           {o.items.map((it) => `${it.title} × ${it.quantity}`).join(', ')}
                         </span>
-                        <strong className="text-sm text-white">{o.totalAmount.toLocaleString('ru-RU')} ₽</strong>
+                        <strong className="text-sm text-[#1C1215]">{o.totalAmount.toLocaleString('ru-RU')} ₽</strong>
                       </div>
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         <button
                           onClick={() => setPhotoOrderModal(o)}
-                          className="flex-1 h-8 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+                          className="flex-1 h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
                         >
                           <Camera className="w-3.5 h-3.5" /> Фотоотчёт
                         </button>
                         <a
                           href={`tel:+${cleanPhone}`}
-                          className="h-8 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center"
+                          className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center"
                           title="Позвонить"
                         >
                           <Phone className="w-3.5 h-3.5" />
@@ -1079,7 +1079,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                           href={`https://wa.me/${cleanPhone}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="h-8 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1"
+                          className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center gap-1"
                         >
                           <MessageCircle className="w-3.5 h-3.5" /> WA
                         </a>
@@ -1109,13 +1109,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 {filteredReviews.map((r) => {
                   const replyText = reviewReplies[r.id];
                   return (
-                    <div key={r.id} className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2">
+                    <div key={r.id} className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
                           <strong className="text-sm">{r.author}</strong>
                           <span
                             className={`text-[11px] ml-2 ${
-                              r.date === 'Сегодня' ? 'text-amber-300 font-semibold' : 'text-[#9E8A91]'
+                              r.date === 'Сегодня' ? 'text-amber-700 font-semibold' : 'text-[#7B676E]'
                             }`}
                           >
                             {r.date}
@@ -1123,7 +1123,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         </div>
                         <span
                           className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
-                            r.isPublished ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                            r.isPublished ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                           }`}
                         >
                           {r.isPublished ? 'Опубликован' : 'Модерация'}
@@ -1139,7 +1139,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       </div>
                       <p className="text-xs leading-relaxed text-[#EAE0E3]">{r.comment}</p>
                       {replyText && (
-                        <div className="p-2.5 rounded-xl bg-[#1C1215] border-l-2 border-[#922E3D] text-xs text-[#D5C5CA]">
+                        <div className="p-2.5 rounded-xl bg-[#FAF7F5] border-l-2 border-[#922E3D] text-xs text-[#4A383E]">
                           <strong className="text-[#F5B8C2]">Ответ салона: </strong>
                           {replyText}
                         </div>
@@ -1151,19 +1151,19 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                             setDraftReply(replyText || '');
                             setDraftReviewDate(r.date || '');
                           }}
-                          className="flex-1 h-8 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+                          className="flex-1 h-8 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
                         >
                           <MessageCircle className="w-3.5 h-3.5" /> {replyText ? 'Изменить ответ / дату' : 'Ответить / дата'}
                         </button>
                         <button
                           onClick={() => (r.isPublished ? togglePublished(r.id) : moderateReview(r.id, true))}
-                          className="h-8 px-3 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold"
+                          className="h-8 px-3 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold"
                         >
                           {r.isPublished ? 'Скрыть' : 'Опубликовать'}
                         </button>
                         <button
                           onClick={() => deleteReview(r.id)}
-                          className="h-8 w-8 rounded-lg bg-[#2C1E23] border border-[#3D2B31] flex items-center justify-center text-rose-300"
+                          className="h-8 w-8 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] flex items-center justify-center text-rose-700"
                           title="Удалить"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1188,18 +1188,18 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     const cleanPhone = (c.phone || '').replace(/\D/g, '');
                     const fullName = `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Клиент';
                     return (
-                      <div key={c.id} className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2.5">
+                      <div key={c.id} className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] space-y-2.5">
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="text-sm font-bold">{fullName}</div>
                             <div className="text-xs text-[#A8949A]">{c.phone}</div>
-                            <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-[#922E3D]/35 text-[#F6B6C0]">
+                            <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-[#922E3D]/15 text-[#922E3D]">
                               <Award className="w-3 h-3" /> {tier.name}, скидка {tier.discountPercent}%
                             </span>
                           </div>
                           <a
                             href={`tel:+${cleanPhone}`}
-                            className="w-9 h-9 rounded-xl bg-[#2C1E23] border border-[#3D2B31] flex items-center justify-center"
+                            className="w-9 h-9 rounded-xl bg-[#F3ECE9] border border-[#DFD2D5] flex items-center justify-center"
                           >
                             <Phone className="w-4 h-4" />
                           </a>
@@ -1211,7 +1211,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                           </span>
                           <button
                             onClick={() => setClientHistoryModal(c.id)}
-                            className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold"
+                            className="h-7 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-[11px] font-semibold"
                           >
                             История →
                           </button>
@@ -1228,24 +1228,24 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               <div className="max-w-3xl space-y-3">
                 {role === 'Админ' ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B]">
+                    <div className="rounded-xl p-3.5 bg-white border border-[#E6DCDE]">
                       <div className="text-[11px] text-[#B4A0A7]">Заказы сегодня</div>
                       <div className="text-xl font-extrabold mt-1">{todayRevenue.toLocaleString('ru-RU')} ₽</div>
-                      <div className="text-[11px] text-emerald-300 mt-0.5">{orders.length} заказов</div>
+                      <div className="text-[11px] text-emerald-700 mt-0.5">{orders.length} заказов</div>
                     </div>
-                    <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B]">
+                    <div className="rounded-xl p-3.5 bg-white border border-[#E6DCDE]">
                       <div className="text-[11px] text-[#B4A0A7]">Средний чек</div>
                       <div className="text-xl font-extrabold mt-1">
                         {orders.length ? Math.round(todayRevenue / orders.length).toLocaleString('ru-RU') : 0} ₽
                       </div>
                     </div>
-                    <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] col-span-2 sm:col-span-1">
+                    <div className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] col-span-2 sm:col-span-1">
                       <div className="text-[11px] text-[#B4A0A7]">В каталоге</div>
                       <div className="text-xl font-extrabold mt-1">{bouquets.length} поз.</div>
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#5E3A43] text-xs text-[#D5C5CA]">
+                  <div className="rounded-xl p-3.5 bg-white border border-[#DFC8CD] text-xs text-[#4A383E]">
                     Режим роли <strong>{role}</strong>: финансовая аналитика скрыта правами доступа.
                   </div>
                 )}
@@ -1260,7 +1260,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     <button
                       key={id}
                       onClick={() => setMoreSubSection(id as typeof moreSubSection)}
-                      className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] flex items-center justify-between text-left hover:border-[#922E3D]"
+                      className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] flex items-center justify-between text-left hover:border-[#922E3D]"
                     >
                       <div>
                         <div className="text-sm font-bold">{title}</div>
@@ -1272,7 +1272,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 </div>
 
                 {/* Sync & Catalog Maintenance */}
-                <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2.5">
+                <div className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold">Облачная синхронизация каталога</span>
                     <span className="text-[#A8949A]">
@@ -1290,7 +1290,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     </button>
                     <button
                       onClick={() => refreshCatalog()}
-                      className="h-9 px-3 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold"
+                      className="h-9 px-3 rounded-xl bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold"
                     >
                       Обновить с сервера
                     </button>
@@ -1299,7 +1299,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         setDangerConfirmInput('');
                         setDangerModal('reset');
                       }}
-                      className="h-9 px-3 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center gap-1"
+                      className="h-9 px-3 rounded-xl bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center gap-1"
                     >
                       <RotateCcw className="w-3.5 h-3.5" /> Сброс каталога
                     </button>
@@ -1308,7 +1308,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         setDangerConfirmInput('');
                         setDangerModal('clear');
                       }}
-                      className="h-9 px-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-300 text-xs font-semibold"
+                      className="h-9 px-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-700 text-xs font-semibold"
                     >
                       Очистить всё...
                     </button>
@@ -1325,13 +1325,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               <div className="flex gap-2">
                 <button
                   onClick={() => applyBulk('hide')}
-                  className="h-8 px-3 rounded-lg bg-[#25191D] border border-[#3D2B31] text-xs font-semibold"
+                  className="h-8 px-3 rounded-lg bg-white border border-[#DFD2D5] text-xs font-semibold"
                 >
                   Скрыть
                 </button>
                 <button
                   onClick={() => applyBulk('show')}
-                  className="h-8 px-3 rounded-lg bg-[#25191D] border border-[#3D2B31] text-xs font-semibold"
+                  className="h-8 px-3 rounded-lg bg-white border border-[#DFD2D5] text-xs font-semibold"
                 >
                   В наличие
                 </button>
@@ -1357,7 +1357,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           )}
 
           {/* MOBILE BOTTOM TAB BAR (5 TABS) */}
-          <nav className="lg:hidden grid grid-cols-5 gap-1 px-1.5 pt-1.5 pb-2.5 bg-[#160E11] border-t border-[#2F2025] shrink-0">
+          <nav className="lg:hidden grid grid-cols-5 gap-1 px-1.5 pt-1.5 pb-2.5 bg-white border-t border-[#E8DFE1] shrink-0">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -1367,7 +1367,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   setSelectedIds([]);
                 }}
                 className={`relative flex flex-col items-center justify-center gap-1 py-1.5 rounded-xl text-[10.5px] font-semibold ${
-                  activeTab === item.id ? 'bg-[#922E3D]/25 text-white' : 'text-[#8F7C82]'
+                  activeTab === item.id ? 'bg-[#922E3D]/12 text-[#922E3D]' : 'text-[#8F7C82]'
                 }`}
               >
                 {item.badge ? (
@@ -1399,7 +1399,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           >
             <form
               onSubmit={handleSaveBouquet}
-              className="w-full lg:max-w-lg bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 max-h-[90vh] overflow-y-auto space-y-3"
+              className="w-full lg:max-w-lg bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 max-h-[90vh] overflow-y-auto space-y-3"
             >
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <div className="flex items-center justify-between">
@@ -1412,19 +1412,19 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     setIsAddBouquetOpen(false);
                     setEditingBouquet(null);
                   }}
-                  className="text-[#C9B7BD] hover:text-white"
+                  className="text-[#634F55] hover:text-[#1C1215]"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-[#1B1215] border border-[#35242A] space-y-2.5">
+              <div className="p-2.5 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium text-[#E9DDE1]">
+                  <span className="text-xs font-medium text-[#1C1215]">
                     Фото букета ({formImages.length}/3)
                   </span>
                   {formImages.length < 3 && (
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2C1E23] hover:bg-[#38272D] border border-[#3D2B31] text-xs font-semibold cursor-pointer transition-colors">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F3ECE9] hover:bg-[#EAE0DE] border border-[#DFD2D5] text-xs font-semibold cursor-pointer transition-colors">
                       <ImageIcon className="w-3.5 h-3.5" /> Выбрать фото (до 3)
                       <input
                         type="file"
@@ -1444,7 +1444,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       return (
                         <div
                           key={`${slotIdx}-${photo.slice(0, 24)}`}
-                          className="relative aspect-square rounded-xl overflow-hidden border border-[#3D2B31] bg-[#271B1F]"
+                          className="relative aspect-square rounded-xl overflow-hidden border border-[#DFD2D5] bg-white"
                         >
                           <img
                             src={photo}
@@ -1478,7 +1478,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     return (
                       <label
                         key={`empty-${slotIdx}`}
-                        className="aspect-square rounded-xl border border-dashed border-[#4A343C] bg-[#24181C] hover:border-[#922E3D] flex flex-col items-center justify-center gap-1 text-[#BFAEB4] hover:text-white cursor-pointer transition-colors"
+                        className="aspect-square rounded-xl border border-dashed border-[#D4C3C7] bg-[#F7F3F1] hover:border-[#922E3D] flex flex-col items-center justify-center gap-1 text-[#756168] hover:text-[#1C1215] cursor-pointer transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         <span className="text-[11px]">Фото {slotIdx + 1}</span>
@@ -1507,12 +1507,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         }
                       }}
                       placeholder="или вставьте URL картинки"
-                      className="flex-1 min-w-0 h-8 px-2.5 rounded-lg bg-[#271B1F] border border-[#3A292E] text-xs text-white"
+                      className="flex-1 min-w-0 h-8 px-2.5 rounded-lg bg-white border border-[#E2D6D9] text-xs text-[#1C1215]"
                     />
                     <button
                       type="button"
                       onClick={handleAddPhotoUrl}
-                      className="h-8 px-2.5 rounded-lg bg-[#2C1E23] hover:bg-[#38272D] border border-[#3D2B31] text-xs font-medium text-white shrink-0"
+                      className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] hover:bg-[#EAE0DE] border border-[#DFD2D5] text-xs font-medium text-[#1C1215] shrink-0"
                     >
                       Добавить
                     </button>
@@ -1521,55 +1521,55 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs text-[#CBB9BF] mb-1">Название</label>
+                <label className="block text-xs text-[#634F55] mb-1">Название</label>
                 <input
                   required
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="Например: Букет из пионов"
-                  className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-xs text-[#CBB9BF] mb-1">Цена (₽)</label>
+                  <label className="block text-xs text-[#634F55] mb-1">Цена (₽)</label>
                   <input
                     required
                     type="number"
                     value={formPrice}
                     onChange={(e) => setFormPrice(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                    className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#CBB9BF] mb-1">Старая</label>
+                  <label className="block text-xs text-[#634F55] mb-1">Старая</label>
                   <input
                     type="number"
                     value={formOldPrice}
                     onChange={(e) => setFormOldPrice(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                    className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-[#CBB9BF] mb-1">Остаток</label>
+                  <label className="block text-xs text-[#634F55] mb-1">Остаток</label>
                   <input
                     type="number"
                     min={0}
                     value={formStock}
                     onChange={(e) => setFormStock(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                    className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-[#CBB9BF] mb-1">Категория</label>
+                  <label className="block text-xs text-[#634F55] mb-1">Категория</label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full h-10 px-2.5 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                    className="w-full h-10 px-2.5 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                   >
                     {EDITABLE_CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -1579,11 +1579,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#CBB9BF] mb-1">Оттенок</label>
+                  <label className="block text-xs text-[#634F55] mb-1">Оттенок</label>
                   <select
                     value={formColor}
                     onChange={(e) => setFormColor(e.target.value as BouquetColor)}
-                    className="w-full h-10 px-2.5 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                    className="w-full h-10 px-2.5 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                   >
                     {COLORS.map((c) => (
                       <option key={c} value={c}>
@@ -1596,7 +1596,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <label className="block text-xs text-[#CBB9BF]">Размеры букета (высота / диаметр)</label>
+                  <label className="block text-xs text-[#634F55]">Размеры букета (высота / диаметр)</label>
                   <div className="flex items-center gap-1">
                     {['40 см', '50 см', '60 см', '70 см'].map((preset) => (
                       <button
@@ -1606,7 +1606,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         className={`px-1.5 py-0.5 rounded-lg text-[10px] font-medium border transition-colors ${
                           formSize === preset
                             ? 'bg-[#922E3D] border-[#922E3D] text-white'
-                            : 'bg-[#2B1D22] border-[#3F2C32] text-[#CBB9BF] hover:text-white'
+                            : 'bg-[#F7F3F1] border-[#DFD2D5] text-[#634F55] hover:text-[#1C1215]'
                         }`}
                       >
                         {preset}
@@ -1619,31 +1619,31 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   value={formSize}
                   onChange={(e) => setFormSize(e.target.value)}
                   placeholder="Например: 50 см или 55×40 см"
-                  className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-[#CBB9BF] mb-1">Описание</label>
+                <label className="block text-xs text-[#634F55] mb-1">Описание</label>
                 <textarea
                   rows={2}
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white resize-none"
+                  className="w-full p-2.5 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215] resize-none"
                 />
               </div>
 
               {/* Recipe */}
-              <div className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] space-y-2">
+              <div className="p-3 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-xs font-bold">Рецептура (состав букета)</div>
-                    <div className="text-[11px] text-[#9E8A91]">Для учёта списания со склада</div>
+                    <div className="text-[11px] text-[#7B676E]">Для учёта списания со склада</div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFormRecipe((prev) => [...prev, { name: 'Эвкалипт', qty: '2 ветки' }])}
-                    className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold"
+                    className="h-7 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-[11px] font-semibold"
                   >
                     + Цветок
                   </button>
@@ -1658,7 +1658,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         )
                       }
                       placeholder="Цветок"
-                      className="flex-1 h-8 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                      className="flex-1 h-8 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
                     />
                     <input
                       value={item.qty}
@@ -1668,12 +1668,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         )
                       }
                       placeholder="Кол-во"
-                      className="w-24 h-8 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                      className="w-24 h-8 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
                     />
                     <button
                       type="button"
                       onClick={() => setFormRecipe((prev) => prev.filter((_, i) => i !== idx))}
-                      className="h-8 px-2 rounded-lg bg-[#2C1E23] text-xs text-rose-300"
+                      className="h-8 px-2 rounded-lg bg-[#F3ECE9] text-xs text-rose-700"
                     >
                       ✕
                     </button>
@@ -1689,7 +1689,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       deleteBouquet(editingBouquet.id);
                       setEditingBouquet(null);
                     }}
-                    className="h-11 px-3.5 rounded-xl bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-semibold"
+                    className="h-11 px-3.5 rounded-xl bg-rose-950/60 border border-rose-500/30 text-rose-700 text-xs font-semibold"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -1713,7 +1713,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setIsFilterOpen(false)}
           >
-            <div className="w-full lg:max-w-sm bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-sm bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <h3 className="text-base font-bold">Сортировка каталога</h3>
               <div className="space-y-2">
@@ -1733,8 +1733,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     }}
                     className={`w-full h-10 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between ${
                       sortBy === val
-                        ? 'bg-[#922E3D]/25 border-[#922E3D] text-white'
-                        : 'bg-[#2C1E23] border-[#3D2B31] text-[#D7C7CD]'
+                        ? 'bg-[#922E3D]/12 border-[#922E3D] text-[#922E3D]'
+                        : 'bg-[#F3ECE9] border-[#DFD2D5] text-[#D7C7CD]'
                     }`}
                   >
                     <span>{lbl}</span>
@@ -1762,22 +1762,22 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setPhotoOrderModal(null)}
           >
-            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-md bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold">Фотоотчёт, {photoOrderModal.orderNumber}</h3>
                 <button onClick={() => setPhotoOrderModal(null)}>
-                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                  <X className="w-5 h-5 text-[#634F55]" />
                 </button>
               </div>
               {photoOrderModal.photoReportUrl ? (
                 <img
                   src={photoOrderModal.photoReportUrl}
                   alt="Фотоотчёт"
-                  className="w-full h-52 object-cover rounded-xl border border-[#3D2B31]"
+                  className="w-full h-52 object-cover rounded-xl border border-[#DFD2D5]"
                 />
               ) : (
-                <div className="h-36 rounded-xl border border-dashed border-[#6B4752] bg-[#1B1215] flex flex-col items-center justify-center text-xs text-[#C9B7BD] gap-2">
+                <div className="h-36 rounded-xl border border-dashed border-[#6B4752] bg-[#F7F3F1] flex flex-col items-center justify-center text-xs text-[#634F55] gap-2">
                   <Camera className="w-7 h-7 text-[#922E3D]" />
                   <span>Загрузите фото собранного букета</span>
                 </div>
@@ -1802,31 +1802,31 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setReplyModalReviewId(null)}
           >
-            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-md bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold">Ответ салона и дата отзыва</h3>
                 <button onClick={() => setReplyModalReviewId(null)}>
-                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                  <X className="w-5 h-5 text-[#634F55]" />
                 </button>
               </div>
               <div>
-                <label className="block text-xs text-[#CBB9BF] mb-1">Дата отзыва</label>
+                <label className="block text-xs text-[#634F55] mb-1">Дата отзыва</label>
                 <input
                   value={draftReviewDate}
                   onChange={(e) => setDraftReviewDate(e.target.value)}
                   placeholder="Например: 6 ноября 2026"
-                  className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#CBB9BF] mb-1">Ответ салона</label>
+                <label className="block text-xs text-[#634F55] mb-1">Ответ салона</label>
                 <textarea
                   rows={3}
                   value={draftReply}
                   onChange={(e) => setDraftReply(e.target.value)}
                   placeholder="Напишите ответ клиенту..."
-                  className="w-full p-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  className="w-full p-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
                 />
               </div>
               <button
@@ -1871,7 +1871,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 setIsAddReviewOpen(false);
                 showToast('ok', 'Отзыв добавлен');
               }}
-              className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3"
+              className="w-full lg:max-w-md bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 space-y-3"
             >
               <h3 className="text-base font-bold">Новый отзыв</h3>
               <input
@@ -1879,12 +1879,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 value={newRevAuthor}
                 onChange={(e) => setNewRevAuthor(e.target.value)}
                 placeholder="Имя клиента"
-                className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
               />
               <select
                 value={newRevRating}
                 onChange={(e) => setNewRevRating(Number(e.target.value))}
-                className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
               >
                 {[5, 4, 3, 2, 1].map((n) => (
                   <option key={n} value={n}>
@@ -1898,7 +1898,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 value={newRevText}
                 onChange={(e) => setNewRevText(e.target.value)}
                 placeholder="Текст отзыва"
-                className="w-full p-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                className="w-full p-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215]"
               />
               <button
                 type="button"
@@ -1940,7 +1940,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 (o) => o.phone.replace(/\D/g, '') === (client.phone || '').replace(/\D/g, '')
               );
               return (
-                <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
+                <div className="w-full lg:max-w-md bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-base font-bold">{fullName}</h3>
@@ -1949,7 +1949,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       </div>
                     </div>
                     <button onClick={() => setClientHistoryModal(null)}>
-                      <X className="w-5 h-5 text-[#C9B7BD]" />
+                      <X className="w-5 h-5 text-[#634F55]" />
                     </button>
                   </div>
                   <div className="text-xs text-[#A8949A]">
@@ -1958,18 +1958,18 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {clientOrders.length === 0 ? (
-                      <div className="text-xs text-[#9E8A91] py-4 text-center">
+                      <div className="text-xs text-[#7B676E] py-4 text-center">
                         Детализированных заказов в локальном журнале пока нет
                       </div>
                     ) : (
                       clientOrders.map((co) => (
                         <div
                           key={co.id}
-                          className="p-2.5 rounded-xl bg-[#1B1215] border border-[#35242A] flex justify-between text-xs"
+                          className="p-2.5 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] flex justify-between text-xs"
                         >
                           <div>
                             <div className="font-semibold">{co.orderNumber}</div>
-                            <div className="text-[#9E8A91]">{co.createdAt}</div>
+                            <div className="text-[#7B676E]">{co.createdAt}</div>
                           </div>
                           <strong>{co.totalAmount.toLocaleString('ru-RU')} ₽</strong>
                         </div>
@@ -1988,7 +1988,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setMoreSubSection(null)}
           >
-            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-md bg-white border-t lg:border border-[#DFD2D5] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold">
                   {moreSubSection === 'promos'
@@ -2000,43 +2000,43 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     : 'Настройки, роли и Push'}
                 </h3>
                 <button onClick={() => setMoreSubSection(null)}>
-                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                  <X className="w-5 h-5 text-[#634F55]" />
                 </button>
               </div>
 
               {moreSubSection === 'promos' && (
                 <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
                   <div>
-                    <label className="block text-xs text-[#CBB9BF] mb-1">Текст акции на сайте</label>
+                    <label className="block text-xs text-[#634F55] mb-1">Текст акции на сайте</label>
                     <input
                       value={promoBannerText}
                       onChange={(e) => setPromoBannerText(e.target.value)}
                       placeholder="Текст баннера акции"
-                      className="w-full h-9 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                      className="w-full h-9 px-3 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
                     />
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] space-y-2">
+                  <div className="p-3 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] space-y-2">
                     <div className="text-xs font-bold">Добавить новый промокод</div>
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         value={newPromoCode}
                         onChange={(e) => setNewPromoCode(e.target.value.toUpperCase())}
                         placeholder="Код (напр. BUKET10)"
-                        className="h-9 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                        className="h-9 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
                       />
                       <input
                         value={newPromoDiscount}
                         onChange={(e) => setNewPromoDiscount(e.target.value)}
                         placeholder="Скидка (10% или 500 ₽)"
-                        className="h-9 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                        className="h-9 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
                       />
                     </div>
                     <input
                       value={newPromoDesc}
                       onChange={(e) => setNewPromoDesc(e.target.value)}
                       placeholder="Условие (необязательно)"
-                      className="w-full h-9 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                      className="w-full h-9 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
                     />
                     <button
                       type="button"
@@ -2066,7 +2066,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     {promos.map((p, idx) => (
                       <div
                         key={p.code}
-                        className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] flex items-center justify-between gap-2"
+                        className="p-3 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] flex items-center justify-between gap-2"
                       >
                         <div className="min-w-0">
                           <div>
@@ -2074,7 +2074,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                             <span className="text-xs text-[#F5B8C2] ml-2">−{p.discount}</span>
                           </div>
                           {p.description && (
-                            <div className="text-[11px] text-[#9E8A91] truncate">{p.description}</div>
+                            <div className="text-[11px] text-[#7B676E] truncate">{p.description}</div>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -2096,7 +2096,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                           </button>
                           <button
                             onClick={() => setPromos((prev) => prev.filter((_, i) => i !== idx))}
-                            className="w-7 h-7 rounded-lg bg-[#2C1E23] text-rose-300 flex items-center justify-center"
+                            className="w-7 h-7 rounded-lg bg-[#F3ECE9] text-rose-700 flex items-center justify-center"
                             title="Удалить промокод"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -2127,7 +2127,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               {moreSubSection === 'settings' && (
                 <div className="space-y-3">
                   <div>
-                    <div className="text-xs text-[#CBB9BF] mb-1.5">Роль сотрудника</div>
+                    <div className="text-xs text-[#634F55] mb-1.5">Роль сотрудника</div>
                     <div className="grid grid-cols-3 gap-2">
                       {(['Админ', 'Флорист', 'Курьер'] as StaffRole[]).map((r) => (
                         <button
@@ -2136,7 +2136,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                           className={`h-9 rounded-xl text-xs font-semibold border ${
                             role === r
                               ? 'bg-[#922E3D] border-[#B44253] text-white'
-                              : 'bg-[#2C1E23] border-[#3D2B31] text-[#D7C7CD]'
+                              : 'bg-[#F3ECE9] border-[#DFD2D5] text-[#D7C7CD]'
                           }`}
                         >
                           {r}
@@ -2144,10 +2144,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       ))}
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] flex items-center justify-between">
+                  <div className="p-3 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] flex items-center justify-between">
                     <div>
                       <div className="text-xs font-semibold">Push-уведомления о заказах</div>
-                      <div className="text-[11px] text-[#9E8A91]">Уведомления браузера</div>
+                      <div className="text-[11px] text-[#7B676E]">Уведомления браузера</div>
                     </div>
                     <button
                       onClick={async () => {
@@ -2176,7 +2176,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         showToast('ok', 'Тестовое уведомление отправлено');
                       }
                     }}
-                    className="w-full h-9 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+                    className="w-full h-9 rounded-xl bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
                   >
                     <Bell className="w-3.5 h-3.5" /> Проверить уведомление
                   </button>
@@ -2192,16 +2192,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && setDangerModal(null)}
           >
-            <div className="w-full max-w-sm bg-[#22171B] border border-rose-500/40 rounded-xl p-5 space-y-3">
+            <div className="w-full max-w-sm bg-white border border-rose-500/40 rounded-xl p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-rose-200">
+                <h3 className="text-base font-bold text-rose-800">
                   {dangerModal === 'clear' ? 'Очистить весь каталог?' : 'Сбросить каталог по умолчанию?'}
                 </h3>
                 <button onClick={() => setDangerModal(null)}>
-                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                  <X className="w-5 h-5 text-[#634F55]" />
                 </button>
               </div>
-              <p className="text-xs text-[#D5C5CA] leading-relaxed">
+              <p className="text-xs text-[#4A383E] leading-relaxed">
                 {dangerModal === 'clear'
                   ? 'Это удалит все букеты из каталога и облачной базы. Для подтверждения введите слово УДАЛИТЬ.'
                   : 'Каталог вернётся к исходным позициям, а текущие изменения будут перезаписаны.'}
@@ -2211,13 +2211,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   value={dangerConfirmInput}
                   onChange={(e) => setDangerConfirmInput(e.target.value)}
                   placeholder="Введите УДАЛИТЬ"
-                  className="w-full h-10 px-3 rounded-xl bg-[#1B1215] border border-rose-500/40 text-sm text-white"
+                  className="w-full h-10 px-3 rounded-xl bg-[#F7F3F1] border border-rose-500/40 text-sm text-[#1C1215]"
                 />
               )}
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => setDangerModal(null)}
-                  className="flex-1 h-10 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold"
+                  className="flex-1 h-10 rounded-xl bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold"
                 >
                   Отмена
                 </button>
