@@ -322,9 +322,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [formStock, setFormStock] = useState('5');
   const [formSize, setFormSize] = useState('50 см');
   const [formDescription, setFormDescription] = useState('');
-  const [formRecipe, setFormRecipe] = useState<RecipeItem[]>([
-    { name: 'Роза Эквадор', qty: '5 шт.' },
-  ]);
+  const [formComposition, setFormComposition] = useState('');
 
   const [photoOrderModal, setPhotoOrderModal] = useState<AdminOrder|null>(null);
   const [replyModalReviewId, setReplyModalReviewId] = useState<string|null>(null);
@@ -402,7 +400,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setFormStock('5');
     setFormSize('50 см');
     setFormDescription('');
-    setFormRecipe([{ name: 'Роза Эквадор', qty: '5 шт.' }]);
+    setFormComposition('');
     setIsAddBouquetOpen(true);
   };
 
@@ -421,11 +419,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setFormSize(b.characteristics?.height || '50 см');
     setFormDescription(b.description || '');
     const savedRecipe = recipesMap[b.id];
-    setFormRecipe(
+    const fallbackFromRecipe =
       savedRecipe && savedRecipe.length > 0
-        ? savedRecipe
-        : [{ name: b.characteristics?.flowersCount || 'Отборные цветы', qty: '1 сет' }]
-    );
+        ? savedRecipe.map((r) => `${r.name}${r.qty ? ` — ${r.qty}` : ''}`).join(', ')
+        : '';
+    setFormComposition(b.characteristics?.flowersCount || fallbackFromRecipe);
   };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -486,10 +484,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     const cleanImages = formImages.map((img) => img.trim()).filter(Boolean).slice(0, 3);
     const finalImages = cleanImages.length > 0 ? cleanImages : ['/bouquet-1.jpg'];
     const primaryImage = finalImages[0];
-    const recipeSummary = formRecipe
-      .filter((r) => r.name.trim())
-      .map((r) => `${r.name.trim()} (${r.qty.trim() || '1 шт.'})`)
-      .join(', ');
+    const recipeSummary = formComposition.trim();
 
     try {
       if (editingBouquet) {
@@ -511,11 +506,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           },
         });
         const nextStock = { ...stockCounts, [editingBouquet.id]: parsedStock };
-        const nextRecipes = { ...recipesMap, [editingBouquet.id]: formRecipe };
         setStockCounts(nextStock);
-        setRecipesMap(nextRecipes);
         localStorage.setItem('sophiya_admin_stock_v1', JSON.stringify(nextStock));
-        localStorage.setItem('sophiya_admin_recipes_v1', JSON.stringify(nextRecipes));
         setEditingBouquet(null);
         showToast('ok', `Букет «${formTitle.trim()}» обновлён`);
       } else {
@@ -1633,52 +1625,17 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 />
               </div>
 
-              {/* Recipe */}
-              <div className="p-3 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-bold">Рецептура (состав букета)</div>
-                    <div className="text-[11px] text-[#7B676E]">Для учёта списания со склада</div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setFormRecipe((prev) => [...prev, { name: 'Эвкалипт', qty: '2 ветки' }])}
-                    className="h-7 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-[11px] font-semibold"
-                  >
-                    + Цветок
-                  </button>
-                </div>
-                {formRecipe.map((item, idx) => (
-                  <div key={idx} className="flex gap-1.5">
-                    <input
-                      value={item.name}
-                      onChange={(e) =>
-                        setFormRecipe((prev) =>
-                          prev.map((r, i) => (i === idx ? { ...r, name: e.target.value } : r))
-                        )
-                      }
-                      placeholder="Цветок"
-                      className="flex-1 h-8 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
-                    />
-                    <input
-                      value={item.qty}
-                      onChange={(e) =>
-                        setFormRecipe((prev) =>
-                          prev.map((r, i) => (i === idx ? { ...r, qty: e.target.value } : r))
-                        )
-                      }
-                      placeholder="Кол-во"
-                      className="w-24 h-8 px-2.5 rounded-lg bg-[#F7F3F1] border border-[#DFD2D5] text-xs text-[#1C1215]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setFormRecipe((prev) => prev.filter((_, i) => i !== idx))}
-                      className="h-8 px-2 rounded-lg bg-[#F3ECE9] text-xs text-rose-700"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+              <div>
+                <label className="block text-xs text-[#634F55] mb-1">
+                  Состав / рецептура (можно скопировать и вставить целиком)
+                </label>
+                <textarea
+                  rows={3}
+                  value={formComposition}
+                  onChange={(e) => setFormComposition(e.target.value)}
+                  placeholder="Например: Роза Эквадор — 15 шт., эвкалипт, матовая упаковка"
+                  className="w-full p-2.5 rounded-xl bg-[#F7F3F1] border border-[#DFD2D5] text-sm text-[#1C1215] resize-y"
+                />
               </div>
 
               <div className="flex gap-2 pt-1">
@@ -1689,7 +1646,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       deleteBouquet(editingBouquet.id);
                       setEditingBouquet(null);
                     }}
-                    className="h-11 px-3.5 rounded-xl bg-rose-950/60 border border-rose-500/30 text-rose-700 text-xs font-semibold"
+                    className="h-11 px-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-semibold"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
