@@ -845,7 +845,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   return (
                     <div
                       key={b.id}
-                      className={`rounded-xl p-3 border transition-colors ${
+                      className={`rounded-xl p-3 border transition-colors flex flex-col justify-between ${
                         isSel
                           ? 'bg-[#2D1C22] border-[#922E3D]'
                           : 'bg-[#25191D] border-[#37252B]'
@@ -918,43 +918,47 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       </div>
 
                       {!bulkMode && (
-                        <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-[#352329] gap-2">
-                          <div className="inline-flex items-center gap-1.5 bg-[#1C1215] border border-[#3D2B31] rounded-lg px-1.5 py-0.5">
+                        <div className="flex flex-wrap items-center justify-between mt-2.5 pt-2.5 border-t border-[#352329] gap-2">
+                          <div className="inline-flex items-center gap-1 bg-[#1C1215] border border-[#3D2B31] rounded-lg px-1 py-0.5 shrink-0">
                             <button
                               onClick={() => updateStockCount(b, cnt - 1)}
-                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold"
+                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold flex items-center justify-center"
                             >
                               −
                             </button>
-                            <span className="text-xs font-bold min-w-[44px] text-center">{cnt} шт.</span>
+                            <span className="text-xs font-bold min-w-[40px] text-center whitespace-nowrap">
+                              {cnt} шт.
+                            </span>
                             <button
                               onClick={() => updateStockCount(b, cnt + 1)}
-                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold"
+                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold flex items-center justify-center"
                             >
                               +
                             </button>
                           </div>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap ml-auto">
                             {cnt > 0 && b.inStock ? (
                               <button
                                 onClick={() => updateStockCount(b, 0)}
-                                className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold text-[#E8D9DE]"
+                                title="Убрать с витрины"
+                                className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold text-[#E8D9DE] whitespace-nowrap"
                               >
-                                Убрать с витрины
+                                Скрыть
                               </button>
                             ) : (
                               <button
                                 onClick={() => updateStockCount(b, Math.max(1, cnt || 5))}
-                                className="h-7 px-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-300"
+                                title="Вернуть в наличие"
+                                className="h-7 px-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-300 whitespace-nowrap"
                               >
-                                Вернуть в наличие
+                                На витрину
                               </button>
                             )}
                             <button
                               onClick={() => openEditForm(b)}
-                              className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#5A3842] text-[11px] font-semibold text-white inline-flex items-center gap-1"
+                              className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#5A3842] text-[11px] font-semibold text-white inline-flex items-center gap-1 whitespace-nowrap"
                             >
-                              <Pencil className="w-3 h-3" /> Изменить
+                              <Pencil className="w-3 h-3 shrink-0" /> Изменить
                             </button>
                           </div>
                         </div>
