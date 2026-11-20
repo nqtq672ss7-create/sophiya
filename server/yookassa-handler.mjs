@@ -1,4 +1,5 @@
 import net from 'node:net';
+import https from 'node:https';
 import crypto from 'node:crypto';
 
 const ORDERS_STORE = 'sophiya_orders_v1';
@@ -138,13 +139,54 @@ function mapYookassaStatus(ykStatus) {
   return 'pending';
 }
 
-async function fetchYookassaPayment(paymentId, authHeader) {
-  const r = await fetch(`${YOOKASSA_API}/${encodeURIComponent(paymentId)}`, {
-    method: 'GET',
-    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+function yookassaRequest(method, pathSuffix, authHeader, idempotenceKey, bodyObj) {
+  return new Promise((resolve, reject) => {
+    const payload = bodyObj ? JSON.stringify(bodyObj) : null;
+    const headers = {
+      Authorization: authHeader,
+      'Content-Type': 'application/json',
+    };
+    if (idempotenceKey) headers['Idempotence-Key'] = idempotenceKey;
+    if (payload) headers['Content-Length'] = Buffer.byteLength(payload);
+
+    const req = https.request(
+      {
+        hostname: 'api.yookassa.ru',
+        port: 443,
+        path: `/v3/payments${pathSuffix}`,
+        method,
+        family: 4,
+        timeout: 15000,
+        headers,
+      },
+      (res) => {
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          const raw = Buffer.concat(chunks).toString('utf8');
+          let data = null;
+          try {
+            data = raw ? JSON.parse(raw) : {};
+          } catch {
+            data = { raw };
+          }
+          const code = res.statusCode || 500;
+          resolve({ ok: code >= 200 && code < 300, status: code, data });
+        });
+      }
+    );
+
+    req.on('timeout', () => {
+      req.destroy(new Error('YooKassa API request timeout'));
+    });
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
   });
-  const data = await r.json().catch(() => null);
-  return { ok: r.ok, status: r.status, data };
+}
+
+async function fetchYookassaPayment(paymentId, authHeader) {
+  return await yookassaRequest('GET', `/${encodeURIComponent(paymentId)}`, authHeader, null, null);
 }
 
 async function readOrders() {
@@ -356,16 +398,8 @@ export async function handleYookassa(req, res, body, parsedUrl) {
   }
 
   try {
-    const ykRes = await fetch(YOOKASSA_API, {
-      method: 'POST',
-      headers: {
-        Authorization: creds.authHeader,
-        'Idempotence-Key': orderId,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(yookassaPayload),
-    });
-    const ykData = await ykRes.json().catch(() => ({}));
+    const ykRes = await yookassaRequest('POST', '', creds.authHeader, orderId, yookassaPayload);
+    const ykData = ykRes.data || {};
     if (!ykRes.ok || !ykData?.id || !ykData?.confirmation?.confirmation_url) {
       return sendJson(res, 502, {
         error: ykData?.description || 'Не удалось создать платёж в ЮKassa',
@@ -411,8 +445,9 @@ export async function handleYookassa(req, res, body, parsedUrl) {
       totalAmount: newOrder.totalAmount,
     });
   } catch (err) {
+    console.error('[yookassa] create error:', err);
     return sendJson(res, 500, {
-      error: 'Ошибка соединения с платёжным шлюзом ЮKassa',
+      error: `Ошибка соединения с ЮKassa: ${err?.message || 'network error'}`,
       details: err?.message,
     });
   }
