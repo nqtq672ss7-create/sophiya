@@ -42,5 +42,4 @@ jobs:
           TARGET_HOST="${VPS_HOST:-194.67.110.156}"
           ssh-keyscan -H "$TARGET_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           rsync -avz --delete --exclude='bouquets-cloud/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" dist/ root@$TARGET_HOST:/var/www/sophiya/
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new api/yookassa.ts root@$TARGET_HOST:/tmp/yookassa.ts
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@$TARGET_HOST "ls -la /opt/sophiya-api && wc -l /opt/sophiya-api/server.mjs && sed -n '1,120p' /opt/sophiya-api/server.mjs"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@$TARGET_HOST "sed -n '850,972p' /opt/sophiya-api/server.mjs"
