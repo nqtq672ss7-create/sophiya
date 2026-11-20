@@ -320,6 +320,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [formImages, setFormImages] = useState<string[]>(['/bouquet-1.jpg']);
   const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [formStock, setFormStock] = useState('5');
+  const [formSize, setFormSize] = useState('50 см');
   const [formDescription, setFormDescription] = useState('');
   const [formRecipe, setFormRecipe] = useState<RecipeItem[]>([
     { name: 'Роза Эквадор', qty: '5 шт.' },
@@ -399,6 +400,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setFormImages([]);
     setFormPhotoUrl('');
     setFormStock('5');
+    setFormSize('50 см');
     setFormDescription('');
     setFormRecipe([{ name: 'Роза Эквадор', qty: '5 шт.' }]);
     setIsAddBouquetOpen(true);
@@ -416,6 +418,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     setFormImages(existing.filter(Boolean).slice(0, 3));
     setFormPhotoUrl('');
     setFormStock(String(getStockCount(b)));
+    setFormSize(b.characteristics?.height || '50 см');
     setFormDescription(b.description || '');
     const savedRecipe = recipesMap[b.id];
     setFormRecipe(
@@ -501,7 +504,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           images: finalImages,
           description: formDescription.trim() || 'Авторская флористическая композиция.',
           characteristics: {
-            height: editingBouquet.characteristics?.height || '50 см',
+            height: formSize.trim() || editingBouquet.characteristics?.height || '50 см',
             flowersCount: recipeSummary || 'Отборные сортовые цветы',
             durability: editingBouquet.characteristics?.durability || '10-14 дней',
             packaging: editingBouquet.characteristics?.packaging || 'Фирменная упаковка «София»',
@@ -528,7 +531,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           hasRealPhoto: cleanImages.length > 0,
           description: formDescription.trim() || 'Авторская флористическая композиция.',
           characteristics: {
-            height: '50 см',
+            height: formSize.trim() || '50 см',
             flowersCount: recipeSummary || 'Отборные сортовые цветы',
             durability: '10-14 дней',
             packaging: 'Фирменная упаковка «София»',
@@ -1589,6 +1592,35 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <label className="block text-xs text-[#CBB9BF]">Размеры букета (высота / диаметр)</label>
+                  <div className="flex items-center gap-1">
+                    {['40 см', '50 см', '60 см', '70 см'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setFormSize(preset)}
+                        className={`px-1.5 py-0.5 rounded-lg text-[10px] font-medium border transition-colors ${
+                          formSize === preset
+                            ? 'bg-[#922E3D] border-[#922E3D] text-white'
+                            : 'bg-[#2B1D22] border-[#3F2C32] text-[#CBB9BF] hover:text-white'
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={formSize}
+                  onChange={(e) => setFormSize(e.target.value)}
+                  placeholder="Например: 50 см или 55×40 см"
+                  className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                />
               </div>
 
               <div>
