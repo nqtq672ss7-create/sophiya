@@ -36,8 +36,8 @@ interface AdminOrder {
   deliveryDate: string;
   items: Array<{ title: string; quantity: number; price: number }>;
   totalAmount: number;
-  paymentMethod: 'sbp'|'card'|'sberpay';
-  paymentStatus: 'paid'|'pending';
+  paymentMethod: 'yookassa'|'sbp'|'card'|'sberpay';
+  paymentStatus: 'paid'|'pending'|'canceled';
   orderStatus: 'new'|'assembling'|'in_transit'|'delivered';
   postcardText?: string;
   photoReportUrl?: string;
@@ -190,6 +190,22 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     if (isUnlocked) {
       refreshReviews();
       refreshPending();
+      const token =
+        sessionStorage.getItem('sophiya_admin_token') ||
+        localStorage.getItem('sophiya_admin_token_v1');
+      if (token) {
+        fetch(getApiUrl('/api/yookassa?action=orders'), {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data && Array.isArray(data.orders)) {
+              setOrders(data.orders);
+            }
+          })
+          .catch(() => {});
+      }
     }
   }, [isUnlocked, refreshReviews, refreshPending]);
 
@@ -553,6 +569,23 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     showToast('ok', 'Массовое действие применено');
   };
 
+  const syncOrderUpdate = async (orderId: string, patch: { orderStatus?: AdminOrder['orderStatus']; photoReportUrl?: string }) => {
+    const token =
+      sessionStorage.getItem('sophiya_admin_token') ||
+      localStorage.getItem('sophiya_admin_token_v1');
+    if (!token) return;
+    try {
+      await fetch(getApiUrl('/api/yookassa?action=updateOrderStatus'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId, ...patch }),
+      });
+    } catch {}
+  };
+
   // Order photo report
   const handleOrderPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, orderId: string) => {
     const file = e.target.files?.[0];
@@ -561,6 +594,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       const url = await compressImageFile(file);
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, photoReportUrl: url } : o)));
       setPhotoOrderModal((prev) => (prev && prev.id === orderId ? { ...prev, photoReportUrl: url } : prev));
+      await syncOrderUpdate(orderId, { photoReportUrl: url });
       showToast('ok', 'Фотоотчёт прикреплён к заказу');
     } catch {
       showToast('err', 'Ошибка загрузки фото');
@@ -1077,11 +1111,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         </a>
                         {st.next && (
                           <button
-                            onClick={() =>
+                            onClick={() => {
+                              const nextStatus = st.next!;
                               setOrders((prev) =>
-                                prev.map((x) => (x.id === o.id ? { ...x, orderStatus: st.next! } : x))
-                              )
-                            }
+                                prev.map((x) => (x.id === o.id ? { ...x, orderStatus: nextStatus } : x))
+                              );
+                              syncOrderUpdate(o.id, { orderStatus: nextStatus });
+                            }}
                             className="h-8 px-3 rounded-lg bg-[#922E3D] text-white text-xs font-semibold"
                           >
                             → {st.nextLabel}

@@ -1,10 +1,11 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import {
   Minus,
   Plus,
   X,
   Smile,
   Phone,
+  Mail,
   MapPin,
   CheckCircle,
   ArrowRight,
@@ -16,15 +17,15 @@ import {
   Building2,
   ShieldCheck,
   Sparkles,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { CartItem } from '../../types/figma-app';
 import { SALON_MAX_URL } from '../../config/contacts';
+import { getApiUrl } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import { formatBouquetAlt } from '../../utils/routes';
 
-const SberPaymentModal = lazy(() =>
-  import('../payment/SberPaymentModal').then((m) => ({ default: m.SberPaymentModal }))
-);
 const B2BInvoiceModal = lazy(() =>
   import('../payment/B2BInvoiceModal').then((m) => ({ default: m.B2BInvoiceModal }))
 );
@@ -47,21 +48,25 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const { customer, addOrderToCustomer } = useAuth();
 
   const [deliveryType, setDeliveryType] = useState<'delivery'|'pickup'>('delivery');
-  const [paymentMethod, setPaymentMethod] = useState<'sberbank'|'max'|'invoice'>('sberbank');
+  const [paymentMethod, setPaymentMethod] = useState<'yookassa'|'max'|'invoice'>('yookassa');
   const [recipientName, setRecipientName] = useState(
     customer ? `${customer.firstName} ${customer.lastName}`.trim() : ''
   );
   const [recipientPhone, setRecipientPhone] = useState(
     customer ? customer.phone : '+7 (917) '
   );
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('г. Нижнекамск, ');
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [isPdAgreed, setIsPdAgreed] = useState(false);
   const [consentError, setConsentError] = useState('');
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string|null>(null);
+  const [paymentError, setPaymentError] = useState('');
 
   // Modals state
-  const [isSberModalOpen, setIsSberModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   const deliveryCost = 0;
@@ -75,7 +80,87 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const finalSubtotal = rawSubtotal - discountAmount;
   const totalToPay = finalSubtotal + (items.length > 0 ? deliveryCost : 0);
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const checkYookassaOrderStatus = useCallback(
+    async (orderId: string, attempt = 0) => {
+      setIsCheckingPayment(true);
+      setPaymentError('');
+      try {
+        const res = await fetch(getApiUrl(`/api/yookassa?orderId=${encodeURIComponent(orderId)}`), {
+          cache: 'no-store',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || 'Не удалось проверить статус оплаты');
+        }
+
+        if (data.paymentStatus === 'paid') {
+          setOrderNumber(data.orderNumber || '');
+          setPendingOrderId(null);
+          setIsCheckingPayment(false);
+
+          try {
+            const rawPending = sessionStorage.getItem('sophiya_yookassa_pending_cart');
+            if (rawPending) {
+              const parsed = JSON.parse(rawPending);
+              if (customer && Array.isArray(parsed.items)) {
+                addOrderToCustomer({
+                  items: parsed.items,
+                  totalAmount: Number(parsed.totalAmount) || Number(data.totalAmount) || 0,
+                });
+              }
+              sessionStorage.removeItem('sophiya_yookassa_pending_cart');
+            }
+          } catch {}
+
+          setIsSuccess(true);
+          onClearCart();
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          return;
+        }
+
+        if (data.paymentStatus === 'canceled') {
+          setIsCheckingPayment(false);
+          setPendingOrderId(null);
+          setPaymentError('Оплата была отменена. Корзина сохранена — вы можете попробовать снова или выбрать другой способ.');
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          return;
+        }
+
+        if (attempt < 3) {
+          setTimeout(() => {
+            checkYookassaOrderStatus(orderId, attempt + 1);
+          }, 2000);
+          return;
+        }
+
+        setIsCheckingPayment(false);
+        setPendingOrderId(orderId);
+        setPaymentError('Платёж ещё обрабатывается банком. Нажмите «Проверить статус» через пару секунд.');
+      } catch (err: any) {
+        setIsCheckingPayment(false);
+        setPendingOrderId(orderId);
+        setPaymentError(err?.message || 'Не удалось проверить статус оплаты');
+      }
+    },
+    [customer, addOrderToCustomer, onClearCart]
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const isReturn = params.get('yookassa_return') === '1';
+    const returnedOrderId = params.get('orderId');
+    if (isReturn && returnedOrderId) {
+      setPendingOrderId(returnedOrderId);
+      checkYookassaOrderStatus(returnedOrderId, 0);
+    }
+  }, [checkYookassaOrderStatus]);
+
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
 
@@ -84,13 +169,56 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
       return;
     }
     setConsentError('');
+    setPaymentError('');
 
     const generatedNum = 'SF-' + Math.floor(100000 + Math.random() * 900000);
     setOrderNumber(generatedNum);
 
-    // 1. Sberbank / SBP acquiring mode
-    if (paymentMethod === 'sberbank') {
-      setIsSberModalOpen(true);
+    // 1. YooKassa online acquiring mode (Card / SBP / SberPay / T-Pay)
+    if (paymentMethod === 'yookassa') {
+      if (isCreatingPayment) return;
+      setIsCreatingPayment(true);
+      try {
+        const res = await fetch(getApiUrl('/api/yookassa?action=create'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerName: recipientName.trim(),
+            phone: recipientPhone.trim(),
+            email: recipientEmail.trim(),
+            deliveryType,
+            address: deliveryType === 'delivery' ? deliveryAddress.trim() : '',
+            deliveryDate: 'Ближайшее время (от 30 мин)',
+            items: items.map((i) => ({
+              id: i.bouquet.id,
+              title: i.bouquet.title,
+              price: i.bouquet.price,
+              quantity: i.quantity,
+            })),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.confirmationUrl) {
+          throw new Error(data.error || 'Не удалось перейти к оплате. Попробуйте снова или выберите MAX.');
+        }
+
+        try {
+          sessionStorage.setItem(
+            'sophiya_yookassa_pending_cart',
+            JSON.stringify({
+              orderId: data.orderId,
+              orderNumber: data.orderNumber,
+              items: items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
+              totalAmount: data.totalAmount || totalToPay,
+            })
+          );
+        } catch {}
+
+        window.location.href = data.confirmationUrl;
+      } catch (err: any) {
+        setPaymentError(err?.message || 'Ошибка создания платежа ЮKassa');
+        setIsCreatingPayment(false);
+      }
       return;
     }
 
@@ -145,6 +273,19 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
     setIsSuccess(true);
     onClearCart();
   };
+
+  // 0. Checking YooKassa return status
+  if (isCheckingPayment) {
+    return (
+      <div className="min-h-[65vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center select-none max-w-md mx-auto">
+        <Loader2 className="w-10 h-10 text-[#6C1E26] animate-spin mb-4" />
+        <h2 className="font-sans font-semibold text-2xl text-[#1C1215] mb-2">Проверяем оплату</h2>
+        <p className="text-xs sm:text-sm text-[#5C454C] font-light">
+          Уточняем статус платежа в ЮKassa, это займёт пару секунд...
+        </p>
+      </div>
+    );
+  }
 
   // 1. Success Screen
   if (isSuccess) {
@@ -376,6 +517,18 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   />
                 </div>
 
+                {/* Email for 54-FZ receipt (optional) */}
+                <div className="bg-[#FAF7F5] rounded-xl p-3 sm:p-3.5 border border-[#E5DDD9] focus-within:border-[#6C1E26] flex items-center gap-3 transition-colors">
+                  <Mail className="w-4 h-4 text-[#6C1E26] shrink-0" />
+                  <input
+                    type="email"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="Email для электронного чека (необязательно)"
+                    className="w-full text-xs sm:text-sm font-sans text-[#1C1215] focus:outline-none bg-transparent"
+                  />
+                </div>
+
                 {/* Address (only if delivery) */}
                 {deliveryType === 'delivery' && (
                   <div className="bg-[#FAF7F5] rounded-xl p-3 sm:p-3.5 border border-[#E5DDD9] focus-within:border-[#6C1E26] flex items-center gap-3 transition-colors">
@@ -398,11 +551,11 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   </label>
 
                   <div className="space-y-2">
-                    {/* Option 1: Sberbank / SBP to Account */}
+                    {/* Option 1: YooKassa Online Acquiring */}
                     <label
-                      onClick={() => setPaymentMethod('sberbank')}
+                      onClick={() => setPaymentMethod('yookassa')}
                       className={`p-3.5 rounded-xl border transition-colors flex items-start gap-3 cursor-pointer ${
-                        paymentMethod === 'sberbank'
+                        paymentMethod === 'yookassa'
                           ? 'border-emerald-600 bg-emerald-50/40 shadow-xs'
                           : 'border-[#E5DDD9] bg-[#FAF7F5] hover:bg-[#FAF7F5]/70'
                       }`}
@@ -410,21 +563,21 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                       <input
                         type="radio"
                         name="paymentMethod"
-                        checked={paymentMethod === 'sberbank'}
-                        onChange={() => setPaymentMethod('sberbank')}
+                        checked={paymentMethod === 'yookassa'}
+                        onChange={() => setPaymentMethod('yookassa')}
                         className="mt-1 text-emerald-600 focus:ring-emerald-500"
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm font-medium text-[#1C1215]">
-                            ПАО Сбербанк / СБП (на расчётный счёт)
+                            Онлайн-оплата (Карта, СБП, SberPay, T-Pay)
                           </span>
                           <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-xl">
                             Рекомендуем
                           </span>
                         </div>
                         <p className="text-[11px] text-[#5C454C] font-light mt-0.5 leading-relaxed">
-                          Оплата через <strong>СберБанк Онлайн</strong>, СБП или банковскую карту на р/с ИП Обручников Д. В.
+                          Быстрая оплата через <strong>ЮKassa</strong> без комиссии с официальным чеком по 54-ФЗ.
                         </p>
                       </div>
                     </label>
@@ -552,14 +705,39 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   )}
                 </div>
 
+                {paymentError && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-1.5">
+                      <p>{paymentError}</p>
+                      {pendingOrderId && (
+                        <button
+                          type="button"
+                          onClick={() => checkYookassaOrderStatus(pendingOrderId, 0)}
+                          className="underline font-semibold text-red-800"
+                        >
+                          Проверить статус оплаты снова
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Submit */}
                 <button
-                  className="w-full py-4 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-sm sm:text-base transition-colors shadow-lg active:scale-[0.99] mt-4 flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={isCreatingPayment}
+                  className="w-full py-4 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-medium text-sm sm:text-base transition-colors shadow-lg active:scale-[0.99] mt-4 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                 >
-                  <CreditCard className="w-4 h-4" />
+                  {isCreatingPayment ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CreditCard className="w-4 h-4" />
+                  )}
                   <span>
-                    {paymentMethod === 'sberbank'
-                      ? `Оплатить через СберБанк (${totalToPay.toLocaleString('ru-RU')} ₽)`
+                    {isCreatingPayment
+                      ? 'Переход на страницу оплаты...'
+                      : paymentMethod === 'yookassa'
+                      ? `Оплатить онлайн (${totalToPay.toLocaleString('ru-RU')} ₽)`
                       : paymentMethod === 'invoice'
                       ? 'Выставить счёт на оплату'
                       : `Оформить заказ в MAX (${totalToPay.toLocaleString('ru-RU')} ₽)`}
@@ -568,29 +746,13 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
                 {/* Legal compliance notice */}
                 <p className="text-[10px] text-center text-[#7C636B] font-light leading-relaxed">
-                  Получатель платежа: ИП Обручников Д. В. (ИНН 165115143005). Расчётный счёт: 40802810762000090051 в ПАО Сбербанк. Безопасность гарантирована.
+                  Получатель платежа: ИП Обручников Д. В. (ИНН 165115143005). Защищённая оплата через ЮKassa с отправкой чека по 54-ФЗ.
                 </p>
               </form>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Sberbank Payment Modal */}
-      {isSberModalOpen && (
-        <Suspense fallback={null}>
-          <SberPaymentModal
-            isOpen={isSberModalOpen}
-            onClose={() => setIsSberModalOpen(false)}
-            orderNumber={orderNumber}
-            totalAmount={totalToPay}
-            itemsSummary={items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`).join(', ')}
-            recipientName={recipientName}
-            recipientPhone={recipientPhone}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-        </Suspense>
-      )}
 
       {/* B2B Invoice Modal */}
       {isInvoiceModalOpen && (
