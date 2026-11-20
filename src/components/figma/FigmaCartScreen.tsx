@@ -64,7 +64,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [isSberModalOpen, setIsSberModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
-  const deliveryCost = deliveryType === 'delivery' ? 700 : 0;
+  const deliveryCost = 0;
   const userDiscount = customer?.discountPercent || 0;
 
   const rawSubtotal = items.reduce(
@@ -331,7 +331,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   }`}
                 >
                   <Truck className="w-4 h-4" />
-                  <span>Доставка (700 ₽)</span>
+                  <span>Доставка (0 ₽)</span>
                 </button>
 
                 <button
@@ -499,8 +499,8 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
                   <div className="flex justify-between text-[#5C454C]">
                     <span>Доставка по Нижнекамску:</span>
-                    <span className="font-medium text-[#6C1E26]">
-                      {deliveryType === 'delivery' ? `${deliveryCost} ₽` : 'Бесплатно (самовывоз)'}
+                    <span className="font-medium text-emerald-700">
+                      {deliveryType === 'delivery' ? 'Бесплатно (0 ₽)' : 'Бесплатно (самовывоз)'}
                     </span>
                   </div>
 

@@ -4,8 +4,7 @@
 
 // In `vite dev` the default is a same-origin path, so local work never writes to the
 // production database. Point at a backend explicitly with VITE_API_BASE when needed.
-export const API_BASE =
-  import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '' : 'https://sitesophiya.vercel.app');
+export const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export function getApiUrl(path: string): string {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;

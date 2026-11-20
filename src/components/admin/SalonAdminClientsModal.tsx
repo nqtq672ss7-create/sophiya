@@ -43,38 +43,7 @@ interface AdminOrder {
   photoReportUrl?: string;
 }
 
-const DEFAULT_ORDERS: AdminOrder[] = [
-  {
-    id: 'ord_1',
-    orderNumber: '№ 8492',
-    createdAt: 'Сегодня, 12:40',
-    customerName: 'Айрат Мингазов',
-    phone: '+7 (917) 256-42-18',
-    deliveryType: 'delivery',
-    address: 'г. Нижнекамск, пр. Мира, 48, кв. 112',
-    deliveryDate: 'Сегодня, 15:00 - 17:00',
-    items: [{ title: '25 красных роз Эквадор', quantity: 1, price: 5900 }],
-    totalAmount: 5900,
-    paymentMethod: 'sbp',
-    paymentStatus: 'paid',
-    orderStatus: 'new',
-  },
-  {
-    id: 'ord_2',
-    orderNumber: '№ 8491',
-    createdAt: 'Сегодня, 11:15',
-    customerName: 'Елена Сафина',
-    phone: '+7 (987) 412-09-33',
-    deliveryType: 'pickup',
-    address: 'Салон «София», пр. Шинников, 13В',
-    deliveryDate: 'Сегодня, 14:00',
-    items: [{ title: 'Пионовидный комплимент', quantity: 1, price: 4200 }],
-    totalAmount: 4200,
-    paymentMethod: 'sberpay',
-    paymentStatus: 'paid',
-    orderStatus: 'assembling',
-  },
-];
+const DEFAULT_ORDERS: AdminOrder[] = [];
 
 const ORDER_STATUS_META: Record<
   AdminOrder['orderStatus'],
@@ -164,6 +133,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const {
     reviews,
     addReview,
+    updateReview,
     deleteReview,
     togglePublished,
     moderateReview,
@@ -285,10 +255,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     }
   };
 
-  // Orders
+  // Orders (ignore legacy demo orders if any were cached)
   const [orders, setOrders] = useState<AdminOrder[]>(() => {
     const saved = readJsonStorage<AdminOrder[]>('sophiya_admin_orders_v1', []);
-    return saved.length > 0 ? saved : DEFAULT_ORDERS;
+    return saved.filter(
+      (o) =>
+        !(
+          (o.id === 'ord_1' && o.customerName === 'Айрат Мингазов') ||
+          (o.id === 'ord_2' && o.customerName === 'Елена Сафина')
+        )
+    );
   });
 
   useEffect(() => {
@@ -302,19 +278,33 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     readJsonStorage<Record<string, string>>('sophiya_admin_review_replies_v1', {})
   );
 
-  // Promos
-  const [promos, setPromos] = useState<Array<{ code: string; discount: string; active: boolean }>>(() =>
+  // Promos & Banner
+  const [promos, setPromos] = useState<
+    Array<{ code: string; discount: string; description: string; active: boolean }>
+  >(() =>
     readJsonStorage('sophiya_admin_promos_v1', [
-      { code: 'VESNA10', discount: '10%', active: true },
-      { code: 'VIP15', discount: '15%', active: true },
+      { code: 'VESNA10', discount: '10%', description: 'Скидка на первый заказ', active: true },
+      { code: 'VIP15', discount: '15%', description: 'Для постоянных клиентов', active: true },
     ])
   );
+  const [promoBannerText, setPromoBannerText] = useState<string>(() =>
+    readJsonStorage('sophiya_admin_promo_banner_v1', 'Бесплатная доставка по городу от 30 минут')
+  );
+  const [newPromoCode, setNewPromoCode] = useState('');
+  const [newPromoDiscount, setNewPromoDiscount] = useState('10%');
+  const [newPromoDesc, setNewPromoDesc] = useState('');
 
   useEffect(() => {
     try {
       localStorage.setItem('sophiya_admin_promos_v1', JSON.stringify(promos));
     } catch {}
   }, [promos]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sophiya_admin_promo_banner_v1', JSON.stringify(promoBannerText));
+    } catch {}
+  }, [promoBannerText]);
 
   // Active Sheets / Modals
   const [editingBouquet, setEditingBouquet] = useState<Bouquet|null>(null);
@@ -337,8 +327,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [photoOrderModal, setPhotoOrderModal] = useState<AdminOrder|null>(null);
   const [replyModalReviewId, setReplyModalReviewId] = useState<string|null>(null);
   const [draftReply, setDraftReply] = useState('');
+  const [draftReviewDate, setDraftReviewDate] = useState('');
   const [clientHistoryModal, setClientHistoryModal] = useState<string|null>(null);
   const [moreSubSection, setMoreSubSection] = useState<'promos'|'loyalty'|'logistics'|'settings'|null>(null);
+  const [dangerModal, setDangerModal] = useState<'clear'|'reset'|null>(null);
+  const [dangerConfirmInput, setDangerConfirmInput] = useState('');
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [newRevAuthor, setNewRevAuthor] = useState('');
   const [newRevRating, setNewRevRating] = useState(5);
@@ -902,7 +895,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                                   : 'bg-emerald-500/20 text-emerald-300'
                               }`}
                             >
-                              {!b.inStock || cnt === 0 ? 'Стоп-лист (0)' : `Осталось ${cnt} шт.`}
+                              {!b.inStock || cnt === 0 ? 'Нет в наличии' : `В наличии, ${cnt} шт.`}
                             </span>
                           </div>
                         </div>
@@ -942,12 +935,19 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                             </button>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            {cnt > 0 && (
+                            {cnt > 0 && b.inStock ? (
                               <button
                                 onClick={() => updateStockCount(b, 0)}
                                 className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold text-[#E8D9DE]"
                               >
-                                В стоп
+                                Убрать с витрины
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => updateStockCount(b, Math.max(1, cnt || 5))}
+                                className="h-7 px-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-300"
+                              >
+                                Вернуть в наличие
                               </button>
                             )}
                             <button
@@ -968,7 +968,16 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             {/* ORDERS TAB */}
             {activeTab === 'orders' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {filteredOrders.map((o) => {
+                {filteredOrders.length === 0 ? (
+                  <div className="col-span-full text-center py-12 px-4 rounded-xl bg-[#25191D] border border-[#37252B] space-y-1.5">
+                    <ShoppingBag className="w-7 h-7 text-[#922E3D] mx-auto" />
+                    <div className="text-sm font-bold">Заказов пока нет</div>
+                    <div className="text-xs text-[#A8949A]">
+                      Новые заказы, оформленные через корзину на сайте, будут появляться здесь.
+                    </div>
+                  </div>
+                ) : (
+                  filteredOrders.map((o) => {
                   const st = ORDER_STATUS_META[o.orderStatus];
                   const cleanPhone = o.phone.replace(/\D/g, '');
                   return (
@@ -1037,7 +1046,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       </div>
                     </div>
                   );
-                })}
+                })
+                )}
               </div>
             )}
 
@@ -1051,7 +1061,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       <div className="flex items-center justify-between">
                         <div>
                           <strong className="text-sm">{r.author}</strong>
-                          <span className="text-[11px] text-[#9E8A91] ml-2">{r.date}</span>
+                          <span
+                            className={`text-[11px] ml-2 ${
+                              r.date === 'Сегодня' ? 'text-amber-300 font-semibold' : 'text-[#9E8A91]'
+                            }`}
+                          >
+                            {r.date}
+                          </span>
                         </div>
                         <span
                           className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
@@ -1081,10 +1097,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                           onClick={() => {
                             setReplyModalReviewId(r.id);
                             setDraftReply(replyText || '');
+                            setDraftReviewDate(r.date || '');
                           }}
                           className="flex-1 h-8 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
                         >
-                          <MessageCircle className="w-3.5 h-3.5" /> {replyText ? 'Изменить ответ' : 'Ответить'}
+                          <MessageCircle className="w-3.5 h-3.5" /> {replyText ? 'Изменить ответ / дату' : 'Ответить / дата'}
                         </button>
                         <button
                           onClick={() => (r.isPublished ? togglePublished(r.id) : moderateReview(r.id, true))}
@@ -1226,16 +1243,22 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                       Обновить с сервера
                     </button>
                     <button
-                      onClick={() => resetToDefault()}
+                      onClick={() => {
+                        setDangerConfirmInput('');
+                        setDangerModal('reset');
+                      }}
                       className="h-9 px-3 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center gap-1"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" /> Сброс
+                      <RotateCcw className="w-3.5 h-3.5" /> Сброс каталога
                     </button>
                     <button
-                      onClick={() => clearAllBouquets()}
+                      onClick={() => {
+                        setDangerConfirmInput('');
+                        setDangerModal('clear');
+                      }}
                       className="h-9 px-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-300 text-xs font-semibold"
                     >
-                      Очистить
+                      Очистить всё...
                     </button>
                   </div>
                 </div>
@@ -1324,7 +1347,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
           >
             <form
               onSubmit={handleSaveBouquet}
-              className="w-full lg:max-w-lg bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 max-h-[90vh] overflow-y-auto space-y-3"
+              className="w-full lg:max-w-lg bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 max-h-[90vh] overflow-y-auto space-y-3"
             >
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <div className="flex items-center justify-between">
@@ -1524,7 +1547,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setIsFilterOpen(false)}
           >
-            <div className="w-full lg:max-w-sm bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-sm bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <h3 className="text-base font-bold">Сортировка каталога</h3>
               <div className="space-y-2">
@@ -1573,7 +1596,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setPhotoOrderModal(null)}
           >
-            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold">Фотоотчёт, {photoOrderModal.orderNumber}</h3>
@@ -1613,27 +1636,47 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setReplyModalReviewId(null)}
           >
-            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
-              <h3 className="text-base font-bold">Ответ салона на отзыв</h3>
-              <textarea
-                rows={3}
-                value={draftReply}
-                onChange={(e) => setDraftReply(e.target.value)}
-                placeholder="Напишите ответ клиенту..."
-                className="w-full p-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
-              />
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold">Ответ салона и дата отзыва</h3>
+                <button onClick={() => setReplyModalReviewId(null)}>
+                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                </button>
+              </div>
+              <div>
+                <label className="block text-xs text-[#CBB9BF] mb-1">Дата отзыва</label>
+                <input
+                  value={draftReviewDate}
+                  onChange={(e) => setDraftReviewDate(e.target.value)}
+                  placeholder="Например: 6 ноября 2026"
+                  className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#CBB9BF] mb-1">Ответ салона</label>
+                <textarea
+                  rows={3}
+                  value={draftReply}
+                  onChange={(e) => setDraftReply(e.target.value)}
+                  placeholder="Напишите ответ клиенту..."
+                  className="w-full p-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                />
+              </div>
               <button
                 onClick={() => {
                   const next = { ...reviewReplies, [replyModalReviewId]: draftReply.trim() };
                   setReviewReplies(next);
                   localStorage.setItem('sophiya_admin_review_replies_v1', JSON.stringify(next));
+                  if (draftReviewDate.trim()) {
+                    updateReview(replyModalReviewId, { date: draftReviewDate.trim() });
+                  }
                   setReplyModalReviewId(null);
-                  showToast('ok', 'Ответ сохранён');
+                  showToast('ok', 'Отзыв обновлён');
                 }}
                 className="w-full h-11 rounded-xl bg-[#922E3D] text-white text-sm font-semibold"
               >
-                Сохранить ответ
+                Сохранить изменения
               </button>
             </div>
           </div>
@@ -1662,7 +1705,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 setIsAddReviewOpen(false);
                 showToast('ok', 'Отзыв добавлен');
               }}
-              className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3"
+              className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3"
             >
               <h3 className="text-base font-bold">Новый отзыв</h3>
               <input
@@ -1731,7 +1774,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 (o) => o.phone.replace(/\D/g, '') === (client.phone || '').replace(/\D/g, '')
               );
               return (
-                <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+                <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-base font-bold">{fullName}</h3>
@@ -1779,7 +1822,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
             onClick={(e) => e.target === e.currentTarget && setMoreSubSection(null)}
           >
-            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-xl lg:rounded-xl p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold">
                   {moreSubSection === 'promos'
@@ -1796,34 +1839,106 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               </div>
 
               {moreSubSection === 'promos' && (
-                <div className="space-y-2">
-                  {promos.map((p, idx) => (
-                    <div
-                      key={p.code}
-                      className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] flex items-center justify-between"
-                    >
-                      <div>
-                        <strong className="text-sm">{p.code}</strong>
-                        <span className="text-xs text-[#F5B8C2] ml-2">−{p.discount}</span>
-                      </div>
-                      <button
-                        onClick={() =>
-                          setPromos((prev) =>
-                            prev.map((item, i) => (i === idx ? { ...item, active: !item.active } : item))
-                          )
-                        }
-                        className={`w-11 h-6 rounded-lg p-0.5 transition-colors ${
-                          p.active ? 'bg-[#922E3D]' : 'bg-[#453238]'
-                        }`}
-                      >
-                        <div
-                          className={`w-5 h-5 rounded-lg bg-white transition-transform ${
-                            p.active ? 'translate-x-5' : 'translate-x-0'
-                          }`}
-                        />
-                      </button>
+                <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+                  <div>
+                    <label className="block text-xs text-[#CBB9BF] mb-1">Текст акции на сайте</label>
+                    <input
+                      value={promoBannerText}
+                      onChange={(e) => setPromoBannerText(e.target.value)}
+                      placeholder="Текст баннера акции"
+                      className="w-full h-9 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                    />
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] space-y-2">
+                    <div className="text-xs font-bold">Добавить новый промокод</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={newPromoCode}
+                        onChange={(e) => setNewPromoCode(e.target.value.toUpperCase())}
+                        placeholder="Код (напр. BUKET10)"
+                        className="h-9 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                      />
+                      <input
+                        value={newPromoDiscount}
+                        onChange={(e) => setNewPromoDiscount(e.target.value)}
+                        placeholder="Скидка (10% или 500 ₽)"
+                        className="h-9 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                      />
                     </div>
-                  ))}
+                    <input
+                      value={newPromoDesc}
+                      onChange={(e) => setNewPromoDesc(e.target.value)}
+                      placeholder="Условие (необязательно)"
+                      className="w-full h-9 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const code = newPromoCode.trim().toUpperCase();
+                        if (!code) return;
+                        setPromos((prev) => [
+                          {
+                            code,
+                            discount: newPromoDiscount.trim() || '10%',
+                            description: newPromoDesc.trim() || 'Акционный промокод',
+                            active: true,
+                          },
+                          ...prev.filter((x) => x.code !== code),
+                        ]);
+                        setNewPromoCode('');
+                        setNewPromoDesc('');
+                        showToast('ok', `Промокод ${code} добавлен`);
+                      }}
+                      className="w-full h-9 rounded-lg bg-[#922E3D] text-white text-xs font-semibold inline-flex items-center justify-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Добавить промокод
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {promos.map((p, idx) => (
+                      <div
+                        key={p.code}
+                        className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] flex items-center justify-between gap-2"
+                      >
+                        <div className="min-w-0">
+                          <div>
+                            <strong className="text-sm">{p.code}</strong>
+                            <span className="text-xs text-[#F5B8C2] ml-2">−{p.discount}</span>
+                          </div>
+                          {p.description && (
+                            <div className="text-[11px] text-[#9E8A91] truncate">{p.description}</div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() =>
+                              setPromos((prev) =>
+                                prev.map((item, i) => (i === idx ? { ...item, active: !item.active } : item))
+                              )
+                            }
+                            className={`w-11 h-6 rounded-lg p-0.5 transition-colors ${
+                              p.active ? 'bg-[#922E3D]' : 'bg-[#453238]'
+                            }`}
+                          >
+                            <div
+                              className={`w-5 h-5 rounded-lg bg-white transition-transform ${
+                                p.active ? 'translate-x-5' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                          <button
+                            onClick={() => setPromos((prev) => prev.filter((_, i) => i !== idx))}
+                            className="w-7 h-7 rounded-lg bg-[#2C1E23] text-rose-300 flex items-center justify-center"
+                            title="Удалить промокод"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -1901,6 +2016,62 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Danger Confirmation Modal (Clear / Reset) */}
+        {dangerModal && (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setDangerModal(null)}
+          >
+            <div className="w-full max-w-sm bg-[#22171B] border border-rose-500/40 rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-rose-200">
+                  {dangerModal === 'clear' ? 'Очистить весь каталог?' : 'Сбросить каталог по умолчанию?'}
+                </h3>
+                <button onClick={() => setDangerModal(null)}>
+                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                </button>
+              </div>
+              <p className="text-xs text-[#D5C5CA] leading-relaxed">
+                {dangerModal === 'clear'
+                  ? 'Это удалит все букеты из каталога и облачной базы. Для подтверждения введите слово УДАЛИТЬ.'
+                  : 'Каталог вернётся к исходным позициям, а текущие изменения будут перезаписаны.'}
+              </p>
+              {dangerModal === 'clear' && (
+                <input
+                  value={dangerConfirmInput}
+                  onChange={(e) => setDangerConfirmInput(e.target.value)}
+                  placeholder="Введите УДАЛИТЬ"
+                  className="w-full h-10 px-3 rounded-xl bg-[#1B1215] border border-rose-500/40 text-sm text-white"
+                />
+              )}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setDangerModal(null)}
+                  className="flex-1 h-10 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold"
+                >
+                  Отмена
+                </button>
+                <button
+                  disabled={dangerModal === 'clear' && dangerConfirmInput.trim().toUpperCase() !== 'УДАЛИТЬ'}
+                  onClick={() => {
+                    if (dangerModal === 'clear') {
+                      clearAllBouquets();
+                      showToast('ok', 'Каталог очищен');
+                    } else {
+                      resetToDefault();
+                      showToast('ok', 'Каталог сброшен');
+                    }
+                    setDangerModal(null);
+                  }}
+                  className="flex-1 h-10 rounded-xl bg-rose-700 text-white text-xs font-semibold disabled:opacity-40"
+                >
+                  Подтвердить
+                </button>
+              </div>
             </div>
           </div>
         )}
