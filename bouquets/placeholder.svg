@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A0D10"/>
+      <stop offset="50%" stop-color="#281116"/>
+      <stop offset="100%" stop-color="#140608"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#8B1A2B" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#8B1A2B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <circle cx="400" cy="420" r="320" fill="url(#glow)"/>
+
+  <!-- Border Frame -->
+  <rect x="30" y="30" width="740" height="940" rx="28" fill="none" stroke="rgba(197, 168, 128, 0.25)" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+  <!-- Elegant Floral / Rose Icon -->
+  <g transform="translate(400, 400) scale(1.6)" stroke="#C5A880" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer Petals -->
+    <path d="M0 -50 C25 -50 45 -30 45 -5 C45 20 20 45 0 50 C-20 45 -45 20 -45 -5 C-45 -30 -25 -50 0 -50 Z" stroke-opacity="0.5"/>
+    <path d="M-30 -25 C-40 0 -25 30 0 35 C25 30 40 0 30 -25" stroke-opacity="0.7"/>
+    <path d="M-20 -10 C-15 15 15 15 20 -10 C15 -25 -15 -25 -20 -10 Z" fill="rgba(197, 168, 128, 0.08)"/>
+    <circle cx="0" cy="-5" r="7" stroke="#C5A880"/>
+    <!-- Stem / Leaf -->
+    <path d="M0 50 Q -5 80 -10 100" stroke-opacity="0.6"/>
+    <path d="M-5 70 Q 20 60 25 75 Q 10 85 -5 70" fill="rgba(197, 168, 128, 0.1)"/>
+  </g>
+
+  <!-- Text Section -->
+  <g text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+    <text x="400" y="620" font-size="14" fill="#C5A880" letter-spacing="4" text-transform="uppercase" font-weight="600">
+      Салон цветов «София»
+    </text>
+
+    <text x="400" y="670" font-size="24" fill="#FFFFFF" font-weight="600" letter-spacing="1">
+      Фото подготавливается
+    </text>
+
+    <text x="400" y="710" font-size="15" fill="rgba(255, 255, 255, 0.6)" font-weight="400">
+      Свяжитесь с флористом для получения фото в WhatsApp
+    </text>
+
+    <!-- Badge -->
+    <rect x="290" y="750" width="220" height="38" rx="19" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.15)"/>
+    <text x="400" y="774" font-size="13" fill="#C5A880" font-weight="500">
+      +7 (917) 256-32-35
+    </text>
+  </g>
+</svg>
