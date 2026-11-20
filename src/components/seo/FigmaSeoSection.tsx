@@ -194,7 +194,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                   Привезём за 30–60 минут
                 </h3>
                 <p className="text-xs sm:text-[13px] text-white/85 leading-relaxed">
-                  Бесплатная доставка при заказе от 4 500 ₽. Перед выездом курьера отправим фото готового букета в MAX.
+                  Бесплатная доставка по Нижнекамску (0 ₽). Перед выездом курьера отправим фото готового букета в MAX.
                 </p>
               </div>
 
@@ -204,7 +204,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                     <div className="font-semibold text-white">Центр и жилые микрорайоны</div>
                     <div className="text-[11px] text-white/70 mt-0.5">Шинников, Мира, Строителей, Сююмбике, Химиков</div>
                   </div>
-                  <span className="font-bold text-[#E8D5B7] shrink-0">300 ₽</span>
+                  <span className="font-bold text-[#E8D5B7] shrink-0">0 ₽</span>
                 </div>
 
                 <div className="h-px bg-white/10" />
@@ -214,7 +214,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                     <div className="font-semibold text-white">Пригородные посёлки</div>
                     <div className="text-[11px] text-white/70 mt-0.5">Красный Ключ, Большое и Нижнее Афанасово</div>
                   </div>
-                  <span className="font-bold text-[#E8D5B7] shrink-0">450 ₽</span>
+                  <span className="font-bold text-[#E8D5B7] shrink-0">400 ₽</span>
                 </div>
 
                 <div className="h-px bg-white/10" />
@@ -224,7 +224,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                     <div className="font-semibold text-white">Промзона и предприятия</div>
                     <div className="text-[11px] text-white/70 mt-0.5">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
                   </div>
-                  <span className="font-bold text-[#E8D5B7] shrink-0">500 ₽</span>
+                  <span className="font-bold text-[#E8D5B7] shrink-0">400 ₽</span>
                 </div>
               </div>
 

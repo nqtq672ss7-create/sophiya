@@ -1,28 +1,177 @@
-import React, { useState, useEffect } from 'react';
-import { X, Users, MessageCircle, Phone, Search, Award, TrendingUp, Sparkles, Package, Plus, Trash2, CheckCircle2, AlertCircle, Image as ImageIcon, Check, Star, Eye, EyeOff, RotateCcw, Lock, Download, RefreshCw, Pencil, ShoppingBag, CreditCard, Truck, Clock } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  X, Users, MessageCircle, Phone, Search, Award, Package, Plus, Trash2,
+  Image as ImageIcon, Check, Star, RotateCcw, Lock, RefreshCw, Pencil,
+  ShoppingBag, Camera, SlidersHorizontal, LayoutGrid, LogOut, Bell, ChevronRight
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCatalog } from '../../context/CatalogContext';
 import { useReviews } from '../../context/ReviewsContext';
 import { calculateLoyaltyTier } from '../../types/customer';
-import { Bouquet, EDITABLE_CATEGORIES } from '../../types/figma-app';
-import { CustomerDatabaseService } from '../../services/customerDb';
+import { Bouquet, BouquetColor, EDITABLE_CATEGORIES } from '../../types/figma-app';
 import { getApiUrl } from '../../config/api';
-import { formatBouquetAlt } from '../../utils/routes';
 
 interface SalonAdminClientsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+type AdminTab = 'catalog'|'orders'|'reviews'|'clients'|'more';
+type StaffRole = 'Админ'|'Флорист'|'Курьер';
+type SortMode = 'default'|'price_asc'|'price_desc'|'stock_asc';
+
+interface RecipeItem {
+  name: string;
+  qty: string;
+}
+
+interface AdminOrder {
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  customerName: string;
+  phone: string;
+  deliveryType: 'delivery'|'pickup';
+  address?: string;
+  deliveryDate: string;
+  items: Array<{ title: string; quantity: number; price: number }>;
+  totalAmount: number;
+  paymentMethod: 'sbp'|'card'|'sberpay';
+  paymentStatus: 'paid'|'pending';
+  orderStatus: 'new'|'assembling'|'in_transit'|'delivered';
+  postcardText?: string;
+  photoReportUrl?: string;
+}
+
+const DEFAULT_ORDERS: AdminOrder[] = [
+  {
+    id: 'ord_1',
+    orderNumber: '№ 8492',
+    createdAt: 'Сегодня, 12:40',
+    customerName: 'Айрат Мингазов',
+    phone: '+7 (917) 256-42-18',
+    deliveryType: 'delivery',
+    address: 'г. Нижнекамск, пр. Мира, 48, кв. 112',
+    deliveryDate: 'Сегодня, 15:00 - 17:00',
+    items: [{ title: '25 красных роз Эквадор', quantity: 1, price: 5900 }],
+    totalAmount: 5900,
+    paymentMethod: 'sbp',
+    paymentStatus: 'paid',
+    orderStatus: 'new',
+  },
+  {
+    id: 'ord_2',
+    orderNumber: '№ 8491',
+    createdAt: 'Сегодня, 11:15',
+    customerName: 'Елена Сафина',
+    phone: '+7 (987) 412-09-33',
+    deliveryType: 'pickup',
+    address: 'Салон «София», пр. Шинников, 13В',
+    deliveryDate: 'Сегодня, 14:00',
+    items: [{ title: 'Пионовидный комплимент', quantity: 1, price: 4200 }],
+    totalAmount: 4200,
+    paymentMethod: 'sberpay',
+    paymentStatus: 'paid',
+    orderStatus: 'assembling',
+  },
+];
+
+const ORDER_STATUS_META: Record<
+  AdminOrder['orderStatus'],
+  { label: string; next: AdminOrder['orderStatus']|null; nextLabel: string|null; badge: string }
+> = {
+  new: { label: 'Новый', next: 'assembling', nextLabel: 'В сборку', badge: 'bg-[#922E3D]/35 text-[#F6B6C0]' },
+  assembling: { label: 'Сборка', next: 'in_transit', nextLabel: 'В путь', badge: 'bg-amber-500/20 text-amber-300' },
+  in_transit: { label: 'В пути', next: 'delivered', nextLabel: 'Доставлен', badge: 'bg-sky-500/20 text-sky-300' },
+  delivered: { label: 'Доставлен', next: null, nextLabel: null, badge: 'bg-emerald-500/20 text-emerald-300' },
+};
+
+const COLORS: BouquetColor[] = ['Розовый', 'Красный', 'Белый', 'Бордовый', 'Персиковый'];
+
+const readJsonStorage = <T,>(key: string, fallback: T): T => {
+  try {
+    if (typeof window === 'undefined') return fallback;
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const compressImageFile = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result !== 'string') {
+        reject(new Error('Не удалось прочитать файл'));
+        return;
+      }
+      const raw = reader.result;
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const maxDim = 720;
+          let { width, height } = img;
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height >= width && height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(raw);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          let out = canvas.toDataURL('image/webp', 0.75);
+          if (!out.startsWith('data:image/webp')) out = canvas.toDataURL('image/jpeg', 0.72);
+          if (out.length > 180000) out = canvas.toDataURL('image/jpeg', 0.64);
+          resolve(out);
+        } catch {
+          resolve(raw);
+        }
+      };
+      img.onerror = () => resolve(raw);
+      img.src = raw;
+    };
+    reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+    reader.readAsDataURL(file);
+  });
+
 export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const { allCustomers, refreshCustomers } = useAuth();
-  const { bouquets, addBouquet, updateBouquet, deleteBouquet, toggleStock, clearAllBouquets, resetToDefault, isSyncing, lastSyncedAt, syncCatalog, refreshCatalog } = useCatalog();
-  const { reviews, publishedReviews, pendingReviews, addReview, deleteReview, togglePublished, moderateReview, refreshReviews, refreshPending } = useReviews();
+  const {
+    bouquets,
+    addBouquet,
+    updateBouquet,
+    deleteBouquet,
+    toggleStock,
+    clearAllBouquets,
+    resetToDefault,
+    isSyncing,
+    lastSyncedAt,
+    syncCatalog,
+    refreshCatalog,
+  } = useCatalog();
+  const {
+    reviews,
+    addReview,
+    deleteReview,
+    togglePublished,
+    moderateReview,
+    refreshReviews,
+    refreshPending,
+  } = useReviews();
 
-  // Security Gate Server Auth State
+  // Auth state
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -34,10 +183,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       if (parts.length !== 2) return true;
       const base64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
       const payload = JSON.parse(atob(base64));
-      if (payload.exp && Date.now() > payload.exp) {
-        return true;
-      }
-      return false;
+      return Boolean(payload.exp && Date.now() > payload.exp);
     } catch {
       return true;
     }
@@ -64,7 +210,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   useEffect(() => {
     const handleExpired = () => {
       setIsUnlocked(false);
-      setPinError('Время сессии истекло. Пожалуйста, введите пароль снова.');
+      setPinError('Время сессии истекло. Введите пароль снова.');
     };
     window.addEventListener('sophiya_admin_session_expired', handleExpired);
     return () => window.removeEventListener('sophiya_admin_session_expired', handleExpired);
@@ -77,352 +223,150 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     }
   }, [isUnlocked, refreshReviews, refreshPending]);
 
-  const [activeTab, setActiveTab] = useState<'catalog'|'orders'|'reviews'|'clients'>('catalog');
+  // Navigation & Filters
+  const [activeTab, setActiveTab] = useState<AdminTab>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAddBouquetOpen, setIsAddBouquetOpen] = useState(false);
-  const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+  const [chipFilter, setChipFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<SortMode>('default');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Online Orders State
-  const [orders, setOrders] = useState<Array<{
-    id: string;
-    orderNumber: string;
-    createdAt: string;
-    customerName: string;
-    phone: string;
-    deliveryType: 'delivery'|'pickup';
-    address?: string;
-    deliveryDate: string;
-    items: Array<{ title: string; quantity: number; price: number }>;
-    totalAmount: number;
-    paymentMethod: 'sbp'|'card'|'sberpay';
-    paymentStatus: 'paid'|'pending';
-    orderStatus: 'new'|'assembling'|'in_transit'|'delivered';
-    postcardText?: string;
-  }>>(() => {
+  // Bulk actions
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Role & Notifications
+  const [role, setRole] = useState<StaffRole>(() =>
+    readJsonStorage<StaffRole>('sophiya_admin_role_v1', 'Админ')
+  );
+  const [pushEnabled, setPushEnabled] = useState<boolean>(() =>
+    readJsonStorage<boolean>('sophiya_admin_push_v1', true)
+  );
+  const [toast, setToast] = useState<{ type: 'ok'|'err'; text: string }|null>(null);
+
+  const showToast = (type: 'ok'|'err', text: string) => {
+    setToast({ type, text });
+    setTimeout(() => setToast((prev) => (prev?.text === text ? null : prev)), 3500);
+  };
+
+  useEffect(() => {
     try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('sophiya_admin_orders_v1');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      }
+      localStorage.setItem('sophiya_admin_role_v1', JSON.stringify(role));
     } catch {}
-    return [
-      {
-        id: 'ord_1',
-        orderNumber: '№ 8492',
-        createdAt: 'Сегодня, 21:40',
-        customerName: 'Айрат Мингазов',
-        phone: '+7 (917) 256-42-18',
-        deliveryType: 'delivery',
-        address: 'г. Нижнекамск, пр. Мира, 48, кв. 112',
-        deliveryDate: 'Завтра, 10:00 - 12:00',
-        items: [
-          { title: '«Розовая мечта» большой букет из хризантемы', quantity: 1, price: 4100 },
-        ],
-        totalAmount: 4100,
-        paymentMethod: 'sbp',
-        paymentStatus: 'paid',
-        orderStatus: 'assembling',
-        postcardText: 'Любимой мамочке с днем рождения! Спасибо за твою теплоту и заботу.',
-      },
-      {
-        id: 'ord_2',
-        orderNumber: '№ 8491',
-        createdAt: 'Сегодня, 19:15',
-        customerName: 'Руслан Зарипов',
-        phone: '+7 (987) 415-33-90',
-        deliveryType: 'pickup',
-        address: 'Самовывоз из салона (пр. Шинников, 13В)',
-        deliveryDate: 'Завтра к 13:30',
-        items: [
-          { title: 'Букет 11 красных роз Ред Наоми', quantity: 1, price: 2700 },
-        ],
-        totalAmount: 2700,
-        paymentMethod: 'card',
-        paymentStatus: 'paid',
-        orderStatus: 'new',
-        postcardText: '',
-      },
-      {
-        id: 'ord_3',
-        orderNumber: '№ 8488',
-        createdAt: '15 ноября, 14:20',
-        customerName: 'Диана Султанова',
-        phone: '+7 (905) 311-88-24',
-        deliveryType: 'delivery',
-        address: 'г. Нижнекамск, ул. Сююмбике, 9, подъезд 2',
-        deliveryDate: '15 ноября к 18:00',
-        items: [
-          { title: 'Букет с короной и шары сердца', quantity: 1, price: 8300 },
-        ],
-        totalAmount: 8300,
-        paymentMethod: 'sberpay',
-        paymentStatus: 'paid',
-        orderStatus: 'delivered',
-        postcardText: 'С юбилеем нашей свадьбы! Люблю бесконечно.',
-      },
-      {
-        id: 'ord_4',
-        orderNumber: '№ 8485',
-        createdAt: '14 ноября, 16:50',
-        customerName: 'Екатерина Петрова',
-        phone: '+7 (919) 628-90-11',
-        deliveryType: 'delivery',
-        address: 'г. Нижнекамск, ул. Строителей, 32, кв. 44',
-        deliveryDate: '14 ноября, 19:00',
-        items: [
-          { title: 'Авторский букет 3 кустовых пионовидных роз', quantity: 1, price: 3500 },
-        ],
-        totalAmount: 3500,
-        paymentMethod: 'card',
-        paymentStatus: 'paid',
-        orderStatus: 'delivered',
-        postcardText: 'С днем учителя!',
-      },
-    ];
+  }, [role]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sophiya_admin_push_v1', JSON.stringify(pushEnabled));
+    } catch {}
+  }, [pushEnabled]);
+
+  // Stock counts & Recipes stored locally per bouquet
+  const [stockCounts, setStockCounts] = useState<Record<string, number>>(() =>
+    readJsonStorage<Record<string, number>>('sophiya_admin_stock_v1', {})
+  );
+  const [recipesMap, setRecipesMap] = useState<Record<string, RecipeItem[]>>(() =>
+    readJsonStorage<Record<string, RecipeItem[]>>('sophiya_admin_recipes_v1', {})
+  );
+
+  const getStockCount = (b: Bouquet) => {
+    if (typeof stockCounts[b.id] === 'number') return stockCounts[b.id];
+    return b.inStock ? 5 : 0;
+  };
+
+  const updateStockCount = (b: Bouquet, nextCount: number) => {
+    const safe = Math.max(0, nextCount);
+    const updated = { ...stockCounts, [b.id]: safe };
+    setStockCounts(updated);
+    try {
+      localStorage.setItem('sophiya_admin_stock_v1', JSON.stringify(updated));
+    } catch {}
+    if ((safe === 0 && b.inStock) || (safe > 0 && !b.inStock)) {
+      toggleStock(b.id);
+    }
+  };
+
+  // Orders
+  const [orders, setOrders] = useState<AdminOrder[]>(() => {
+    const saved = readJsonStorage<AdminOrder[]>('sophiya_admin_orders_v1', []);
+    return saved.length > 0 ? saved : DEFAULT_ORDERS;
   });
 
-  const [orderFilter, setOrderFilter] = useState<'all'|'new'|'assembling'|'in_transit'|'delivered'>('all');
-  const [orderSearch, setOrderSearch] = useState('');
+  useEffect(() => {
+    try {
+      localStorage.setItem('sophiya_admin_orders_v1', JSON.stringify(orders));
+    } catch {}
+  }, [orders]);
 
-  const handleUpdateOrderStatus = (orderId: string, newStatus: 'new'|'assembling'|'in_transit'|'delivered') => {
-    setOrders((prev) => {
-      const updated = prev.map((ord) => (ord.id === orderId ? { ...ord, orderStatus: newStatus } : ord));
-      try {
-        localStorage.setItem('sophiya_admin_orders_v1', JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
-    triggerSuccess('Статус заказа успешно обновлен!');
-  };
+  // Review replies
+  const [reviewReplies, setReviewReplies] = useState<Record<string, string>>(() =>
+    readJsonStorage<Record<string, string>>('sophiya_admin_review_replies_v1', {})
+  );
 
-  const filteredOrders = orders.filter((o) => {
-    if (orderFilter !== 'all' && o.orderStatus !== orderFilter) return false;
-    if (!orderSearch.trim()) return true;
-    const q = orderSearch.toLowerCase();
-    return (
-      o.orderNumber.toLowerCase().includes(q) ||
-      o.customerName.toLowerCase().includes(q) ||
-      o.phone.includes(q) ||
-      (o.address && o.address.toLowerCase().includes(q))
-    );
-  });
+  // Promos
+  const [promos, setPromos] = useState<Array<{ code: string; discount: string; active: boolean }>>(() =>
+    readJsonStorage('sophiya_admin_promos_v1', [
+      { code: 'VESNA10', discount: '10%', active: true },
+      { code: 'VIP15', discount: '15%', active: true },
+    ])
+  );
 
-  // Notifications State
-  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
-  const [successNotice, setSuccessNotice] = useState('');
-  const [isErrorMessage, setIsErrorMessage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  useEffect(() => {
+    try {
+      localStorage.setItem('sophiya_admin_promos_v1', JSON.stringify(promos));
+    } catch {}
+  }, [promos]);
 
-  const triggerSuccess = (msg: string) => {
-    setSuccessNotice(msg);
-    setIsSuccessMessage(true);
-    setTimeout(() => setIsSuccessMessage(false), 4000);
-  };
-
-  const triggerError = (msg: string) => {
-    setErrorMessage(msg);
-    setIsErrorMessage(true);
-    setTimeout(() => setIsErrorMessage(false), 6000);
-  };
-
-  // New Bouquet Form State
-  const [newTitle, setNewTitle] = useState('');
-  const [newPrice, setNewPrice] = useState<number|''>('');
-  const [newOldPrice, setNewOldPrice] = useState<number|''>('');
-  const [newCategory, setNewCategory] = useState<'Монобукеты'|'Авторские'|'Коробки'|'Корзины'>('Авторские');
-  const [newColor, setNewColor] = useState('Розовый');
-  const [newHeight, setNewHeight] = useState('50 см');
-  const [newComposition, setNewComposition] = useState('');
-  const [newDurability, setNewDurability] = useState('10-14 дней');
-  const [newPackaging, setNewPackaging] = useState('Фирменная дизайнерская упаковка «София»');
-  const [newDescription, setNewDescription] = useState('');
-  const [newImage, setNewImage] = useState('/bouquet-1.jpg');
-  const [newImages, setNewImages] = useState<string[]>(['/bouquet-1.jpg']);
-  const [imageCompressionNotice, setImageCompressionNotice] = useState<string>('');
+  // Active Sheets / Modals
+  const [editingBouquet, setEditingBouquet] = useState<Bouquet|null>(null);
+  const [isAddBouquetOpen, setIsAddBouquetOpen] = useState(false);
   const [isSavingBouquet, setIsSavingBouquet] = useState(false);
 
-  // Edit Bouquet Form State
-  const [editingBouquet, setEditingBouquet] = useState<Bouquet|null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editPrice, setEditPrice] = useState<number|''>('');
-  const [editOldPrice, setEditOldPrice] = useState<number|''>('');
-  const [editCategory, setEditCategory] = useState<'Монобукеты'|'Авторские'|'Коробки'|'Корзины'>('Авторские');
-  const [editColor, setEditColor] = useState('Розовый');
-  const [editHeight, setEditHeight] = useState('50 см');
-  const [editComposition, setEditComposition] = useState('');
-  const [editDurability, setEditDurability] = useState('10-14 дней');
-  const [editPackaging, setEditPackaging] = useState('Фирменная дизайнерская упаковка «София»');
-  const [editDescription, setEditDescription] = useState('');
-  const [editImage, setEditImage] = useState('/bouquet-1.jpg');
-  const [editImages, setEditImages] = useState<string[]>([]);
-  const [editCompressionNotice, setEditCompressionNotice] = useState<string>('');
-  const [isUpdatingBouquet, setIsUpdatingBouquet] = useState(false);
+  // Draft form fields (shared for Add & Edit)
+  const [formTitle, setFormTitle] = useState('');
+  const [formPrice, setFormPrice] = useState('');
+  const [formOldPrice, setFormOldPrice] = useState('');
+  const [formCategory, setFormCategory] = useState<string>(EDITABLE_CATEGORIES[0]);
+  const [formColor, setFormColor] = useState<BouquetColor>('Розовый');
+  const [formImage, setFormImage] = useState('/bouquet-1.jpg');
+  const [formStock, setFormStock] = useState('5');
+  const [formDescription, setFormDescription] = useState('');
+  const [formRecipe, setFormRecipe] = useState<RecipeItem[]>([
+    { name: 'Роза Эквадор', qty: '5 шт.' },
+  ]);
 
-  const compressImageFile = (file: File): Promise<{ dataUrl: string; kb: number }> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result !== 'string') {
-          return reject(new Error('Не удалось прочитать файл'));
-        }
-        const rawResult = reader.result;
-        const img = new Image();
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            const maxDim = 720;
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > maxDim) {
-                height = Math.round((height * maxDim) / width);
-                width = maxDim;
-              }
-            } else {
-              if (height > maxDim) {
-                width = Math.round((width * maxDim) / height);
-                height = maxDim;
-              }
-            }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, width, height);
-              let compressed = canvas.toDataURL('image/webp', 0.75);
-              if (!compressed.startsWith('data:image/webp')) {
-                compressed = canvas.toDataURL('image/jpeg', 0.72);
-              }
-              if (compressed.length > 180000) {
-                compressed = canvas.toDataURL('image/jpeg', 0.64);
-              }
-              const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
-              resolve({ dataUrl: compressed, kb: approxKb });
-            } else {
-              resolve({ dataUrl: rawResult, kb: Math.round((rawResult.length * 3) / 4 / 1024) });
-            }
-          } catch {
-            resolve({ dataUrl: rawResult, kb: Math.round((rawResult.length * 3) / 4 / 1024) });
-          }
-        };
-        img.onerror = () => reject(new Error('Ошибка загрузки изображения'));
-        img.src = rawResult;
-      };
-      reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-      reader.readAsDataURL(file);
-    });
-  };
+  const [photoOrderModal, setPhotoOrderModal] = useState<AdminOrder|null>(null);
+  const [replyModalReviewId, setReplyModalReviewId] = useState<string|null>(null);
+  const [draftReply, setDraftReply] = useState('');
+  const [clientHistoryModal, setClientHistoryModal] = useState<string|null>(null);
+  const [moreSubSection, setMoreSubSection] = useState<'promos'|'loyalty'|'logistics'|'settings'|null>(null);
+  const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+  const [newRevAuthor, setNewRevAuthor] = useState('');
+  const [newRevRating, setNewRevRating] = useState(5);
+  const [newRevText, setNewRevText] = useState('');
 
-  const handleSlotPhotoUpload = async (index: number, mode: 'create'|'edit', file: File) => {
-    try {
-      if (mode === 'create') {
-        setImageCompressionNotice(`Сжатие фото #${index + 1}...`);
-        const { dataUrl, kb } = await compressImageFile(file);
-        setNewImages((prev) => {
-          const next = [...prev];
-          next[index] = dataUrl;
-          return next;
-        });
-        if (index === 0) setNewImage(dataUrl);
-        setImageCompressionNotice(`✓ Ракурс ${index + 1} добавлен (~${kb} КБ)`);
-      } else {
-        setEditCompressionNotice(`Сжатие фото #${index + 1}...`);
-        const { dataUrl, kb } = await compressImageFile(file);
-        setEditImages((prev) => {
-          const next = [...prev];
-          next[index] = dataUrl;
-          return next;
-        });
-        if (index === 0) setEditImage(dataUrl);
-        setEditCompressionNotice(`✓ Ракурс ${index + 1} обновлен (~${kb} КБ)`);
-      }
-    } catch {
-      triggerError('Не удалось обработать изображение. Попробуйте другой файл (JPG или PNG).');
-    }
-  };
-
-  const handleRemovePhotoSlot = (index: number, mode: 'create'|'edit') => {
-    if (mode === 'create') {
-      setNewImages((prev) => {
-        const next = [...prev];
-        next.splice(index, 1);
-        return next;
-      });
-      if (index === 0) {
-        setNewImage(newImages[1] || '/bouquet-1.jpg');
-      }
-    } else {
-      setEditImages((prev) => {
-        const next = [...prev];
-        next.splice(index, 1);
-        return next;
-      });
-      if (index === 0) {
-        setEditImage(editImages[1] || '/bouquet-1.jpg');
-      }
-    }
-  };
-
-  const handleStartEdit = (b: Bouquet) => {
-    setEditingBouquet(b);
-    setEditTitle(b.title);
-    setEditPrice(b.price);
-    setEditOldPrice(b.oldPrice && b.oldPrice > b.price ? b.oldPrice : '');
-    setEditCategory((b.category as any) || 'Авторские');
-    setEditColor((b.color as any) || 'Розовый');
-    setEditHeight(b.characteristics?.height || '50 см');
-    setEditComposition(b.characteristics?.flowersCount || '');
-    setEditDurability(b.characteristics?.durability || '10-14 дней');
-    setEditPackaging(b.characteristics?.packaging || 'Фирменная дизайнерская упаковка «София»');
-    setEditDescription(b.description || '');
-    const currentPhotos = (b.images && b.images.length > 0 ? b.images : [b.image]).filter(Boolean);
-    setEditImages(currentPhotos);
-    setEditImage(currentPhotos[0] || b.image || '/bouquet-1.jpg');
-    setEditCompressionNotice('');
-    setIsAddBouquetOpen(false);
-  };
-
-  // New Review Form State
-  const [reviewAuthor, setReviewAuthor] = useState('');
-  const [reviewRating, setReviewRating] = useState<number>(5);
-  const [reviewDate, setReviewDate] = useState('Сегодня');
-  const [reviewBouquet, setReviewBouquet] = useState('');
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewIsVerified, setReviewIsVerified] = useState(true);
-  const [reviewIsPublished, setReviewIsPublished] = useState(true);
-
-  const handleUnlock = async (e?: React.FormEvent, bypassPin?: string) => {
+  // Auth handlers
+  const handleUnlock = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const pin = (bypassPin || pinInput).trim();
+    const pin = pinInput.trim();
     if (!pin) {
-      setPinError('Введите PIN-код доступа');
+      setPinError('Введите пароль доступа');
       return;
     }
-
     setIsAuthenticating(true);
     setPinError('');
-
     try {
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
-
       const res = await fetch(getApiUrl('/api/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pin, honeypot: '' }),
         signal: controller?.signal,
       });
-
       if (timeoutId) clearTimeout(timeoutId);
-
       const data = await res.json().catch(() => ({}));
-
       if (res.ok && data.token) {
         setIsUnlocked(true);
-        setPinError('');
         setPinInput('');
         sessionStorage.setItem('sophiya_admin_token', data.token);
         localStorage.setItem('sophiya_admin_token_v1', data.token);
@@ -430,16 +374,11 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         refreshReviews();
         refreshPending();
       } else {
-        setPinError(data.error || 'Неверный пароль доступа. Попробуйте снова.');
+        setPinError(data.error || 'Неверный пароль доступа');
         setPinInput('');
       }
-    } catch (err: any) {
-      console.error('Login request failed:', err);
-      if (err?.name === 'AbortError') {
-        setPinError('Время ожидания ответа сервера истекло. Проверьте интернет и нажмите «Войти» снова.');
-      } else {
-        setPinError('Не удалось подключиться к серверу авторизации. Проверьте интернет.');
-      }
+    } catch {
+      setPinError('Не удалось подключиться к серверу авторизации');
     } finally {
       setIsAuthenticating(false);
     }
@@ -452,1822 +391,1515 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     try {
       sessionStorage.removeItem('sophiya_admin_token');
       localStorage.removeItem('sophiya_admin_token_v1');
-      sessionStorage.removeItem('sophiya_crm_unlocked');
-      localStorage.removeItem('sophiya_crm_unlocked');
-    } catch (err) {
-      console.error(err);
-    }
-    onClose();
+    } catch {}
   };
 
-  if (!isOpen) return null;
+  // Bouquet Add / Edit
+  const openAddForm = () => {
+    setEditingBouquet(null);
+    setFormTitle('');
+    setFormPrice('');
+    setFormOldPrice('');
+    setFormCategory(EDITABLE_CATEGORIES[0]);
+    setFormColor('Розовый');
+    setFormImage('/bouquet-1.jpg');
+    setFormStock('5');
+    setFormDescription('');
+    setFormRecipe([{ name: 'Роза Эквадор', qty: '5 шт.' }]);
+    setIsAddBouquetOpen(true);
+  };
 
-  // Filter clients
-  const filteredCustomers = allCustomers.filter(
-    (c) =>
-      c.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.phone.includes(searchQuery)
-  );
+  const openEditForm = (b: Bouquet) => {
+    setIsAddBouquetOpen(false);
+    setEditingBouquet(b);
+    setFormTitle(b.title);
+    setFormPrice(String(b.price));
+    setFormOldPrice(b.oldPrice ? String(b.oldPrice) : '');
+    setFormCategory(b.category);
+    setFormColor(b.color || 'Розовый');
+    setFormImage(b.image || '/bouquet-1.jpg');
+    setFormStock(String(getStockCount(b)));
+    setFormDescription(b.description || '');
+    const savedRecipe = recipesMap[b.id];
+    setFormRecipe(
+      savedRecipe && savedRecipe.length > 0
+        ? savedRecipe
+        : [{ name: b.characteristics?.flowersCount || 'Отборные цветы', qty: '1 сет' }]
+    );
+  };
 
-  // Filter bouquets
-  const filteredBouquets = bouquets.filter(
-    (b) =>
-      b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.characteristics.flowersCount.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Filter reviews
-  const filteredReviews = reviews.filter(
-    (r) =>
-      r.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (r.bouquetTitle && r.bouquetTitle.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const totalRevenue = allCustomers.reduce((acc, c) => acc + c.totalSpent, 0);
-  const inStockCount = bouquets.filter((b) => b.inStock).length;
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageCompressionNotice('Оптимизация изображения...');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const rawResult = reader.result;
-          const img = new Image();
-          img.onload = () => {
-            try {
-              const canvas = document.createElement('canvas');
-              const maxDim = 720;
-              let width = img.width;
-              let height = img.height;
-              if (width > height) {
-                if (width > maxDim) {
-                  height = Math.round((height * maxDim) / width);
-                  width = maxDim;
-                }
-              } else {
-                if (height > maxDim) {
-                  width = Math.round((width * maxDim) / height);
-                  height = maxDim;
-                }
-              }
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                ctx.drawImage(img, 0, 0, width, height);
-                let compressed = canvas.toDataURL('image/webp', 0.75);
-                if (!compressed.startsWith('data:image/webp')) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.72);
-                }
-                if (compressed.length > 180000) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.64);
-                }
-                const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
-                setImageCompressionNotice(`✓ Сжато: ~${approxKb} КБ (мгновенная загрузка)`);
-                setNewImage(compressed);
-              } else {
-                setNewImage(rawResult);
-                setImageCompressionNotice('');
-              }
-            } catch {
-              setNewImage(rawResult);
-              setImageCompressionNotice('');
-            }
-          };
-          img.onerror = () => {
-            setNewImage(rawResult);
-            setImageCompressionNotice('');
-          };
-          img.src = rawResult;
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    try {
+      const compressed = await compressImageFile(file);
+      setFormImage(compressed);
+      showToast('ok', 'Фото сжато и готово к сохранению');
+    } catch {
+      showToast('err', 'Не удалось загрузить фото');
     }
   };
 
-  const handleCreateBouquet = async (e: React.FormEvent) => {
+  const handleSaveBouquet = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newPrice || isSavingBouquet) return;
-
+    if (!formTitle.trim() || !formPrice || isSavingBouquet) return;
     setIsSavingBouquet(true);
-    try {
-      const allImages = newImages.filter(Boolean);
-      const mainImg = allImages[0] || newImage || '/bouquet-1.jpg';
-      await addBouquet({
-        title: newTitle.trim(),
-        price: Number(newPrice),
-        ...(newOldPrice && Number(newOldPrice) > Number(newPrice)
-          ? { oldPrice: Number(newOldPrice) }
-          : {}),
-        category: newCategory,
-        color: newColor,
-        inStock: true,
-        image: mainImg,
-        images: allImages.length > 0 ? allImages : [mainImg],
-        hasRealPhoto: true,
-        description: newDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
-        characteristics: {
-          height: newHeight,
-          flowersCount: newComposition || 'Отборные цветы премиум сортов',
-          durability: newDurability,
-          packaging: newPackaging,
-        },
-      });
+    const parsedStock = Math.max(0, parseInt(formStock, 10) || 0);
+    const recipeSummary = formRecipe
+      .filter((r) => r.name.trim())
+      .map((r) => `${r.name.trim()} (${r.qty.trim() || '1 шт.'})`)
+      .join(', ');
 
-      // Reset Form
-      setNewTitle('');
-      setNewPrice('');
-      setNewOldPrice('');
-      setNewComposition('');
-      setNewDescription('');
-      setNewImages(['/bouquet-1.jpg']);
-      setNewImage('/bouquet-1.jpg');
-      setImageCompressionNotice('');
-      setIsAddBouquetOpen(false);
-      triggerSuccess('Новый букет успешно добавлен и синхронизирован со всеми устройствами!');
+    try {
+      if (editingBouquet) {
+        await updateBouquet(editingBouquet.id, {
+          title: formTitle.trim(),
+          price: Number(formPrice),
+          oldPrice: formOldPrice && Number(formOldPrice) > Number(formPrice) ? Number(formOldPrice) : 0,
+          category: formCategory,
+          color: formColor,
+          inStock: parsedStock > 0,
+          image: formImage,
+          images: [formImage],
+          description: formDescription.trim() || 'Авторская флористическая композиция.',
+          characteristics: {
+            height: editingBouquet.characteristics?.height || '50 см',
+            flowersCount: recipeSummary || 'Отборные сортовые цветы',
+            durability: editingBouquet.characteristics?.durability || '10-14 дней',
+            packaging: editingBouquet.characteristics?.packaging || 'Фирменная упаковка «София»',
+          },
+        });
+        const nextStock = { ...stockCounts, [editingBouquet.id]: parsedStock };
+        const nextRecipes = { ...recipesMap, [editingBouquet.id]: formRecipe };
+        setStockCounts(nextStock);
+        setRecipesMap(nextRecipes);
+        localStorage.setItem('sophiya_admin_stock_v1', JSON.stringify(nextStock));
+        localStorage.setItem('sophiya_admin_recipes_v1', JSON.stringify(nextRecipes));
+        setEditingBouquet(null);
+        showToast('ok', `Букет «${formTitle.trim()}» обновлён`);
+      } else {
+        await addBouquet({
+          title: formTitle.trim(),
+          price: Number(formPrice),
+          ...(formOldPrice && Number(formOldPrice) > Number(formPrice) ? { oldPrice: Number(formOldPrice) } : {}),
+          category: formCategory,
+          color: formColor,
+          inStock: parsedStock > 0,
+          image: formImage,
+          images: [formImage],
+          hasRealPhoto: true,
+          description: formDescription.trim() || 'Авторская флористическая композиция.',
+          characteristics: {
+            height: '50 см',
+            flowersCount: recipeSummary || 'Отборные сортовые цветы',
+            durability: '10-14 дней',
+            packaging: 'Фирменная упаковка «София»',
+          },
+        });
+        setIsAddBouquetOpen(false);
+        showToast('ok', 'Новый букет добавлен в каталог');
+      }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Не удалось сохранить в облако.';
-      triggerError(msg);
+      showToast('err', err instanceof Error ? err.message : 'Ошибка сохранения');
     } finally {
       setIsSavingBouquet(false);
     }
   };
 
-  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const applyBulk = async (action: 'hide'|'show'|'mono') => {
+    if (!selectedIds.length) return;
+    for (const id of selectedIds) {
+      const b = bouquets.find((x) => x.id === id);
+      if (!b) continue;
+      if (action === 'hide' && b.inStock) await toggleStock(id);
+      if (action === 'show' && !b.inStock) await toggleStock(id);
+      if (action === 'mono') await updateBouquet(id, { category: 'Монобукеты' });
+    }
+    setBulkMode(false);
+    setSelectedIds([]);
+    showToast('ok', 'Массовое действие применено');
+  };
+
+  // Order photo report
+  const handleOrderPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, orderId: string) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setEditCompressionNotice('Оптимизация изображения...');
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          const rawResult = reader.result;
-          const img = new Image();
-          img.onload = () => {
-            try {
-              const canvas = document.createElement('canvas');
-              const maxDim = 720;
-              let width = img.width;
-              let height = img.height;
-              if (width > height) {
-                if (width > maxDim) {
-                  height = Math.round((height * maxDim) / width);
-                  width = maxDim;
-                }
-              } else {
-                if (height > maxDim) {
-                  width = Math.round((width * maxDim) / height);
-                  height = maxDim;
-                }
-              }
-              canvas.width = width;
-              canvas.height = height;
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                ctx.drawImage(img, 0, 0, width, height);
-                let compressed = canvas.toDataURL('image/webp', 0.75);
-                if (!compressed.startsWith('data:image/webp')) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.72);
-                }
-                if (compressed.length > 180000) {
-                  compressed = canvas.toDataURL('image/jpeg', 0.64);
-                }
-                const approxKb = Math.round((compressed.length * 3) / 4 / 1024);
-                setEditCompressionNotice(`✓ Новое фото готово (~${approxKb} КБ)`);
-                setEditImage(compressed);
-              } else {
-                setEditImage(rawResult);
-                setEditCompressionNotice('');
-              }
-            } catch {
-              setEditImage(rawResult);
-              setEditCompressionNotice('');
-            }
-          };
-          img.onerror = () => {
-            setEditImage(rawResult);
-            setEditCompressionNotice('');
-          };
-          img.src = rawResult;
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSaveBouquetEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingBouquet || !editTitle.trim() || !editPrice || isUpdatingBouquet) return;
-
-    setIsUpdatingBouquet(true);
+    if (!file) return;
     try {
-      const allImages = editImages.filter(Boolean);
-      const mainImg = allImages[0] || editImage || editingBouquet.image;
-      await updateBouquet(editingBouquet.id, {
-        title: editTitle.trim(),
-        price: Number(editPrice),
-        oldPrice:
-          editOldPrice && Number(editOldPrice) > Number(editPrice)
-            ? Number(editOldPrice)
-            : 0,
-        category: editCategory,
-        color: editColor,
-        image: mainImg,
-        images: allImages.length > 0 ? allImages : [mainImg],
-        description: editDescription.trim() || 'Авторская флористическая композиция из свежей поставки цветов высшей категории.',
-        characteristics: {
-          height: editHeight.trim() || '50 см',
-          flowersCount: editComposition.trim() || 'Отборные сортовые цветы',
-          durability: editDurability.trim() || '10-14 дней',
-          packaging: editPackaging.trim() || 'Фирменная дизайнерская упаковка «София»',
-        },
-      });
-
-      triggerSuccess(`Букет «${editTitle.trim()}» успешно обновлен на сайте!`);
-      setEditingBouquet(null);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Не удалось обновить букет в облачной базе.';
-      triggerError(msg);
-    } finally {
-      setIsUpdatingBouquet(false);
+      const url = await compressImageFile(file);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, photoReportUrl: url } : o)));
+      setPhotoOrderModal((prev) => (prev && prev.id === orderId ? { ...prev, photoReportUrl: url } : prev));
+      showToast('ok', 'Фотоотчёт прикреплён к заказу');
+    } catch {
+      showToast('err', 'Ошибка загрузки фото');
     }
   };
 
-  const handleCreateReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewAuthor.trim() || !reviewComment.trim()) return;
-
-    addReview({
-      author: reviewAuthor.trim(),
-      rating: reviewRating,
-      date: reviewDate.trim() || 'Сегодня',
-      bouquetTitle: reviewBouquet.trim() || undefined,
-      comment: reviewComment.trim(),
-      isVerified: reviewIsVerified,
-      isPublished: reviewIsPublished,
+  // Filtered lists
+  const filteredBouquets = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    let list = bouquets.filter((b) => {
+      if (q && !b.title.toLowerCase().includes(q) && !b.category.toLowerCase().includes(q)) return false;
+      const cnt = getStockCount(b);
+      if (chipFilter === 'inStock') return b.inStock && cnt > 0;
+      if (chipFilter === 'low') return b.inStock && cnt > 0 && cnt <= 2;
+      if (chipFilter === 'hidden') return !b.inStock || cnt === 0;
+      if (EDITABLE_CATEGORIES.includes(chipFilter)) return b.category === chipFilter;
+      return true;
     });
+    if (sortBy === 'price_asc') list = [...list].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price_desc') list = [...list].sort((a, b) => b.price - a.price);
+    if (sortBy === 'stock_asc') list = [...list].sort((a, b) => getStockCount(a) - getStockCount(b));
+    return list;
+  }, [bouquets, searchQuery, chipFilter, sortBy, stockCounts]);
 
-    setReviewAuthor('');
-    setReviewComment('');
-    setReviewBouquet('');
-    setIsAddReviewOpen(false);
-    setSuccessNotice('Отзыв успешно добавлен и сохранен в системе!');
-    setIsSuccessMessage(true);
-    setTimeout(() => setIsSuccessMessage(false), 3000);
-  };
+  const filteredOrders = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return orders.filter(
+      (o) => !q || o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q)
+    );
+  }, [orders, searchQuery]);
 
+  const filteredReviews = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return reviews.filter(
+      (r) => !q || r.author.toLowerCase().includes(q) || r.comment.toLowerCase().includes(q)
+    );
+  }, [reviews, searchQuery]);
+
+  const filteredClients = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return allCustomers.filter((c) => {
+      const fullName = `${c.firstName || ''} ${c.lastName || ''}`.trim().toLowerCase();
+      return !q || fullName.includes(q) || c.phone.includes(q);
+    });
+  }, [allCustomers, searchQuery]);
+
+  const newOrdersCount = orders.filter((o) => o.orderStatus === 'new').length;
+  const pendingReviewsCount = reviews.filter((r) => !r.isPublished).length;
+
+  const todayRevenue = useMemo(
+    () => orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0),
+    [orders]
+  );
+
+  if (!isOpen) return null;
+
+  // ===========================================================================
+  // LOCKED / LOGIN SCREEN
+  // ===========================================================================
   if (!isUnlocked) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 animate-fadeIn select-none font-sans">
-        <div className="relative w-full max-w-md bg-[#1C1215] border border-white/15 p-6 sm:p-8 shadow-2xl text-white rounded-xl overflow-hidden text-center">
+      <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-[#1C1215] border border-[#3A282E] rounded-xl p-6 text-[#F7EFF2] shadow-2xl relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-lg bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+            className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-[#271B1F] border border-[#3A282E] flex items-center justify-center text-[#C9B7BD] hover:text-white"
             aria-label="Закрыть"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
-
-          <div className="w-14 h-14 rounded-xl bg-[#6C1E26] border border-[#C5A880]/30 flex items-center justify-center mx-auto mb-4 shadow-lg text-[#C5A880]">
-            <Lock className="w-7 h-7" />
+          <div className="flex flex-col items-center text-center gap-3 mt-2">
+            <div className="w-12 h-12 rounded-xl bg-[#922E3D] flex items-center justify-center text-white font-bold text-xl">
+              <Lock className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold">Вход в админ-панель</h2>
+            <p className="text-xs text-[#A8949A]">Салон цветов «София», Введите пароль сотрудника</p>
           </div>
-
-          <span className="px-2.5 py-0.5 bg-[#6C1E26] text-[10px] uppercase tracking-widest text-white font-medium rounded inline-block mb-2">
-            Закрытая зона управления
-          </span>
-
-          <h3 className="font-sans font-medium text-2xl text-white font-normal mb-1">
-            Вход для владелицы салона
-          </h3>
-          <p className="text-xs text-white/60 font-light mb-6">
-            Введите персональный PIN-код доступа для входа в панель управления
-          </p>
-
-          <form onSubmit={handleUnlock} className="space-y-4">
-            <div>
-              <input
-                type="password"
-                maxLength={32}
-                autoFocus
-                disabled={isAuthenticating}
-                value={pinInput}
-                onChange={(e) => {
-                  setPinInput(e.target.value);
-                  setPinError('');
-                }}
-                placeholder="Пароль доступа"
-                className={`w-full text-center tracking-wider font-sans text-base py-3 px-4 bg-white/5 border rounded-xl text-white placeholder-white/30 focus:outline-none transition-colors ${
-                  pinError
-                    ? 'border-red-500 focus:border-red-500 bg-red-950/20'
-                    : 'border-white/15 focus:border-[#C5A880]'
-                }`}
-              />
-              {/* Invisible bot honeypot input */}
-              <input type="text" name="company_website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
-              {pinError && (
-                <p className="text-red-400 text-xs mt-2 animate-fadeIn text-center">
-                  {pinError}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isAuthenticating}
-                className="flex-1 py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-white font-medium transition-colors cursor-pointer"
-              >
-                Отмена
-              </button>
-              <button
-                disabled={isAuthenticating}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-xs text-white font-semibold transition-colors shadow-lg cursor-pointer flex items-center justify-center gap-2"
-              >
-                {isAuthenticating ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Проверка...</span>
-                  </>
-                ) : (
-                  <span>Войти в CRM</span>
-                )}
-              </button>
-            </div>
+          <form onSubmit={handleUnlock} className="mt-5 space-y-3">
+            <input
+              type="password"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              placeholder="Пароль доступа"
+              autoFocus
+              className="w-full h-11 px-4 rounded-xl bg-[#271B1F] border border-[#3F2C32] text-sm text-white focus:outline-none focus:border-[#922E3D]"
+            />
+            {pinError && <div className="text-xs text-rose-400">{pinError}</div>}
+            <button
+              type="button"
+              onClick={() => handleUnlock()}
+              disabled={isAuthenticating}
+              className="w-full h-11 rounded-xl bg-[#922E3D] hover:bg-[#a63647] text-white text-sm font-semibold transition-colors disabled:opacity-60"
+            >
+              {isAuthenticating ? 'Проверка...' : 'Войти в панель'}
+            </button>
           </form>
         </div>
       </div>
     );
   }
 
+  const navItems: Array<{ id: AdminTab; label: string; badge?: number; icon: React.ReactNode }> = [
+    { id: 'catalog', label: 'Каталог', icon: <Package className="w-4 h-4" /> },
+    { id: 'orders', label: 'Заказы', badge: newOrdersCount, icon: <ShoppingBag className="w-4 h-4" /> },
+    { id: 'reviews', label: 'Отзывы', badge: pendingReviewsCount, icon: <Star className="w-4 h-4" /> },
+    { id: 'clients', label: 'Клиенты', icon: <Users className="w-4 h-4" /> },
+    { id: 'more', label: 'Ещё', icon: <LayoutGrid className="w-4 h-4" /> },
+  ];
+
+  // ===========================================================================
+  // MAIN RESPONSIVE SHELL (Mobile Bottom Tab Bar + Desktop Sidebar)
+  // ===========================================================================
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 animate-fadeIn select-none font-sans">
-      <div className="relative w-full max-w-5xl bg-[#1C1215] border border-white/15 p-6 sm:p-8 shadow-2xl text-white max-h-[92vh] flex flex-col rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-start justify-between pb-5 border-b border-white/10">
+    <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center lg:p-5">
+      <div className="w-full h-full lg:max-w-6xl lg:h-[90vh] bg-[#1C1215] text-[#F7EFF2] lg:rounded-xl lg:border lg:border-[#3A282E] flex flex-col lg:flex-row overflow-hidden relative shadow-2xl">
+        {/* Toast */}
+        {toast && (
+          <div
+            className={`absolute top-4 right-4 left-4 lg:left-auto lg:w-96 z-50 px-4 py-3 rounded-xl border text-xs font-semibold shadow-xl ${
+              toast.type === 'ok'
+                ? 'bg-[#24191D] border-emerald-500/50 text-emerald-300'
+                : 'bg-[#2B171C] border-rose-500/60 text-rose-200'
+            }`}
+          >
+            {toast.text}
+          </div>
+        )}
+
+        {/* DESKTOP SIDEBAR */}
+        <aside className="hidden lg:flex w-64 shrink-0 bg-[#160E11] border-r border-[#2F2025] flex-col p-4 justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 bg-[#6C1E26] text-[10px] uppercase tracking-widest text-white font-medium rounded">
-                Панель управления салоном
-              </span>
-              <span className="text-xs text-[#C5A880] font-light">
-                г. Нижнекамск, пр. Шинников, 13В
-              </span>
+            <div className="flex items-center gap-3 px-2 pb-5 border-b border-[#2F2025]">
+              <div className="w-9 h-9 rounded-xl bg-[#922E3D] flex items-center justify-center font-extrabold text-white">
+                S
+              </div>
+              <div>
+                <div className="text-sm font-bold">Sophiya Admin</div>
+                <div className="text-[11px] text-[#A8949A]">Роль: {role}</div>
+              </div>
             </div>
-            <h3 className="font-sans font-medium text-2xl sm:text-3xl text-white font-normal">
-              CRM Салона цветов «София»
-            </h3>
+
+            <nav className="mt-4 space-y-1.5">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setBulkMode(false);
+                    setSelectedIds([]);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    activeTab === item.id
+                      ? 'bg-[#922E3D] text-white'
+                      : 'text-[#B5A3A9] hover:bg-[#24191D] hover:text-white'
+                  }`}
+                >
+                  <span className="flex items-center gap-2.5">
+                    {item.icon}
+                    {item.label}
+                  </span>
+                  {item.badge ? (
+                    <span className="px-2 py-0.5 rounded-lg text-[11px] bg-black/30 text-white">
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="space-y-2 pt-4 border-t border-[#2F2025]">
             <button
               onClick={handleLock}
-              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-light transition-colors flex items-center gap-1.5"
-              title="Заблокировать CRM и выйти"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-[#25191D] border border-[#3A282E] text-[#E8A8B3] hover:bg-[#322026]"
             >
-              <Lock className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span className="hidden sm:inline">Выйти из CRM</span>
+              <LogOut className="w-4 h-4" />
+              Выйти из админки
             </button>
-
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg bg-white/10 text-white/70 hover:text-white hover:bg-white/20 transition-colors"
-              aria-label="Закрыть"
+              className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-[#25191D] border border-[#3A282E] text-[#C9B7BD] hover:text-white"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
+              Закрыть окно
             </button>
           </div>
-        </div>
+        </aside>
 
-        {/* Tab Switcher: Каталог букетов vs Отзывы клиентов vs База клиентов */}
-        <div className="flex items-center gap-2 pt-4 pb-2 border-b border-white/10 overflow-x-auto scrollbar-none">
-          <button
-            onClick={() => {
-              setActiveTab('catalog');
-              setIsAddBouquetOpen(false);
-              setIsAddReviewOpen(false);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 shrink-0 ${
-              activeTab === 'catalog'
-                ? 'bg-[#6C1E26] text-white shadow'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Package className="w-4 h-4" />
-            <span>Каталог букетов ({bouquets.length})</span>
-          </button>
+        {/* MAIN AREA */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* TOP BAR */}
+          <header className="px-4 py-3 border-b border-[#2F2025] flex items-center justify-between gap-2 shrink-0 bg-[#1C1215]">
+            <div className="flex items-center gap-2.5 lg:hidden">
+              <div className="w-8 h-8 rounded-xl bg-[#922E3D] flex items-center justify-center font-extrabold text-sm text-white">
+                S
+              </div>
+              <div>
+                <div className="text-sm font-bold leading-tight">Sophiya</div>
+                <div className="text-[11px] text-[#A8949A]">Роль: {role}</div>
+              </div>
+            </div>
 
-          <button
-            onClick={() => {
-              setActiveTab('orders');
-              setIsAddBouquetOpen(false);
-              setIsAddReviewOpen(false);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 shrink-0 ${
-              activeTab === 'orders'
-                ? 'bg-[#6C1E26] text-white shadow'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Заказы онлайн ({orders.length})</span>
-          </button>
+            <div className="hidden lg:block">
+              <h2 className="text-base font-bold">
+                {navItems.find((n) => n.id === activeTab)?.label}
+              </h2>
+            </div>
 
-          <button
-            onClick={() => {
-              setActiveTab('reviews');
-              setIsAddBouquetOpen(false);
-              setIsAddReviewOpen(false);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 shrink-0 ${
-              activeTab === 'reviews'
-                ? 'bg-[#6C1E26] text-white shadow'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Star className="w-4 h-4" />
-            <span>Отзывы клиентов ({reviews.length})</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('clients');
-              setIsAddBouquetOpen(false);
-              setIsAddReviewOpen(false);
-            }}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 shrink-0 ${
-              activeTab === 'clients'
-                ? 'bg-[#6C1E26] text-white shadow'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>База клиентов ({allCustomers.length})</span>
-          </button>
-        </div>
-
-        {isSuccessMessage && (
-          <div className="mt-3 p-3 bg-emerald-950/70 border border-emerald-500/50 text-emerald-200 text-xs rounded-xl flex items-center gap-2 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{successNotice || 'Действие успешно выполнено!'}</span>
-          </div>
-        )}
-
-        {isErrorMessage && (
-          <div className="mt-3 p-3 bg-[#3A0A10]/90 border border-[#8E2433] text-rose-200 text-xs rounded-xl flex flex-wrap items-center justify-between gap-2 animate-fadeIn">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>{errorMessage || 'Произошла ошибка при выполнении операции.'}</span>
-            </div>
-            {isAddBouquetOpen && (
-              <button
-                type="button"
-                onClick={() => handleCreateBouquet({ preventDefault: () => {} } as any)}
-                disabled={isSavingBouquet}
-                className="px-3 py-1 bg-[#8E2433] hover:bg-[#A32A3B] text-white rounded-lg font-medium text-[11px] shrink-0 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {isSavingBouquet ? 'Сохранение...' : 'Повторить попытку'}
-              </button>
-            )}
-            {editingBouquet && (
-              <button
-                type="button"
-                onClick={() => handleSaveBouquetEdit({ preventDefault: () => {} } as any)}
-                disabled={isUpdatingBouquet}
-                className="px-3 py-1 bg-[#8E2433] hover:bg-[#A32A3B] text-white rounded-lg font-medium text-[11px] shrink-0 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {isUpdatingBouquet ? 'Сохранение...' : 'Повторить попытку'}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* 1. CATALOG MANAGEMENT TAB */}
-        {activeTab === 'catalog' && (
-          <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
-            {/* Helpful instructions banner */}
-            <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-[#6C1E26]/20 border border-[#C5A880]/30 text-white text-xs flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#C5A880] shrink-0" />
-                <span>Подсказка: чтобы изменить фото, цену или состав букета — нажмите кнопку <strong>«Изменить»</strong> на карточке любого букета.</span>
-              </span>
-            </div>
-            {/* Top Metrics & Add Action */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block">Всего позиций</span>
-                <span className="font-sans font-medium text-2xl text-white font-normal">{bouquets.length} букетов</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 block">В наличии в салоне</span>
-                <span className="font-sans font-medium text-2xl text-emerald-300 font-normal">{inStockCount} букетов</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-amber-300 block">Под заказ</span>
-                <span className="font-sans font-medium text-2xl text-amber-200 font-normal">{bouquets.length - inStockCount} букетов</span>
-              </div>
-
-              <button
-                onClick={() => setIsAddBouquetOpen(!isAddBouquetOpen)}
-                className="p-3.5 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Добавить букет</span>
-              </button>
-            </div>
-
-            {/* Creation Form (Collapsible) */}
-            {isAddBouquetOpen && (
-              <form onSubmit={handleCreateBouquet} className="mb-6 p-5 rounded-xl bg-black/40 border border-[#6C1E26]/50 shadow-xl space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                  <h4 className="font-sans font-medium text-lg text-[#C5A880]">Добавление нового букета в салон</h4>
+              {activeTab === 'catalog' && (
+                <>
                   <button
-                    type="button"
-                    onClick={() => setIsAddBouquetOpen(false)}
-                    className="text-xs text-white/50 hover:text-white"
+                    onClick={openAddForm}
+                    className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-[#922E3D] hover:bg-[#a63647] text-white text-xs font-semibold"
                   >
-                    Отмена
+                    <Plus className="w-4 h-4" /> Добавить букет
                   </button>
-                </div>
+                  <button
+                    onClick={() => {
+                      setBulkMode(!bulkMode);
+                      setSelectedIds([]);
+                    }}
+                    className={`h-9 px-3 rounded-xl text-xs font-semibold border transition-colors ${
+                      bulkMode
+                        ? 'bg-[#922E3D] border-[#B44253] text-white'
+                        : 'bg-[#271B1F] border-[#3A282E] text-[#E8D9DE]'
+                    }`}
+                  >
+                    {bulkMode ? 'Готово' : 'Выбрать'}
+                  </button>
+                </>
+              )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Название букета *</label>
-                    <input
-                      type="text"
-                      required
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      placeholder="Например: Прованские пионы в шелке"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
+              {activeTab === 'reviews' && (
+                <button
+                  onClick={() => setIsAddReviewOpen(true)}
+                  className="h-9 px-3 rounded-xl bg-[#271B1F] border border-[#3A282E] text-xs font-semibold text-[#E8D9DE] hover:border-[#922E3D]"
+                >
+                  + Отзыв
+                </button>
+              )}
 
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Новая / текущая цена (₽) *</label>
-                    <input
-                      type="number"
-                      required
-                      value={newPrice}
-                      onChange={(e) => setNewPrice(Number(e.target.value) || '')}
-                      placeholder="12 500"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
+              <button
+                onClick={handleLock}
+                title="Выйти из админ-панели"
+                className="lg:hidden h-9 w-9 rounded-xl bg-[#271B1F] border border-[#3A282E] flex items-center justify-center text-[#E8A8B3]"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onClose}
+                title="Закрыть"
+                className="h-9 w-9 rounded-xl bg-[#271B1F] border border-[#3A282E] flex items-center justify-center text-[#C9B7BD] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </header>
 
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">
-                      Старая цена (₽, для скидки)
-                      {newOldPrice && newPrice && Number(newOldPrice) > Number(newPrice) && (
-                        <span className="ml-1.5 text-emerald-300 font-semibold">
-                          -{Math.round(((Number(newOldPrice) - Number(newPrice)) / Number(newOldPrice)) * 100)}%
-                        </span>
-                      )}
-                    </label>
-                    <input
-                      type="number"
-                      value={newOldPrice}
-                      onChange={(e) => setNewOldPrice(Number(e.target.value) || '')}
-                      placeholder="Например: 15 000"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Категория</label>
-                    <select
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value as any)}
-                      className="w-full px-3 py-2 bg-[#2C1F22] border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    >
-                      {EDITABLE_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Состав букета</label>
-                    <input
-                      type="text"
-                      value={newComposition}
-                      onChange={(e) => setNewComposition(e.target.value)}
-                      placeholder="Например: 25 роз French Pink + эвкалипт"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Высота / Размер</label>
-                    <input
-                      type="text"
-                      value={newHeight}
-                      onChange={(e) => setNewHeight(e.target.value)}
-                      placeholder="50 см"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Стойкость цветов</label>
-                    <input
-                      type="text"
-                      value={newDurability}
-                      onChange={(e) => setNewDurability(e.target.value)}
-                      placeholder="10-14 дней"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-                </div>
-
-                {/* 3 Photos Gallery Upload */}
-                <div className="p-3.5 rounded-xl bg-black/30 border border-white/10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="block text-[11px] text-white/80 font-medium">Фотографии букета (до 3 ракурсов)</label>
-                      <span className="text-[10px] text-white/40 block">Основное фото + дополнительные ракурсы (бутоны крупно, упаковка)</span>
-                    </div>
-                    {imageCompressionNotice && (
-                      <span className="text-[11px] text-emerald-400 font-medium">
-                        {imageCompressionNotice}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 pt-1">
-                    {[0, 1, 2].map((slotIndex) => {
-                      const photoUrl = newImages[slotIndex];
-                      const slotLabel = slotIndex === 0 ? 'Главное (обложка)' : slotIndex === 1 ? 'Ракурс 2 (бутоны)' : 'Ракурс 3 (сверху)';
-                      return (
-                        <div key={slotIndex} className="relative flex flex-col items-center">
-                          {photoUrl ? (
-                            <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-[#C5A880]/60 bg-[#2A181C] group">
-                              <img
-                                src={photoUrl}
-                                alt={`Ракурс ${slotIndex + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
-                                <label className="cursor-pointer p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors" title="Заменить фото">
-                                  <ImageIcon className="w-4 h-4 text-[#C5A880]" />
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) handleSlotPhotoUpload(slotIndex, 'create', file);
-                                    }}
-                                    className="hidden"
-                                  />
-                                </label>
-                                {slotIndex > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemovePhotoSlot(slotIndex, 'create')}
-                                    className="p-1.5 rounded-lg bg-red-600/70 hover:bg-red-600 text-white transition-colors"
-                                    title="Удалить ракурс"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <label className="cursor-pointer w-full aspect-square rounded-xl border-2 border-dashed border-white/20 hover:border-[#C5A880]/60 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center p-2 text-center">
-                              <Plus className="w-5 h-5 text-[#C5A880] mb-1" />
-                              <span className="text-[10px] text-white/70 leading-tight">+ Фото {slotIndex + 1}</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) handleSlotPhotoUpload(slotIndex, 'create', file);
-                                }}
-                                className="hidden"
-                              />
-                            </label>
-                          )}
-                          <span className="text-[10px] text-white/50 mt-1 text-center font-light">{slotLabel}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-white/70 mb-1">Описание для покупателя</label>
-                  <textarea
-                    rows={2}
-                    value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
-                    placeholder="Расскажите о сорте, аромате или поводе для подарка..."
-                    className="w-full px-3 py-2 bg-white/10 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+          {/* SEARCH & CHIPS */}
+          {activeTab !== 'more' && (
+            <div className="px-4 pt-3 pb-2 space-y-2.5 shrink-0 bg-[#1C1215]">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-[#8F7D83] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Поиск..."
+                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-[#271B1F] border border-[#3A292E] text-sm text-white placeholder:text-[#8F7D83] focus:outline-none focus:border-[#922E3D]"
                   />
                 </div>
-
-                <div className="flex justify-end gap-3 pt-2">
+                {activeTab === 'catalog' && (
                   <button
-                    type="button"
-                    onClick={() => setIsAddBouquetOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs text-white/60 hover:text-white"
+                    onClick={() => setIsFilterOpen(true)}
+                    className={`h-10 px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 shrink-0 ${
+                      sortBy !== 'default'
+                        ? 'bg-[#922E3D]/25 border-[#922E3D] text-white'
+                        : 'bg-[#271B1F] border-[#3A292E] text-[#E8D9DE]'
+                    }`}
                   >
-                    Отмена
+                    <SlidersHorizontal className="w-4 h-4" /> Фильтр
                   </button>
-                  <button
-                    
-                    disabled={isSavingBouquet}
-                    className="px-6 py-2.5 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-white text-xs font-semibold shadow-md disabled:opacity-50 cursor-pointer"
-                  >
-                    {isSavingBouquet ? 'Сохранение в облако...' : 'Опубликовать на сайт'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Edit Bouquet Form (Collapsible / Focused) */}
-            {editingBouquet && (
-              <form onSubmit={handleSaveBouquetEdit} className="mb-6 p-5 rounded-xl bg-[#201014] border-2 border-[#C5A880]/80 shadow-2xl space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-3 border-b border-[#C5A880]/30">
-                  <div className="flex items-center gap-2">
-                    <Pencil className="w-4 h-4 text-[#C5A880]" />
-                    <h4 className="font-sans font-medium text-lg text-[#FAF7F5]">
-                      Редактирование: <span className="text-[#C5A880]">«{editingBouquet.title}»</span>
-                    </h4>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setEditingBouquet(null)}
-                    className="text-xs text-white/60 hover:text-white px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                  >
-                    Закрыть
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Название букета *</label>
-                    <input
-                      type="text"
-                      required
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      placeholder="Например: Букет 11 красных роз"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-[#C5A880] mb-1 font-semibold">Новая / текущая цена (₽) *</label>
-                    <input
-                      type="number"
-                      required
-                      value={editPrice}
-                      onChange={(e) => setEditPrice(Number(e.target.value) || '')}
-                      placeholder="9500"
-                      className="w-full px-3 py-2 bg-white/15 border border-[#C5A880]/60 rounded-xl text-sm font-semibold text-[#FAF7F5] focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1 font-medium">
-                      Старая цена (₽, для скидки)
-                      {editOldPrice && editPrice && Number(editOldPrice) > Number(editPrice) && (
-                        <span className="ml-1.5 text-emerald-300 font-semibold">
-                          -{Math.round(((Number(editOldPrice) - Number(editPrice)) / Number(editOldPrice)) * 100)}%
-                        </span>
-                      )}
-                    </label>
-                    <input
-                      type="number"
-                      value={editOldPrice}
-                      onChange={(e) => setEditOldPrice(Number(e.target.value) || '')}
-                      placeholder="Оставьте пустым, если без скидки"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Категория</label>
-                    <select
-                      value={editCategory}
-                      onChange={(e) => setEditCategory(e.target.value as any)}
-                      className="w-full px-3 py-2 bg-[#2C1F22] border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    >
-                      {EDITABLE_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Состав и количество цветов *</label>
-                    <input
-                      type="text"
-                      value={editComposition}
-                      onChange={(e) => setEditComposition(e.target.value)}
-                      placeholder="Например: 11 красных роз Red Naomi + эвкалипт"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                    <span className="block text-[10px] text-white/40 mt-0.5">Меняйте количество при смене объема букета</span>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Высота / Размер</label>
-                    <input
-                      type="text"
-                      value={editHeight}
-                      onChange={(e) => setEditHeight(e.target.value)}
-                      placeholder="50 см"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1 font-medium">Стойкость цветов</label>
-                    <input
-                      type="text"
-                      value={editDurability}
-                      onChange={(e) => setEditDurability(e.target.value)}
-                      placeholder="10-14 дней"
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-                </div>
-
-                {/* 3 Photos Gallery Upload / Edit */}
-                <div className="p-3.5 rounded-xl bg-black/40 border-2 border-[#C5A880]/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="block text-[11px] text-white font-medium">Фотографии букета (до 3 ракурсов)</label>
-                      <span className="text-[10px] text-white/50 block">Нажмите на любой слот, чтобы загрузить или заменить ракурс</span>
-                    </div>
-                    {editCompressionNotice && (
-                      <span className="text-[11px] text-emerald-400 font-medium">
-                        {editCompressionNotice}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 pt-1">
-                    {[0, 1, 2].map((slotIndex) => {
-                      const photoUrl = editImages[slotIndex];
-                      const slotLabel = slotIndex === 0 ? 'Главное (обложка)' : slotIndex === 1 ? 'Ракурс 2 (бутоны)' : 'Ракурс 3 (сверху)';
-                      return (
-                        <div key={slotIndex} className="relative flex flex-col items-center">
-                          {photoUrl ? (
-                            <div className="relative w-full aspect-square rounded-xl overflow-hidden border-2 border-[#C5A880] bg-[#2A181C] group shadow-md">
-                              <img
-                                src={photoUrl}
-                                alt={`Ракурс ${slotIndex + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-1">
-                                <label className="cursor-pointer p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors" title="Заменить фото">
-                                  <ImageIcon className="w-4 h-4 text-[#C5A880]" />
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) handleSlotPhotoUpload(slotIndex, 'edit', file);
-                                    }}
-                                    className="hidden"
-                                  />
-                                </label>
-                                {slotIndex > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemovePhotoSlot(slotIndex, 'edit')}
-                                    className="p-1.5 rounded-lg bg-red-600/70 hover:bg-red-600 text-white transition-colors"
-                                    title="Удалить ракурс"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <label className="cursor-pointer w-full aspect-square rounded-xl border-2 border-dashed border-white/20 hover:border-[#C5A880]/60 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center p-2 text-center">
-                              <Plus className="w-5 h-5 text-[#C5A880] mb-1" />
-                              <span className="text-[10px] text-white/70 leading-tight">+ Фото {slotIndex + 1}</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) handleSlotPhotoUpload(slotIndex, 'edit', file);
-                                }}
-                                className="hidden"
-                              />
-                            </label>
-                          )}
-                          <span className="text-[10px] text-white/50 mt-1 text-center font-light">{slotLabel}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-white/70 mb-1 font-medium">Описание для покупателя</label>
-                  <textarea
-                    rows={2}
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    placeholder="Расскажите о сорте, аромате или поводе для подарка..."
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                  <span className="text-[11px] text-white/50">
-                    ID позиции: <code className="text-[#C5A880]">{editingBouquet.id}</code>
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setEditingBouquet(null)}
-                      className="px-4 py-2 rounded-xl text-xs text-white/60 hover:text-white cursor-pointer"
-                    >
-                      Отмена
-                    </button>
-                    <button
-                      disabled={isUpdatingBouquet}
-                      className="px-6 py-2.5 rounded-xl bg-[#8E2433] hover:bg-[#A32B3C] text-white text-xs font-semibold shadow-lg disabled:opacity-50 cursor-pointer flex items-center gap-2"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>{isUpdatingBouquet ? 'Сохранение в облако...' : 'Сохранить изменения'}</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            )}
-
-            {/* Search Input & Bulk Actions */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Поиск по названию или цветам в букете..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
-                />
+                )}
               </div>
 
-              {/* Cloud Sync Button */}
-              <button
-                type="button"
-                onClick={async () => {
-                  const ok = await syncCatalog();
-                  if (ok) {
-                    setSuccessNotice('Каталог успешно синхронизирован с облаком для всех покупателей');
-                    setIsSuccessMessage(true);
-                    setTimeout(() => setIsSuccessMessage(false), 2500);
-                  }
-                }}
-                disabled={isSyncing}
-                className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                title="Синхронизировать весь каталог с облачной базой"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 text-[#C5A880] ${isSyncing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Синхронизация</span>
-              </button>
-
-              {/* Refresh from cloud button */}
-              <button
-                type="button"
-                onClick={async () => {
-                  await refreshCatalog();
-                  setSuccessNotice('Каталог обновлен из облачной базы данных');
-                  setIsSuccessMessage(true);
-                  setTimeout(() => setIsSuccessMessage(false), 2000);
-                }}
-                disabled={isSyncing}
-                className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                title="Загрузить свежие букеты из облачной базы"
-              >
-                <RotateCcw className={`w-3.5 h-3.5 text-[#C5A880] ${isSyncing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Обновить</span>
-              </button>
-
-              {/* Backup & Export Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bouquets, null, 2));
-                  const downloadAnchor = document.createElement('a');
-                  downloadAnchor.setAttribute("href", dataStr);
-                  downloadAnchor.setAttribute("download", `sophiya_catalog_backup_${new Date().toISOString().slice(0, 10)}.json`);
-                  document.body.appendChild(downloadAnchor);
-                  downloadAnchor.click();
-                  downloadAnchor.remove();
-                }}
-                className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white/80 hover:text-white text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
-                title="Скачать резервную копию всех букетов"
-              >
-                <Download className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span className="hidden sm:inline">Бэкап</span>
-              </button>
-            </div>
-
-            {/* Bouquets Table / Cards */}
-            <div className="space-y-2.5 flex-1 overflow-y-auto">
-              {filteredBouquets.map((b) => (
-                <div
-                  key={b.id}
-                  className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors ${
-                    editingBouquet?.id === b.id
-                      ? 'bg-[#2A1218] border-[#C5A880] shadow-lg'
-                      : 'bg-white/5 border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={b.image}
-                      alt={formatBouquetAlt(b.title)}
-                      className="w-14 h-14 rounded-xl object-cover shrink-0 bg-[#2A181C]"
-                    />
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-sans font-medium text-base text-white font-medium">{b.title}</span>
-                        <span className="text-[10px] text-white/50 bg-black/30 px-2 py-0.5 rounded">
-                          {b.category}
-                        </span>
-                      </div>
-                      <span className="text-white/50 text-[11px] block mt-0.5">
-                        {b.characteristics.flowersCount} — {b.characteristics.height}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
-                    <span className="font-sans font-medium text-lg text-[#C5A880] font-semibold">
-                      {b.price.toLocaleString('ru-RU')} ₽
-                    </span>
-
-                    {/* Edit Button */}
+              {activeTab === 'catalog' && (
+                <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {[
+                    ['all', 'Все'],
+                    ['inStock', 'В наличии'],
+                    ['low', 'Мало (≤2)'],
+                    ['hidden', 'Скрытые / Стоп'],
+                    ...EDITABLE_CATEGORIES.slice(0, 5).map((c) => [c, c]),
+                  ].map(([id, label]) => (
                     <button
-                      onClick={() => handleStartEdit(b)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-                        editingBouquet?.id === b.id
-                          ? 'bg-[#C5A880] text-[#1C1215] font-semibold shadow'
-                          : 'bg-white/10 hover:bg-white/20 border border-white/15 text-white/90 hover:text-white hover:border-[#C5A880]/50'
+                      key={id}
+                      onClick={() => setChipFilter(id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap border transition-colors ${
+                        chipFilter === id
+                          ? 'bg-[#922E3D] border-[#B44253] text-white'
+                          : 'bg-[#25191D] border-[#3A292E] text-[#C9B7BD]'
                       }`}
-                      title="Редактировать букет (цена, фото, состав, объем)"
                     >
-                      <Pencil className="w-3.5 h-3.5 text-[#C5A880]" />
-                      <span>Изменить</span>
+                      {label}
                     </button>
-
-                    {/* Stock Status Toggle */}
-                    <button
-                      onClick={() => toggleStock(b.id)}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
-                        b.inStock
-                          ? 'bg-emerald-950/70 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900/60'
-                          : 'bg-[#2A181C] border border-white/20 text-white/50 hover:bg-white/10'
-                      }`}
-                      title="Нажмите, чтобы изменить статус"
-                    >
-                      {b.inStock ? '✓ В наличии' : '○ Под заказ'}
-                    </button>
-
-                    {/* Delete */}
-                    <button
-                      onClick={async () => {
-                        await deleteBouquet(b.id);
-                        triggerSuccess(`Букет «${b.title}» удален со всех устройств`);
-                      }}
-                      className="p-2 text-white/40 hover:text-red-400 transition-colors cursor-pointer"
-                      title="Удалить позицию"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 2. Раздел онлайн-заказов */}
-        {activeTab === 'orders' && (
-          <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1 animate-fadeIn">
-            {/* Top Order Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block">Всего онлайн-заказов</span>
-                <span className="font-sans font-medium text-2xl text-white font-normal">{orders.length}</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 block">Оплачено клиентами</span>
-                <span className="font-sans font-medium text-2xl text-emerald-300 font-normal">
-                  {orders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString('ru-RU')} ₽
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-amber-300 block">В работе флориста</span>
-                <span className="font-sans font-medium text-2xl text-amber-200 font-normal">
-                  {orders.filter((o) => o.orderStatus === 'new' || o.orderStatus === 'assembling' || o.orderStatus === 'in_transit').length}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-[#C5A880] block">Успешно доставлено</span>
-                <span className="font-sans font-medium text-2xl text-[#FAF7F5] font-normal">
-                  {orders.filter((o) => o.orderStatus === 'delivered').length}
-                </span>
-              </div>
-            </div>
-
-            {/* Filters & Search */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-4">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={orderSearch}
-                  onChange={(e) => setOrderSearch(e.target.value)}
-                  placeholder="Поиск по номеру заказа, имени, телефону или адресу..."
-                  className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880]"
-                />
-              </div>
-
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-                <button
-                  type="button"
-                  onClick={() => setOrderFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    orderFilter === 'all' ? 'bg-[#6C1E26] text-white shadow' : 'bg-white/5 text-white/60 hover:text-white'
-                  }`}
-                >
-                  Все ({orders.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOrderFilter('new')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    orderFilter === 'new' ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-white/5 text-white/60 hover:text-white'
-                  }`}
-                >
-                  Новые ({orders.filter((o) => o.orderStatus === 'new').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOrderFilter('assembling')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    orderFilter === 'assembling' ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50' : 'bg-white/5 text-white/60 hover:text-white'
-                  }`}
-                >
-                  В сборке ({orders.filter((o) => o.orderStatus === 'assembling').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOrderFilter('in_transit')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    orderFilter === 'in_transit' ? 'bg-blue-500/30 text-blue-300 border border-blue-500/50' : 'bg-white/5 text-white/60 hover:text-white'
-                  }`}
-                >
-                  У курьера ({orders.filter((o) => o.orderStatus === 'in_transit').length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOrderFilter('delivered')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    orderFilter === 'delivered' ? 'bg-white/20 text-white' : 'bg-white/5 text-white/60 hover:text-white'
-                  }`}
-                >
-                  Доставлены ({orders.filter((o) => o.orderStatus === 'delivered').length})
-                </button>
-              </div>
-            </div>
-
-            {/* Orders Cards List */}
-            <div className="space-y-3 pb-6">
-              {filteredOrders.length === 0 ? (
-                <div className="p-8 text-center text-white/50 text-xs border border-white/10 rounded-xl bg-white/5">
-                  Заказы по заданным фильтрам не найдены.
-                </div>
-              ) : (
-                filteredOrders.map((ord) => (
-                  <div
-                    key={ord.id}
-                    className="p-4 rounded-xl bg-black/40 border border-white/10 hover:border-white/20 transition-colors space-y-3"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
-                      <div className="flex items-center gap-2">
-                        <span className="font-sans font-medium text-base text-white">{ord.orderNumber}</span>
-                        <span className="text-[11px] text-white/40">{ord.createdAt}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          <span>
-                            {ord.paymentMethod === 'sbp' ? 'Оплачено через СБП' : ord.paymentMethod === 'sberpay' ? 'Оплачено через SberPay' : 'Оплачено банковской картой'}
-                          </span>
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
-                            ord.orderStatus === 'new'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                              : ord.orderStatus === 'assembling'
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                              : ord.orderStatus === 'in_transit'
-                              ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
-                              : 'bg-white/10 text-white/70'
-                          }`}
-                        >
-                          {ord.orderStatus === 'new'
-                            ? 'Новый заказ (оплачен)'
-                            : ord.orderStatus === 'assembling'
-                            ? 'Флорист собирает букет'
-                            : ord.orderStatus === 'in_transit'
-                            ? 'Передан курьеру на доставку'
-                            : 'Доставлен получателю'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-white/40 block mb-0.5">Покупатель</span>
-                        <div className="text-white font-medium">{ord.customerName}</div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <a
-                            href={`tel:${ord.phone.replace(/[^0-9+]/g, '')}`}
-                            className="text-[11px] text-[#C5A880] hover:underline flex items-center gap-1"
-                          >
-                            <Phone className="w-3 h-3" />
-                            <span>{ord.phone}</span>
-                          </a>
-                          <a
-                            href={`https://wa.me/${ord.phone.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1 rounded bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/50 transition-colors"
-                            title="Открыть WhatsApp"
-                          >
-                            <MessageCircle className="w-3 h-3" />
-                          </a>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-white/40 block mb-0.5">Получение и адрес</span>
-                        <div className="text-white">
-                          {ord.deliveryType === 'delivery' ? `Курьер: ${ord.address}` : ord.address}
-                        </div>
-                        <div className="text-white/60 text-[11px] mt-0.5 flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-[#C5A880]" />
-                          <span>{ord.deliveryDate}</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-white/40 block mb-0.5">Состав заказа</span>
-                        {ord.items.map((item, i) => (
-                          <div key={i} className="text-white flex items-center justify-between">
-                            <span>{item.title}</span>
-                            <span className="text-white/60">{item.quantity} шт. × {item.price.toLocaleString('ru-RU')} ₽</span>
-                          </div>
-                        ))}
-                        <div className="mt-1 pt-1 border-t border-white/10 flex justify-between font-medium text-[#C5A880]">
-                          <span>Итого к выдаче:</span>
-                          <span>{ord.totalAmount.toLocaleString('ru-RU')} ₽</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {ord.postcardText && (
-                      <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-xs">
-                        <span className="text-[10px] uppercase tracking-wider text-[#C5A880] block mb-0.5">Текст открытки к букету:</span>
-                        <p className="text-white/90 italic">«{ord.postcardText}»</p>
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
-                      <div className="text-[11px] text-white/40">
-                        Действия с заказом:
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {ord.orderStatus === 'new' && (
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateOrderStatus(ord.id, 'assembling')}
-                            className="px-3 py-1.5 rounded-lg bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 text-xs font-medium border border-amber-500/40 transition-colors"
-                          >
-                            Взять в сборку флористом →
-                          </button>
-                        )}
-                        {ord.orderStatus === 'assembling' && (
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateOrderStatus(ord.id, 'in_transit')}
-                            className="px-3 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 text-xs font-medium border border-blue-500/40 transition-colors"
-                          >
-                            Передать курьеру на доставку →
-                          </button>
-                        )}
-                        {ord.orderStatus === 'in_transit' && (
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateOrderStatus(ord.id, 'delivered')}
-                            className="px-3 py-1.5 rounded-lg bg-emerald-600/40 hover:bg-emerald-600/60 text-emerald-200 text-xs font-medium border border-emerald-500/40 transition-colors"
-                          >
-                            Отметить: «Заказ доставлен» ✓
-                          </button>
-                        )}
-                        {ord.orderStatus === 'delivered' && (
-                          <span className="text-xs text-white/40 flex items-center gap-1">
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Заказ успешно завершен</span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 3. REVIEWS MANAGEMENT TAB */}
-        {activeTab === 'reviews' && (
-          <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
-            {/* Top Metrics & Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block">Всего отзывов</span>
-                <span className="font-sans font-medium text-2xl text-white font-normal">{reviews.length} отзывов</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 block">Опубликовано на сайте</span>
-                <span className="font-sans font-medium text-2xl text-emerald-300 font-normal">{publishedReviews.length} отзывов</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-amber-300 block">Средний рейтинг</span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="font-sans font-medium text-2xl text-amber-200 font-normal">
-                    {reviews.length > 0
-                      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-                      : '5.0'}
-                  </span>
-                  <span className="text-xs text-white/40">/ 5.0</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setIsAddReviewOpen(!isAddReviewOpen)}
-                className="p-3.5 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Добавить отзыв</span>
-              </button>
-            </div>
-
-            {/* Creation Form for Reviews */}
-            {isAddReviewOpen && (
-              <form onSubmit={handleCreateReview} className="mb-6 p-5 rounded-xl bg-black/40 border border-[#6C1E26]/50 shadow-xl space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                  <h4 className="font-sans font-medium text-lg text-[#C5A880]">Добавление отзыва клиента</h4>
-                  <button
-                    type="button"
-                    onClick={() => setIsAddReviewOpen(false)}
-                    className="text-xs text-white/50 hover:text-white"
-                  >
-                    Отмена
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Имя клиента *</label>
-                    <input
-                      type="text"
-                      required
-                      value={reviewAuthor}
-                      onChange={(e) => setReviewAuthor(e.target.value)}
-                      placeholder="Например: Алина Сафина"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Оценка (звёзды) *</label>
-                    <div className="flex items-center gap-2 py-1.5">
-                      {[1, 2, 3, 4, 5].map((val) => (
+          {/* SCROLLABLE BODY */}
+          <div className="flex-1 overflow-y-auto px-4 pb-24 lg:pb-6 pt-2">
+            {/* CATALOG TAB */}
+            {activeTab === 'catalog' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {filteredBouquets.map((b) => {
+                  const cnt = getStockCount(b);
+                  const isSel = selectedIds.includes(b.id);
+                  return (
+                    <div
+                      key={b.id}
+                      className={`rounded-xl p-3 border transition-colors ${
+                        isSel
+                          ? 'bg-[#2D1C22] border-[#922E3D]'
+                          : 'bg-[#25191D] border-[#37252B]'
+                      } ${!b.inStock ? 'opacity-75' : ''}`}
+                    >
+                      <div
+                        className="flex items-center gap-3 cursor-pointer"
+                        onClick={() => {
+                          if (bulkMode) {
+                            setSelectedIds((prev) =>
+                              prev.includes(b.id) ? prev.filter((x) => x !== b.id) : [...prev, b.id]
+                            );
+                          } else {
+                            openEditForm(b);
+                          }
+                        }}
+                      >
+                        {bulkMode && (
+                          <div
+                            className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
+                              isSel ? 'bg-[#922E3D] border-[#922E3D] text-white' : 'border-[#5B434B]'
+                            }`}
+                          >
+                            {isSel && <Check className="w-3.5 h-3.5" />}
+                          </div>
+                        )}
+                        <img
+                          src={b.image || '/bouquet-1.jpg'}
+                          alt={b.title}
+                          className="w-14 h-14 rounded-xl object-cover shrink-0 bg-[#160E11]"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-bold truncate">{b.title}</div>
+                          <div className="text-[11px] text-[#A8949A] truncate">
+                            {b.category}, {b.color}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-sm font-extrabold text-[#F5B8C2]">
+                              {b.price.toLocaleString('ru-RU')} ₽
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
+                                !b.inStock || cnt === 0
+                                  ? 'bg-rose-500/20 text-rose-300'
+                                  : cnt <= 2
+                                  ? 'bg-amber-500/20 text-amber-300'
+                                  : 'bg-emerald-500/20 text-emerald-300'
+                              }`}
+                            >
+                              {!b.inStock || cnt === 0 ? 'Стоп-лист (0)' : `Осталось ${cnt} шт.`}
+                            </span>
+                          </div>
+                        </div>
                         <button
-                          key={val}
-                          type="button"
-                          onClick={() => setReviewRating(val)}
-                          className="p-1 transition-transform hover:scale-110"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleStock(b.id);
+                          }}
+                          className={`w-11 h-6 rounded-lg p-0.5 transition-colors shrink-0 ${
+                            b.inStock ? 'bg-[#922E3D]' : 'bg-[#453238]'
+                          }`}
+                          aria-label="Переключить наличие"
                         >
-                          <Star
-                            className={`w-5 h-5 ${
-                              val <= reviewRating
-                                ? 'text-amber-400 fill-amber-400'
-                                : 'text-white/20'
+                          <div
+                            className={`w-5 h-5 rounded-lg bg-white transition-transform ${
+                              b.inStock ? 'translate-x-5' : 'translate-x-0'
                             }`}
                           />
                         </button>
-                      ))}
-                      <span className="text-xs text-[#C5A880] ml-2 font-medium">{reviewRating} из 5</span>
+                      </div>
+
+                      {!bulkMode && (
+                        <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-[#352329] gap-2">
+                          <div className="inline-flex items-center gap-1.5 bg-[#1C1215] border border-[#3D2B31] rounded-lg px-1.5 py-0.5">
+                            <button
+                              onClick={() => updateStockCount(b, cnt - 1)}
+                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold"
+                            >
+                              −
+                            </button>
+                            <span className="text-xs font-bold min-w-[44px] text-center">{cnt} шт.</span>
+                            <button
+                              onClick={() => updateStockCount(b, cnt + 1)}
+                              className="w-6 h-6 rounded bg-[#2F2025] text-white text-xs font-bold"
+                            >
+                              +
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {cnt > 0 && (
+                              <button
+                                onClick={() => updateStockCount(b, 0)}
+                                className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold text-[#E8D9DE]"
+                              >
+                                В стоп
+                              </button>
+                            )}
+                            <button
+                              onClick={() => openEditForm(b)}
+                              className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#5A3842] text-[11px] font-semibold text-white inline-flex items-center gap-1"
+                            >
+                              <Pencil className="w-3 h-3" /> Изменить
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] text-white/70 mb-1">Букет из заказа</label>
-                    <input
-                      type="text"
-                      value={reviewBouquet}
-                      onChange={(e) => setReviewBouquet(e.target.value)}
-                      placeholder="Например: Букет «Аделин»"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-white/70 mb-1">Текст отзыва *</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={reviewComment}
-                    onChange={(e) => setReviewComment(e.target.value)}
-                    placeholder="Напишите впечатление клиента о цветах, доставке и свежести букета..."
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-                  <div className="flex items-center gap-5">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
-                      <input
-                        type="checkbox"
-                        checked={reviewIsVerified}
-                        onChange={(e) => setReviewIsVerified(e.target.checked)}
-                        className="rounded border-white/20 bg-white/5 text-[#6C1E26] focus:ring-0"
-                      />
-                      <span>Отметка «Проверенный заказ»</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-white/80">
-                      <input
-                        type="checkbox"
-                        checked={reviewIsPublished}
-                        onChange={(e) => setReviewIsPublished(e.target.checked)}
-                        className="rounded border-white/20 bg-white/5 text-[#6C1E26] focus:ring-0"
-                      />
-                      <span>Опубликовать на витрине сайта</span>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddReviewOpen(false)}
-                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-medium transition-colors"
-                    >
-                      Отмена
-                    </button>
-                    <button
-                      
-                      className="px-5 py-2 rounded-xl bg-[#6C1E26] hover:bg-[#851D28] text-xs text-white font-medium transition-colors shadow-lg"
-                    >
-                      Сохранить отзыв
-                    </button>
-                  </div>
-                </div>
-              </form>
+                  );
+                })}
+              </div>
             )}
 
-            {/* Search and Quick Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-4 items-center justify-between">
-              <div className="relative flex-1 w-full">
-                <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Поиск по автору, букету или тексту отзыва..."
-                  className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#C5A880]"
-                />
+            {/* ORDERS TAB */}
+            {activeTab === 'orders' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {filteredOrders.map((o) => {
+                  const st = ORDER_STATUS_META[o.orderStatus];
+                  const cleanPhone = o.phone.replace(/\D/g, '');
+                  return (
+                    <div key={o.id} className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-extrabold">{o.orderNumber}</span>
+                          <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${st.badge}`}>
+                            {st.label}
+                          </span>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
+                            o.photoReportUrl
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : 'bg-white/10 text-[#C9B7BD]'
+                          }`}
+                        >
+                          {o.photoReportUrl ? 'Фотоотчёт ✓' : 'Без фото'}
+                        </span>
+                      </div>
+                      <div className="text-sm font-semibold">{o.customerName}</div>
+                      <div className="text-xs text-[#A8949A]">
+                        {o.deliveryType === 'delivery' ? 'Доставка' : 'Самовывоз'}, {o.address} ({o.deliveryDate})
+                      </div>
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-[#352329]">
+                        <span className="text-[#D7C7CD]">
+                          {o.items.map((it) => `${it.title} × ${it.quantity}`).join(', ')}
+                        </span>
+                        <strong className="text-sm text-white">{o.totalAmount.toLocaleString('ru-RU')} ₽</strong>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        <button
+                          onClick={() => setPhotoOrderModal(o)}
+                          className="flex-1 h-8 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+                        >
+                          <Camera className="w-3.5 h-3.5" /> Фотоотчёт
+                        </button>
+                        <a
+                          href={`tel:+${cleanPhone}`}
+                          className="h-8 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center"
+                          title="Позвонить"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                        </a>
+                        <a
+                          href={`https://wa.me/${cleanPhone}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-8 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" /> WA
+                        </a>
+                        {st.next && (
+                          <button
+                            onClick={() =>
+                              setOrders((prev) =>
+                                prev.map((x) => (x.id === o.id ? { ...x, orderStatus: st.next! } : x))
+                              )
+                            }
+                            className="h-8 px-3 rounded-lg bg-[#922E3D] text-white text-xs font-semibold"
+                          >
+                            → {st.nextLabel}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* REVIEWS TAB */}
+            {activeTab === 'reviews' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {filteredReviews.map((r) => {
+                  const replyText = reviewReplies[r.id];
+                  return (
+                    <div key={r.id} className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <strong className="text-sm">{r.author}</strong>
+                          <span className="text-[11px] text-[#9E8A91] ml-2">{r.date}</span>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
+                            r.isPublished ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          }`}
+                        >
+                          {r.isPublished ? 'Опубликован' : 'Модерация'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-0.5 text-amber-400">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3.5 h-3.5 ${i < r.rating ? 'fill-amber-400 text-amber-400' : 'text-[#4F3B42]'}`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs leading-relaxed text-[#EAE0E3]">{r.comment}</p>
+                      {replyText && (
+                        <div className="p-2.5 rounded-xl bg-[#1C1215] border-l-2 border-[#922E3D] text-xs text-[#D5C5CA]">
+                          <strong className="text-[#F5B8C2]">Ответ салона: </strong>
+                          {replyText}
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => {
+                            setReplyModalReviewId(r.id);
+                            setDraftReply(replyText || '');
+                          }}
+                          className="flex-1 h-8 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" /> {replyText ? 'Изменить ответ' : 'Ответить'}
+                        </button>
+                        <button
+                          onClick={() => (r.isPublished ? togglePublished(r.id) : moderateReview(r.id, true))}
+                          className="h-8 px-3 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold"
+                        >
+                          {r.isPublished ? 'Скрыть' : 'Опубликовать'}
+                        </button>
+                        <button
+                          onClick={() => deleteReview(r.id)}
+                          className="h-8 w-8 rounded-lg bg-[#2C1E23] border border-[#3D2B31] flex items-center justify-center text-rose-300"
+                          title="Удалить"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* CLIENTS TAB */}
+            {activeTab === 'clients' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                {filteredClients.length === 0 ? (
+                  <div className="col-span-full text-center py-12 text-sm text-[#A8949A]">
+                    Клиенты пока не найдены
+                  </div>
+                ) : (
+                  filteredClients.map((c) => {
+                    const { tier } = calculateLoyaltyTier(c.totalSpent || 0);
+                    const cleanPhone = (c.phone || '').replace(/\D/g, '');
+                    const fullName = `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Клиент';
+                    return (
+                      <div key={c.id} className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="text-sm font-bold">{fullName}</div>
+                            <div className="text-xs text-[#A8949A]">{c.phone}</div>
+                            <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-[#922E3D]/35 text-[#F6B6C0]">
+                              <Award className="w-3 h-3" /> {tier.name}, скидка {tier.discountPercent}%
+                            </span>
+                          </div>
+                          <a
+                            href={`tel:+${cleanPhone}`}
+                            className="w-9 h-9 rounded-xl bg-[#2C1E23] border border-[#3D2B31] flex items-center justify-center"
+                          >
+                            <Phone className="w-4 h-4" />
+                          </a>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-[#352329] text-xs">
+                          <span>
+                            Покупок: <strong>{c.ordersCount || 0}</strong> ·{' '}
+                            <strong>{(c.totalSpent || 0).toLocaleString('ru-RU')} ₽</strong>
+                          </span>
+                          <button
+                            onClick={() => setClientHistoryModal(c.id)}
+                            className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold"
+                          >
+                            История →
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* MORE TAB */}
+            {activeTab === 'more' && (
+              <div className="max-w-3xl space-y-3">
+                {role === 'Админ' ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B]">
+                      <div className="text-[11px] text-[#B4A0A7]">Заказы сегодня</div>
+                      <div className="text-xl font-extrabold mt-1">{todayRevenue.toLocaleString('ru-RU')} ₽</div>
+                      <div className="text-[11px] text-emerald-300 mt-0.5">{orders.length} заказов</div>
+                    </div>
+                    <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B]">
+                      <div className="text-[11px] text-[#B4A0A7]">Средний чек</div>
+                      <div className="text-xl font-extrabold mt-1">
+                        {orders.length ? Math.round(todayRevenue / orders.length).toLocaleString('ru-RU') : 0} ₽
+                      </div>
+                    </div>
+                    <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] col-span-2 sm:col-span-1">
+                      <div className="text-[11px] text-[#B4A0A7]">В каталоге</div>
+                      <div className="text-xl font-extrabold mt-1">{bouquets.length} поз.</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#5E3A43] text-xs text-[#D5C5CA]">
+                    Режим роли <strong>{role}</strong>: финансовая аналитика скрыта правами доступа.
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[
+                    ['promos', 'Промокоды и акции', `Активно: ${promos.filter((p) => p.active).length}`],
+                    ['loyalty', 'Клубные карты', 'Уровни скидок и кэшбэка'],
+                    ['logistics', 'Логистика и зоны', 'Центр 0 ₽, Пригород 400 ₽, Промзона 400 ₽'],
+                    ['settings', 'Настройки, роли и Push', `Роль: ${role}, Push: ${pushEnabled ? 'Вкл' : 'Выкл'}`],
+                  ].map(([id, title, sub]) => (
+                    <button
+                      key={id}
+                      onClick={() => setMoreSubSection(id as typeof moreSubSection)}
+                      className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] flex items-center justify-between text-left hover:border-[#922E3D]"
+                    >
+                      <div>
+                        <div className="text-sm font-bold">{title}</div>
+                        <div className="text-xs text-[#A8949A] mt-0.5">{sub}</div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-[#A8949A]" />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sync & Catalog Maintenance */}
+                <div className="rounded-xl p-3.5 bg-[#25191D] border border-[#37252B] space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold">Облачная синхронизация каталога</span>
+                    <span className="text-[#A8949A]">
+                      {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString('ru-RU') : 'Локально'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => syncCatalog()}
+                      disabled={isSyncing}
+                      className="h-9 px-3 rounded-xl bg-[#922E3D] text-white text-xs font-semibold inline-flex items-center gap-1.5"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                      Синхронизировать
+                    </button>
+                    <button
+                      onClick={() => refreshCatalog()}
+                      className="h-9 px-3 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold"
+                    >
+                      Обновить с сервера
+                    </button>
+                    <button
+                      onClick={() => resetToDefault()}
+                      className="h-9 px-3 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Сброс
+                    </button>
+                    <button
+                      onClick={() => clearAllBouquets()}
+                      className="h-9 px-3 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-300 text-xs font-semibold"
+                    >
+                      Очистить
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* BULK ACTION BAR */}
+          {bulkMode && selectedIds.length > 0 && (
+            <div className="mx-4 mb-2 p-3 rounded-xl bg-[#2E1D23] border border-[#922E3D] flex flex-wrap items-center justify-between gap-2 shadow-xl">
+              <span className="text-xs font-bold">Выбрано: {selectedIds.length}</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => applyBulk('hide')}
+                  className="h-8 px-3 rounded-lg bg-[#25191D] border border-[#3D2B31] text-xs font-semibold"
+                >
+                  Скрыть
+                </button>
+                <button
+                  onClick={() => applyBulk('show')}
+                  className="h-8 px-3 rounded-lg bg-[#25191D] border border-[#3D2B31] text-xs font-semibold"
+                >
+                  В наличие
+                </button>
+                <button
+                  onClick={() => applyBulk('mono')}
+                  className="h-8 px-3 rounded-lg bg-[#922E3D] text-white text-xs font-semibold"
+                >
+                  В «Монобукеты»
+                </button>
               </div>
             </div>
+          )}
 
-            {/* Pending moderation queue */}
-            {pendingReviews.length > 0 && (
-              <div className="mb-5 space-y-3">
-                <span className="text-xs text-amber-300 block">
-                  Ждут проверки: {pendingReviews.length}
-                </span>
-                {pendingReviews.map((rev) => (
-                  <div
-                    key={rev.id}
-                    className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs"
+          {/* MOBILE FAB */}
+          {activeTab === 'catalog' && !bulkMode && (
+            <button
+              onClick={openAddForm}
+              className="lg:hidden fixed right-4 bottom-20 w-14 h-14 rounded-xl bg-[#922E3D] border border-[#B64556] text-white shadow-xl flex items-center justify-center z-20"
+              aria-label="Добавить букет"
+            >
+              <Plus className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* MOBILE BOTTOM TAB BAR (5 TABS) */}
+          <nav className="lg:hidden grid grid-cols-5 gap-1 px-1.5 pt-1.5 pb-2.5 bg-[#160E11] border-t border-[#2F2025] shrink-0">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setBulkMode(false);
+                  setSelectedIds([]);
+                }}
+                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 rounded-xl text-[10.5px] font-semibold ${
+                  activeTab === item.id ? 'bg-[#922E3D]/25 text-white' : 'text-[#8F7C82]'
+                }`}
+              >
+                {item.badge ? (
+                  <span className="absolute top-0.5 right-3 min-w-[16px] h-4 px-1 rounded-lg bg-[#922E3D] text-white text-[10px] font-bold flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                ) : null}
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* ================================================================= */}
+        {/* BOTTOM SHEETS (MOBILE) / MODALS (DESKTOP)                         */}
+        {/* ================================================================= */}
+
+        {/* Add / Edit Bouquet */}
+        {(isAddBouquetOpen || editingBouquet) && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsAddBouquetOpen(false);
+                setEditingBouquet(null);
+              }
+            }}
+          >
+            <form
+              onSubmit={handleSaveBouquet}
+              className="w-full lg:max-w-lg bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 max-h-[90vh] overflow-y-auto space-y-3"
+            >
+              <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold">
+                  {editingBouquet ? 'Редактировать букет' : 'Новый букет'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddBouquetOpen(false);
+                    setEditingBouquet(null);
+                  }}
+                  className="text-[#C9B7BD] hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#1B1215] border border-[#35242A]">
+                <img src={formImage} alt="Превью" className="w-14 h-14 rounded-xl object-cover" />
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold cursor-pointer">
+                    <ImageIcon className="w-3.5 h-3.5" /> Загрузить фото
+                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                  </label>
+                  <input
+                    type="text"
+                    value={formImage}
+                    onChange={(e) => setFormImage(e.target.value)}
+                    placeholder="или URL картинки"
+                    className="w-full h-8 px-2.5 rounded-lg bg-[#271B1F] border border-[#3A292E] text-xs text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#CBB9BF] mb-1">Название</label>
+                <input
+                  required
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="Например: Букет из пионов"
+                  className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs text-[#CBB9BF] mb-1">Цена (₽)</label>
+                  <input
+                    required
+                    type="number"
+                    value={formPrice}
+                    onChange={(e) => setFormPrice(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#CBB9BF] mb-1">Старая</label>
+                  <input
+                    type="number"
+                    value={formOldPrice}
+                    onChange={(e) => setFormOldPrice(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#CBB9BF] mb-1">Остаток</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formStock}
+                    onChange={(e) => setFormStock(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-[#CBB9BF] mb-1">Категория</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full h-10 px-2.5 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
                   >
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex text-amber-400">
-                          {[...Array(rev.rating)].map((_, i) => (
-                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                          ))}
-                        </div>
-                        <span className="font-sans font-medium text-lg text-white ml-1">{rev.author}</span>
-                        {rev.bouquetTitle && (
-                          <span className="px-2 py-0.5 bg-[#6C1E26]/40 border border-[#6C1E26] text-[#C5A880] text-[10px] rounded-lg">
-                            {rev.bouquetTitle}
-                          </span>
-                        )}
-                        <span className="text-[11px] text-white/40 font-light ml-auto md:ml-2">{rev.date}</span>
-                      </div>
-                      <p className="text-white/80 font-light text-xs leading-relaxed">«{rev.comment}»</p>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <button
-                        onClick={() => moderateReview(rev.id, true)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/50 transition-colors"
-                      >
-                        Опубликовать
-                      </button>
-                      <button
-                        onClick={() => moderateReview(rev.id, false)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-medium bg-white/10 text-white/70 border border-white/10 hover:text-red-300 hover:border-red-400/40 transition-colors"
-                      >
-                        Удалить
-                      </button>
-                    </div>
+                    {EDITABLE_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-[#CBB9BF] mb-1">Оттенок</label>
+                  <select
+                    value={formColor}
+                    onChange={(e) => setFormColor(e.target.value as BouquetColor)}
+                    className="w-full h-10 px-2.5 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+                  >
+                    {COLORS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[#CBB9BF] mb-1">Описание</label>
+                <textarea
+                  rows={2}
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white resize-none"
+                />
+              </div>
+
+              {/* Recipe */}
+              <div className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-bold">Рецептура (состав букета)</div>
+                    <div className="text-[11px] text-[#9E8A91]">Для учёта списания со склада</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormRecipe((prev) => [...prev, { name: 'Эвкалипт', qty: '2 ветки' }])}
+                    className="h-7 px-2.5 rounded-lg bg-[#2C1E23] border border-[#3D2B31] text-[11px] font-semibold"
+                  >
+                    + Цветок
+                  </button>
+                </div>
+                {formRecipe.map((item, idx) => (
+                  <div key={idx} className="flex gap-1.5">
+                    <input
+                      value={item.name}
+                      onChange={(e) =>
+                        setFormRecipe((prev) =>
+                          prev.map((r, i) => (i === idx ? { ...r, name: e.target.value } : r))
+                        )
+                      }
+                      placeholder="Цветок"
+                      className="flex-1 h-8 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                    />
+                    <input
+                      value={item.qty}
+                      onChange={(e) =>
+                        setFormRecipe((prev) =>
+                          prev.map((r, i) => (i === idx ? { ...r, qty: e.target.value } : r))
+                        )
+                      }
+                      placeholder="Кол-во"
+                      className="w-24 h-8 px-2.5 rounded-lg bg-[#2B1D22] border border-[#3F2C32] text-xs text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormRecipe((prev) => prev.filter((_, i) => i !== idx))}
+                      className="h-8 px-2 rounded-lg bg-[#2C1E23] text-xs text-rose-300"
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
-            )}
 
-            {/* Reviews List */}
-            <div className="space-y-3 pb-6">
-              {filteredReviews.length === 0 ? (
-                <div className="p-8 text-center text-white/40 border border-white/10 rounded-xl">
-                  По вашему запросу отзывы не найдены
-                </div>
-              ) : (
-                filteredReviews.map((rev) => (
-                  <div
-                    key={rev.id}
-                    className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs transition-colors"
+              <div className="flex gap-2 pt-1">
+                {editingBouquet && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      deleteBouquet(editingBouquet.id);
+                      setEditingBouquet(null);
+                    }}
+                    className="h-11 px-3.5 rounded-xl bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs font-semibold"
                   >
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex text-amber-400">
-                          {[...Array(rev.rating)].map((_, i) => (
-                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                          ))}
-                        </div>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveBouquet}
+                  disabled={isSavingBouquet}
+                  className="flex-1 h-11 rounded-xl bg-[#922E3D] text-white text-sm font-semibold"
+                >
+                  {isSavingBouquet ? 'Сохранение...' : 'Сохранить букет'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
-                        <span className="font-sans font-medium text-lg text-white font-normal ml-1">
-                          {rev.author}
-                        </span>
-
-                        {rev.bouquetTitle && (
-                          <span className="px-2 py-0.5 bg-[#6C1E26]/40 border border-[#6C1E26] text-[#C5A880] text-[10px] rounded-lg">
-                            {rev.bouquetTitle}
-                          </span>
-                        )}
-
-                        {rev.isVerified && (
-                          <span className="px-2 py-0.5 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[10px] rounded-lg flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                            <span>Проверен</span>
-                          </span>
-                        )}
-
-                        <span className="text-[11px] text-white/40 font-light ml-auto md:ml-2">
-                          {rev.date}
-                        </span>
-                      </div>
-
-                      <p className="text-white/80 font-light text-xs leading-relaxed">
-                        «{rev.comment}»
-                      </p>
-                    </div>
-
-                    {/* Actions: Toggle Publish + Delete */}
-                    <div className="flex items-center gap-3 border-t md:border-t-0 border-white/10 pt-3 md:pt-0 shrink-0">
-                      <button
-                        onClick={() => togglePublished(rev.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                          rev.isPublished
-                            ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/50'
-                            : 'bg-white/10 text-white/50 border border-white/10 hover:bg-white/20 hover:text-white'
-                        }`}
-                        title={rev.isPublished ? 'Нажмите, чтобы скрыть с сайта' : 'Нажмите, чтобы опубликовать на сайте'}
-                      >
-                        {rev.isPublished ? (
-                          <>
-                            <Eye className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>На сайте</span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="w-3.5 h-3.5" />
-                            <span>Скрыт</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          if (true) {
-                            deleteReview(rev.id);
-                          }
-                        }}
-                        className="p-2 text-white/40 hover:text-red-400 transition-colors"
-                        title="Удалить отзыв"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+        {/* Filter & Sort Sheet */}
+        {isFilterOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => e.target === e.currentTarget && setIsFilterOpen(false)}
+          >
+            <div className="w-full lg:max-w-sm bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+              <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
+              <h3 className="text-base font-bold">Сортировка каталога</h3>
+              <div className="space-y-2">
+                {(
+                  [
+                    ['default', 'По умолчанию'],
+                    ['price_asc', 'Сначала дешевле'],
+                    ['price_desc', 'Сначала дороже'],
+                    ['stock_asc', 'Сначала заканчиваются (остаток)'],
+                  ] as Array<[SortMode, string]>
+                ).map(([val, lbl]) => (
+                  <button
+                    key={val}
+                    onClick={() => {
+                      setSortBy(val);
+                      setIsFilterOpen(false);
+                    }}
+                    className={`w-full h-10 px-3 rounded-xl border text-xs font-semibold flex items-center justify-between ${
+                      sortBy === val
+                        ? 'bg-[#922E3D]/25 border-[#922E3D] text-white'
+                        : 'bg-[#2C1E23] border-[#3D2B31] text-[#D7C7CD]'
+                    }`}
+                  >
+                    <span>{lbl}</span>
+                    {sortBy === val && <Check className="w-4 h-4" />}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setChipFilter('all');
+                  setSortBy('default');
+                  setIsFilterOpen(false);
+                }}
+                className="w-full h-10 rounded-xl bg-[#922E3D] text-white text-xs font-semibold"
+              >
+                Сбросить фильтры
+              </button>
             </div>
           </div>
         )}
 
-        {/* 3. CLIENTS TAB */}
-        {activeTab === 'clients' && (
-          <div className="flex-1 overflow-y-auto pt-4 flex flex-col pr-1">
-            {/* Top Summary Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block mb-1">
-                  Всего клиентов в базе
-                </span>
-                <span className="font-sans font-medium text-3xl text-white font-normal">
-                  {allCustomers.length} человек
-                </span>
+        {/* Photo Report Sheet */}
+        {photoOrderModal && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => e.target === e.currentTarget && setPhotoOrderModal(null)}
+          >
+            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+              <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold">Фотоотчёт, {photoOrderModal.orderNumber}</h3>
+                <button onClick={() => setPhotoOrderModal(null)}>
+                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                </button>
               </div>
-
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block mb-1">
-                  Общая сумма заказов
-                </span>
-                <span className="font-sans font-medium text-3xl text-white font-normal">
-                  {totalRevenue.toLocaleString('ru-RU')} ₽
-                </span>
-              </div>
-
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/50 block mb-1">
-                  Средний чек клиента
-                </span>
-                <span className="font-sans font-medium text-3xl text-white font-normal">
-                  {allCustomers.length > 0
-                    ? Math.round(totalRevenue / allCustomers.reduce((acc, c) => acc + (c.ordersCount || 1), 0)).toLocaleString('ru-RU')
-                    : 0}{' '}
-                  ₽
-                </span>
-              </div>
-            </div>
-
-            {/* Search Bar & Cloud Sync Button */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Поиск по имени, фамилии или номеру телефона..."
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/30 border border-white/15 rounded-xl text-white text-xs placeholder:text-white/40 focus:outline-none focus:border-[#C5A880]"
+              {photoOrderModal.photoReportUrl ? (
+                <img
+                  src={photoOrderModal.photoReportUrl}
+                  alt="Фотоотчёт"
+                  className="w-full h-52 object-cover rounded-xl border border-[#3D2B31]"
                 />
-              </div>
-              <button
-                type="button"
-                onClick={async () => {
-                  await refreshCustomers();
-                  setSuccessNotice('База клиентов синхронизирована с облаком');
-                  setIsSuccessMessage(true);
-                  setTimeout(() => setIsSuccessMessage(false), 2500);
-                }}
-                className="px-3 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs text-white/80 hover:text-white flex items-center gap-1.5 transition-colors shrink-0"
-                title="Синхронизировать базу клиентов с сервером"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span className="hidden sm:inline">Синхронизировать</span>
-              </button>
+              ) : (
+                <div className="h-36 rounded-xl border border-dashed border-[#6B4752] bg-[#1B1215] flex flex-col items-center justify-center text-xs text-[#C9B7BD] gap-2">
+                  <Camera className="w-7 h-7 text-[#922E3D]" />
+                  <span>Загрузите фото собранного букета</span>
+                </div>
+              )}
+              <label className="w-full h-11 rounded-xl bg-[#922E3D] text-white text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer">
+                <Camera className="w-4 h-4" />
+                {photoOrderModal.photoReportUrl ? 'Заменить фото' : 'Сделать / выбрать фото'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleOrderPhotoUpload(e, photoOrderModal.id)}
+                />
+              </label>
+            </div>
+          </div>
+        )}
 
+        {/* Review Reply Sheet */}
+        {replyModalReviewId && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => e.target === e.currentTarget && setReplyModalReviewId(null)}
+          >
+            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+              <div className="w-10 h-1 rounded-lg bg-white/20 mx-auto lg:hidden" />
+              <h3 className="text-base font-bold">Ответ салона на отзыв</h3>
+              <textarea
+                rows={3}
+                value={draftReply}
+                onChange={(e) => setDraftReply(e.target.value)}
+                placeholder="Напишите ответ клиенту..."
+                className="w-full p-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+              />
+              <button
+                onClick={() => {
+                  const next = { ...reviewReplies, [replyModalReviewId]: draftReply.trim() };
+                  setReviewReplies(next);
+                  localStorage.setItem('sophiya_admin_review_replies_v1', JSON.stringify(next));
+                  setReplyModalReviewId(null);
+                  showToast('ok', 'Ответ сохранён');
+                }}
+                className="w-full h-11 rounded-xl bg-[#922E3D] text-white text-sm font-semibold"
+              >
+                Сохранить ответ
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Add Review Modal */}
+        {isAddReviewOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => e.target === e.currentTarget && setIsAddReviewOpen(false)}
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newRevAuthor.trim() || !newRevText.trim()) return;
+                addReview({
+                  author: newRevAuthor.trim(),
+                  rating: newRevRating,
+                  date: new Date().toLocaleDateString('ru-RU'),
+                  comment: newRevText.trim(),
+                  isVerified: true,
+                  isPublished: true,
+                });
+                setNewRevAuthor('');
+                setNewRevText('');
+                setIsAddReviewOpen(false);
+                showToast('ok', 'Отзыв добавлен');
+              }}
+              className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3"
+            >
+              <h3 className="text-base font-bold">Новый отзыв</h3>
+              <input
+                required
+                value={newRevAuthor}
+                onChange={(e) => setNewRevAuthor(e.target.value)}
+                placeholder="Имя клиента"
+                className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+              />
+              <select
+                value={newRevRating}
+                onChange={(e) => setNewRevRating(Number(e.target.value))}
+                className="w-full h-10 px-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+              >
+                {[5, 4, 3, 2, 1].map((n) => (
+                  <option key={n} value={n}>
+                    Оценка: {n} из 5
+                  </option>
+                ))}
+              </select>
+              <textarea
+                required
+                rows={3}
+                value={newRevText}
+                onChange={(e) => setNewRevText(e.target.value)}
+                placeholder="Текст отзыва"
+                className="w-full p-3 rounded-xl bg-[#2B1D22] border border-[#3F2C32] text-sm text-white"
+              />
               <button
                 type="button"
                 onClick={() => {
-                  if (allCustomers.length === 0) {
-                    setSuccessNotice('В базе пока нет клиентов для выгрузки.');
-                    setIsSuccessMessage(true);
-                    setTimeout(() => setIsSuccessMessage(false), 3000);
-                    return;
-                  }
-                  CustomerDatabaseService.exportToCSV(allCustomers);
-                  setSuccessNotice(`Файл базы (${allCustomers.length} клиентов) скачан на ваш компьютер!`);
-                  setIsSuccessMessage(true);
-                  setTimeout(() => setIsSuccessMessage(false), 3000);
+                  if (!newRevAuthor.trim() || !newRevText.trim()) return;
+                  addReview({
+                    author: newRevAuthor.trim(),
+                    rating: newRevRating,
+                    date: new Date().toLocaleDateString('ru-RU'),
+                    comment: newRevText.trim(),
+                    isVerified: true,
+                    isPublished: true,
+                  });
+                  setNewRevAuthor('');
+                  setNewRevText('');
+                  setIsAddReviewOpen(false);
+                  showToast('ok', 'Отзыв добавлен');
                 }}
-                className="px-3 py-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 hover:text-white flex items-center gap-1.5 transition-colors shrink-0 shadow"
-                title="Скачать резервную копию всей базы клиентов в файл Excel / CSV"
+                className="w-full h-11 rounded-xl bg-[#922E3D] text-white text-sm font-semibold"
               >
-                <Download className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">Экспорт в Excel (CSV)</span>
+                Добавить отзыв
               </button>
-            </div>
+            </form>
+          </div>
+        )}
 
-            {/* Clients List */}
-            <div className="space-y-2.5 flex-1 overflow-y-auto">
-              {filteredCustomers.length === 0 ? (
-                <div className="py-16 text-center text-xs text-white/50 flex flex-col items-center gap-2">
-                  <Users className="w-8 h-8 text-white/20" />
-                  <span className="max-w-md">
-                    {searchQuery
-                      ? 'По вашему запросу клиенты не найдены'
-                      : 'В базе пока нет зарегистрированных клиентов. Новые гости появятся здесь автоматически после оформления клубной карты на сайте.'}
-                  </span>
-                </div>
-              ) : (
-                filteredCustomers.map((c) => (
-                  <div
-                    key={c.id}
-                    className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-sans font-medium text-xl text-white font-normal">
-                          {c.firstName} {c.lastName}
-                        </span>
-                        <span className="px-2 py-0.5 border border-[#C5A880]/30 text-[#C5A880] text-[10px] uppercase tracking-wider rounded">
-                          {c.tier} статус
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3 text-white/60 font-light">
-                        <span className="text-white font-mono">{c.phone}</span>
-                        {c.birthDate && (
-                          <>
-                            <span>•</span>
-                            <span>ДР: {new Date(c.birthDate).toLocaleDateString('ru-RU')}</span>
-                          </>
-                        )}
-                        <span>•</span>
-                        <span>В клубе с {c.registeredAt}</span>
+        {/* Client History Sheet */}
+        {clientHistoryModal && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => e.target === e.currentTarget && setClientHistoryModal(null)}
+          >
+            {(() => {
+              const client = allCustomers.find((c) => c.id === clientHistoryModal);
+              if (!client) return null;
+              const { tier } = calculateLoyaltyTier(client.totalSpent || 0);
+              const fullName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Клиент';
+              const clientOrders = orders.filter(
+                (o) => o.phone.replace(/\D/g, '') === (client.phone || '').replace(/\D/g, '')
+              );
+              return (
+                <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold">{fullName}</h3>
+                      <div className="text-xs text-[#F5B8C2]">
+                        {tier.name}, скидка {tier.discountPercent}%
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
-                      <div className="text-left md:text-right">
-                        <span className="text-[10px] uppercase tracking-wider text-white/50 block">
-                          Куплено на сумму
-                        </span>
-                        <span className="font-sans font-medium text-lg text-white font-normal">
-                          {c.totalSpent.toLocaleString('ru-RU')} ₽
-                        </span>
-                        <span className="text-[11px] text-[#C5A880] block">
-                          {c.ordersCount} заказов — Скидка {c.discountPercent}%
-                        </span>
+                    <button onClick={() => setClientHistoryModal(null)}>
+                      <X className="w-5 h-5 text-[#C9B7BD]" />
+                    </button>
+                  </div>
+                  <div className="text-xs text-[#A8949A]">
+                    Всего заказов: {client.ordersCount || 0}, На сумму:{' '}
+                    {(client.totalSpent || 0).toLocaleString('ru-RU')} ₽
+                  </div>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {clientOrders.length === 0 ? (
+                      <div className="text-xs text-[#9E8A91] py-4 text-center">
+                        Детализированных заказов в локальном журнале пока нет
                       </div>
+                    ) : (
+                      clientOrders.map((co) => (
+                        <div
+                          key={co.id}
+                          className="p-2.5 rounded-xl bg-[#1B1215] border border-[#35242A] flex justify-between text-xs"
+                        >
+                          <div>
+                            <div className="font-semibold">{co.orderNumber}</div>
+                            <div className="text-[#9E8A91]">{co.createdAt}</div>
+                          </div>
+                          <strong>{co.totalAmount.toLocaleString('ru-RU')} ₽</strong>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
-                      <a
-                        href={`https://wa.me/${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                          `Здравствуйте, ${c.firstName}! Салон цветов «София» на связи. Рады видеть вас в нашем клубе привилегий.`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors flex items-center gap-1.5 shrink-0 shadow"
+        {/* More Subsections Sheet */}
+        {moreSubSection && (
+          <div
+            className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
+            onClick={(e) => e.target === e.currentTarget && setMoreSubSection(null)}
+          >
+            <div className="w-full lg:max-w-md bg-[#22171B] border-t lg:border border-[#3D2B31] rounded-t-3xl lg:rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold">
+                  {moreSubSection === 'promos'
+                    ? 'Промокоды и акции'
+                    : moreSubSection === 'loyalty'
+                    ? 'Клубные карты'
+                    : moreSubSection === 'logistics'
+                    ? 'Логистика и зоны доставки'
+                    : 'Настройки, роли и Push'}
+                </h3>
+                <button onClick={() => setMoreSubSection(null)}>
+                  <X className="w-5 h-5 text-[#C9B7BD]" />
+                </button>
+              </div>
+
+              {moreSubSection === 'promos' && (
+                <div className="space-y-2">
+                  {promos.map((p, idx) => (
+                    <div
+                      key={p.code}
+                      className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] flex items-center justify-between"
+                    >
+                      <div>
+                        <strong className="text-sm">{p.code}</strong>
+                        <span className="text-xs text-[#F5B8C2] ml-2">−{p.discount}</span>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setPromos((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, active: !item.active } : item))
+                          )
+                        }
+                        className={`w-11 h-6 rounded-lg p-0.5 transition-colors ${
+                          p.active ? 'bg-[#922E3D]' : 'bg-[#453238]'
+                        }`}
                       >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
-                      </a>
+                        <div
+                          className={`w-5 h-5 rounded-lg bg-white transition-transform ${
+                            p.active ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {moreSubSection === 'loyalty' && (
+                <div className="text-xs space-y-2 text-[#DFD2D6] leading-relaxed">
+                  <div>• Базовый уровень: 0% (приветственный)</div>
+                  <div>• Серебряная карта: от 10 000 ₽ — постоянная скидка 5%</div>
+                  <div>• Золотая карта: от 25 000 ₽ — скидка 7% + приоритетная доставка</div>
+                </div>
+              )}
+
+              {moreSubSection === 'logistics' && (
+                <div className="text-xs space-y-2 text-[#DFD2D6] leading-relaxed">
+                  <div>• Зона 1 (Центр и мкр.): <strong>0 ₽ (бесплатно)</strong>, 30–60 мин</div>
+                  <div>• Зона 2 (Пригородные посёлки): <strong>400 ₽</strong>, 45–75 мин</div>
+                  <div>• Зона 3 (Предприятия и промзона): <strong>400 ₽</strong>, к точному часу</div>
+                </div>
+              )}
+
+              {moreSubSection === 'settings' && (
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs text-[#CBB9BF] mb-1.5">Роль сотрудника</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['Админ', 'Флорист', 'Курьер'] as StaffRole[]).map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => setRole(r)}
+                          className={`h-9 rounded-xl text-xs font-semibold border ${
+                            role === r
+                              ? 'bg-[#922E3D] border-[#B44253] text-white'
+                              : 'bg-[#2C1E23] border-[#3D2B31] text-[#D7C7CD]'
+                          }`}
+                        >
+                          {r}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ))
+                  <div className="p-3 rounded-xl bg-[#1B1215] border border-[#35242A] flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-semibold">Push-уведомления о заказах</div>
+                      <div className="text-[11px] text-[#9E8A91]">Уведомления браузера</div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const next = !pushEnabled;
+                        setPushEnabled(next);
+                        if (next && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+                          await Notification.requestPermission().catch(() => {});
+                        }
+                      }}
+                      className={`w-11 h-6 rounded-lg p-0.5 transition-colors ${
+                        pushEnabled ? 'bg-[#922E3D]' : 'bg-[#453238]'
+                      }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-lg bg-white transition-transform ${
+                          pushEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                        new Notification('Sophiya: Новый заказ', { body: 'Проверка push-уведомлений' });
+                      } else {
+                        showToast('ok', 'Тестовое уведомление отправлено');
+                      }
+                    }}
+                    className="w-full h-9 rounded-xl bg-[#2C1E23] border border-[#3D2B31] text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+                  >
+                    <Bell className="w-3.5 h-3.5" /> Проверить уведомление
+                  </button>
+                </div>
               )}
             </div>
           </div>

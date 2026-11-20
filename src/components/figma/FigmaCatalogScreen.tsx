@@ -126,7 +126,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
               href={SALON_MAX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl bg-[#922E3D]/10 hover:bg-[#922E3D]/20 text-[#922E3D] border border-[#922E3D]/20 shadow-md flex items-center justify-center active:scale-95 transition-colors"
+              className="w-10 h-10 rounded-xl bg-[#1C1215] hover:bg-[#2C1A1F] text-[#E5C398] border border-white/15 shadow-md flex items-center justify-center active:scale-95 transition-colors"
               aria-label="Написать в MAX"
               title="Написать в MAX"
             >
@@ -302,7 +302,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">30–60 мин</span>
                 </div>
                 <div className="text-xl font-bold text-[#1C1215]">
-                  300 ₽ <span className="text-xs font-normal text-[#7C636B]">(бесплатно от 4 500 ₽)</span>
+                  0 ₽ <span className="text-xs font-normal text-emerald-700">(бесплатно)</span>
                 </div>
                 <p className="text-xs text-[#5C454C] leading-relaxed">
                   Пр. Шинников, Мира, Строителей, Сююмбике, Химиков, ул. Баки Урманче, Чулман, Табеева и все жилые микрорайоны.
@@ -314,7 +314,9 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 2: Пригород</span>
                   <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#922E3D]/10 text-[#922E3D]">45–75 мин</span>
                 </div>
-                <div className="text-xl font-bold text-[#1C1215]">450 ₽</div>
+                <div className="text-xl font-bold text-[#1C1215]">
+                  400 ₽ <span className="text-xs font-normal text-[#7C636B]">(фиксированно)</span>
+                </div>
                 <p className="text-xs text-[#5C454C] leading-relaxed">
                   Красный Ключ, Большое и Нижнее Афанасово, Дмитриевка, Ильинка. Бережное вручение получателю лично в руки.
                 </p>
@@ -325,7 +327,9 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <span className="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 3: Промзона</span>
                   <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
                 </div>
-                <div className="text-xl font-bold text-[#1C1215]">500 ₽</div>
+                <div className="text-xl font-bold text-[#1C1215]">
+                  400 ₽ <span className="text-xs font-normal text-[#7C636B]">(фиксированно)</span>
+                </div>
                 <p className="text-xs text-[#5C454C] leading-relaxed">
                   БСИ, проходные ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК — доставим к окончанию смены или к мероприятию.
                 </p>
