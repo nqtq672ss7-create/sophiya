@@ -272,8 +272,18 @@ export async function handleYookassa(req, res, body, parsedUrl) {
       orderId: current.id,
       orderNumber: current.orderNumber,
       paymentStatus: current.paymentStatus,
+      paymentMethod: current.paymentMethod,
+      orderStatus: current.orderStatus,
       totalAmount: current.totalAmount,
       deliveryType: current.deliveryType,
+      address: current.address || '',
+      deliveryDate: current.deliveryDate || '',
+      recipientName: current.recipientName || current.customerName,
+      recipientPhone: current.recipientPhone || current.phone,
+      customerName: current.customerName,
+      phone: current.phone,
+      postcardText: current.postcardText || '',
+      comment: current.comment || '',
     });
   }
 
@@ -321,22 +331,69 @@ export async function handleYookassa(req, res, body, parsedUrl) {
     return sendJson(res, 200, { ok: true, order: orders[idx] });
   }
 
-  if (!creds) {
+  if (action === 'updateOrderDetails') {
+    const orderId = String(body?.orderId || '').trim();
+    if (!orderId) return sendJson(res, 400, { error: 'orderId is required' });
+    const orders = await readOrders();
+    const idx = orders.findIndex((o) => o.id === orderId);
+    if (idx === -1) return sendJson(res, 404, { error: 'Заказ не найден' });
+    if (orders[idx].orderStatus !== 'new') {
+      return sendJson(res, 409, {
+        error: 'Заказ уже передан в сборку/доставку. Для изменений свяжитесь с флористом.',
+      });
+    }
+
+    const nextDeliveryType = body?.deliveryType === 'pickup' ? 'pickup' : 'delivery';
+    const nextAddress = String(body?.address || '').trim().slice(0, 300);
+    if (nextDeliveryType === 'delivery' && nextAddress.length < 5) {
+      return sendJson(res, 400, { error: 'Укажите адрес доставки' });
+    }
+
+    const nextRecipientName = String(body?.recipientName || orders[idx].recipientName || orders[idx].customerName).trim().slice(0, 120);
+    const nextRecipientPhone = String(body?.recipientPhone || orders[idx].recipientPhone || orders[idx].phone).trim().slice(0, 40);
+    const nextCustomerName = String(body?.customerName || orders[idx].customerName).trim().slice(0, 120);
+    const nextPhone = String(body?.phone || orders[idx].phone).trim().slice(0, 40);
+    const nextDeliveryDate = String(body?.deliveryDate || orders[idx].deliveryDate || 'Ближайшее время').trim().slice(0, 100);
+    const nextPostcard = String(body?.postcardText ?? orders[idx].postcardText ?? '').trim().slice(0, 500);
+    const nextComment = String(body?.comment ?? orders[idx].comment ?? '').trim().slice(0, 500);
+
+    orders[idx] = {
+      ...orders[idx],
+      deliveryType: nextDeliveryType,
+      address: nextDeliveryType === 'delivery' ? nextAddress : '',
+      deliveryDate: nextDeliveryDate,
+      recipientName: nextRecipientName,
+      recipientPhone: nextRecipientPhone,
+      customerName: nextCustomerName,
+      phone: nextPhone,
+      postcardText: nextPostcard,
+      comment: nextComment,
+    };
+    await saveOrders(orders);
+    return sendJson(res, 200, { ok: true, order: orders[idx] });
+  }
+
+  const paymentMethod = body?.paymentMethod === 'cash' ? 'cash' : 'yookassa';
+
+  if (paymentMethod === 'yookassa' && !creds) {
     return sendJson(res, 503, {
-      error: 'Онлайн-оплата временно не настроена. Вы можете оформить заказ через MAX.',
+      error: 'Онлайн-оплата временно не настроена. Вы можете оформить заказ через MAX или при получении.',
     });
   }
 
   const rawItems = Array.isArray(body?.items) ? body.items : [];
   if (rawItems.length === 0) return sendJson(res, 400, { error: 'Корзина пуста' });
 
-  const customerName = String(body?.customerName || '').trim().slice(0, 120);
-  const phone = String(body?.phone || '').trim().slice(0, 40);
+  const customerName = String(body?.customerName || body?.recipientName || '').trim().slice(0, 120);
+  const phone = String(body?.phone || body?.recipientPhone || '').trim().slice(0, 40);
+  const recipientName = String(body?.recipientName || customerName).trim().slice(0, 120);
+  const recipientPhone = String(body?.recipientPhone || phone).trim().slice(0, 40);
   const email = String(body?.email || '').trim().slice(0, 120);
   const deliveryType = body?.deliveryType === 'pickup' ? 'pickup' : 'delivery';
   const address = String(body?.address || '').trim().slice(0, 300);
-  const deliveryDate = String(body?.deliveryDate || 'Ближайшее время').trim().slice(0, 80);
+  const deliveryDate = String(body?.deliveryDate || 'Ближайшее время').trim().slice(0, 100);
   const postcardText = String(body?.postcardText || '').trim().slice(0, 500);
+  const comment = String(body?.comment || '').trim().slice(0, 500);
 
   if (!customerName || normalizePhoneDigits(phone).length < 10) {
     return sendJson(res, 400, { error: 'Укажите имя и корректный номер телефона' });
@@ -372,6 +429,44 @@ export async function handleYookassa(req, res, body, parsedUrl) {
 
   const orderId = `ord_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
   const orderNumber = `SF-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  if (paymentMethod === 'cash') {
+    const cashOrder = {
+      id: orderId,
+      orderNumber,
+      createdAt: new Date().toLocaleString('ru-RU', {
+        timeZone: 'Europe/Moscow',
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      customerName,
+      phone,
+      recipientName,
+      recipientPhone,
+      ...(email ? { email } : {}),
+      deliveryType,
+      ...(deliveryType === 'delivery' ? { address } : {}),
+      deliveryDate,
+      items: verifiedItems,
+      totalAmount,
+      paymentMethod: 'cash',
+      paymentStatus: 'pending',
+      orderStatus: 'new',
+      ...(postcardText ? { postcardText } : {}),
+      ...(comment ? { comment } : {}),
+    };
+    const existingOrders = await readOrders();
+    await saveOrders([cashOrder, ...existingOrders]);
+    return sendJson(res, 200, {
+      orderId: cashOrder.id,
+      orderNumber: cashOrder.orderNumber,
+      totalAmount: cashOrder.totalAmount,
+      paymentMethod: 'cash',
+    });
+  }
+
   const siteBaseUrl = (process.env.SITE_PUBLIC_URL || 'https://xn----ctbjn3arftl7c8b.xn--p1ai').replace(/\/+$/, '');
   const returnUrl = `${siteBaseUrl}/cart/?yookassa_return=1&orderId=${encodeURIComponent(orderId)}`;
 
@@ -419,6 +514,8 @@ export async function handleYookassa(req, res, body, parsedUrl) {
       }),
       customerName,
       phone,
+      recipientName,
+      recipientPhone,
       ...(email ? { email } : {}),
       deliveryType,
       ...(deliveryType === 'delivery' ? { address } : {}),
@@ -429,6 +526,7 @@ export async function handleYookassa(req, res, body, parsedUrl) {
       paymentStatus: 'pending',
       orderStatus: 'new',
       ...(postcardText ? { postcardText } : {}),
+      ...(comment ? { comment } : {}),
       paymentId: ykData.id,
       confirmationUrl: ykData.confirmation.confirmation_url,
       isTest: creds.secretKey.startsWith('test_'),

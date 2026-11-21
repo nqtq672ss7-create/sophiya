@@ -36,7 +36,7 @@ interface AdminOrder {
   deliveryDate: string;
   items: Array<{ title: string; quantity: number; price: number }>;
   totalAmount: number;
-  paymentMethod: 'yookassa'|'sbp'|'card'|'sberpay';
+  paymentMethod: 'yookassa'|'cash'|'sbp'|'card'|'sberpay';
   paymentStatus: 'paid'|'pending'|'canceled';
   orderStatus: 'new'|'assembling'|'in_transit'|'delivered';
   postcardText?: string;
