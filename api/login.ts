@@ -24,7 +24,7 @@ function getKVClient() {
 }
 
 function isAllowedOrigin(origin: string | undefined): boolean {
-  if (!origin) return true;
+  if (!origin) return false;
   let decoded = origin;
   try {
     decoded = decodeURI(origin);
@@ -33,47 +33,49 @@ function isAllowedOrigin(origin: string | undefined): boolean {
   const clean = decoded.toLowerCase().trim().replace(/\/+$/, '');
   const raw = origin.toLowerCase().trim().replace(/\/+$/, '');
 
-  const allowedPatterns = [
-    /^https?:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai(:[0-9]+)?$/,
-    /^https?:\/\/(www\.)?цветы-софия\.рф(:[0-9]+)?$/,
-    /^https?:\/\/sitesophiya\.vercel\.app(:[0-9]+)?$/,
-    /^https?:\/\/([a-zA-Z0-9_-]+\.)?github\.io(:[0-9]+)?$/,
-    /^https?:\/\/localhost(:[0-9]+)?$/,
-    /^https?:\/\/127\.0\.0\.1(:[0-9]+)?$/,
+  const allowedPatterns: RegExp[] = [
+    /^https:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai$/,
+    /^https:\/\/(www\.)?цветы-софия\.рф$/,
   ];
+  if (process.env.NODE_ENV !== 'production') {
+    allowedPatterns.push(/^http:\/\/localhost(:[0-9]+)?$/, /^http:\/\/127\.0\.0\.1(:[0-9]+)?$/);
+  }
 
   return allowedPatterns.some((pattern) => pattern.test(clean) || pattern.test(raw));
 }
 
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
-  const origin = req.headers.origin as string;
+  const origin = req.headers.origin as string | undefined;
+  res.setHeader('Vary', 'Origin');
   if (origin && isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  } else {
+  } else if (origin) {
     res.setHeader('Access-Control-Allow-Origin', 'null');
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With'
+    'Content-Type, Authorization, X-Order-Token, Cache-Control, Pragma, X-Requested-With'
   );
   res.setHeader('Access-Control-Max-Age', '86400');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.removeHeader('X-Powered-By');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
 }
 
 function getClientIp(req: VercelRequest): string {
+  const realIp = req.headers['x-real-ip'];
+  if (typeof realIp === 'string' && realIp.trim()) {
+    return realIp.trim();
+  }
   const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0].trim();
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    const parts = forwarded.split(',').map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
   }
   if (Array.isArray(forwarded) && forwarded.length > 0) {
-    return forwarded[0].trim();
+    const last = String(forwarded[forwarded.length - 1] || '').trim();
+    if (last) return last;
   }
   return req.socket?.remoteAddress || '127.0.0.1';
 }
@@ -90,11 +92,10 @@ function generateToken(): string {
   return payloadB64 + '.' + signature;
 }
 
-function isPasswordValid(password: string|null|undefined): boolean {
+function isPasswordValid(password: string | null | undefined): boolean {
   const adminPass = process.env.ADMIN_PASSWORD?.trim();
   if (!adminPass) return false;
   if (!password || typeof password !== 'string') return false;
-  // Compare fixed-length digests so neither length nor content leaks through timing.
   const given = crypto.createHash('sha256').update(password.trim()).digest();
   const expected = crypto.createHash('sha256').update(adminPass).digest();
   return crypto.timingSafeEqual(given, expected);
@@ -118,6 +119,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const client = getKVClient();
   const ip = getClientIp(req);
+  const safeIp = ip.replace(/[^a-zA-Z0-9_.:-]/g, '_');
+  const rlStore = `ratelimit_login_${safeIp}`;
 
   let body: any;
   try {
@@ -129,27 +132,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Bad request' });
   }
 
-  // Brute-force rate limiting check
+  // Fail-closed brute-force rate limiting check
+  let existingRecord: any = null;
   try {
-    const safeIp = ip.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const key = `ratelimit_login_${safeIp}`;
-    const record: any = await client.get(key);
+    existingRecord = await client.get(rlStore);
     const now = Date.now();
-    if (record && record.lockedUntil && now < record.lockedUntil) {
-      const remainingWait = Math.ceil((record.lockedUntil - now) / 1000);
+    if (existingRecord && existingRecord.lockedUntil && now < existingRecord.lockedUntil) {
+      const remainingWait = Math.ceil((existingRecord.lockedUntil - now) / 1000);
       return res.status(429).json({
         error: `Слишком много попыток входа. Доступ заблокирован на ${remainingWait} сек.`,
         retryAfter: remainingWait,
       });
     }
-  } catch {}
+  } catch {
+    return res.status(503).json({
+      error: 'Сервис авторизации временно недоступен. Попробуйте позже.',
+    });
+  }
 
   const password = body.password || body.pin;
   if (!isPasswordValid(password)) {
     try {
-      const safeIp = ip.replace(/[^a-zA-Z0-9_-]/g, '_');
-      const key = `ratelimit_login_${safeIp}`;
-      let record: any = await client.get(key);
+      let record: any = existingRecord;
       if (!record || typeof record !== 'object') {
         record = { count: 0, firstAttempt: Date.now() };
       }
@@ -157,8 +161,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (record.count >= 5) {
         record.lockedUntil = Date.now() + 15 * 60 * 1000;
       }
-      await client.set(key, record, { ex: 15 * 60 });
-    } catch {}
+      await client.set(rlStore, record, { ex: 15 * 60 });
+    } catch {
+      return res.status(503).json({
+        error: 'Сервис авторизации временно недоступен. Попробуйте позже.',
+      });
+    }
 
     return res.status(401).json({
       error: 'Неверный PIN-код или пароль доступа.',
@@ -166,8 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const safeIp = ip.replace(/[^a-zA-Z0-9_-]/g, '_');
-    await client.del(`ratelimit_login_${safeIp}`);
+    await client.del(rlStore);
   } catch {}
 
   const token = generateToken();

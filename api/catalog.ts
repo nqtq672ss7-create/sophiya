@@ -23,8 +23,8 @@ function getKVClient() {
   return kv;
 }
 
-function isAllowedOrigin(origin: string|undefined): boolean {
-  if (!origin) return true;
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return false;
   let decoded = origin;
   try {
     decoded = decodeURI(origin);
@@ -33,38 +33,34 @@ function isAllowedOrigin(origin: string|undefined): boolean {
   const clean = decoded.toLowerCase().trim().replace(/\/+$/, '');
   const raw = origin.toLowerCase().trim().replace(/\/+$/, '');
 
-  const allowedPatterns = [
-    /^https?:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai(:[0-9]+)?$/,
-    /^https?:\/\/(www\.)?цветы-софия\.рф(:[0-9]+)?$/,
-    /^https?:\/\/sitesophiya\.vercel\.app(:[0-9]+)?$/,
-    /^https?:\/\/([a-zA-Z0-9_-]+\.)?github\.io(:[0-9]+)?$/,
-    /^https?:\/\/localhost(:[0-9]+)?$/,
-    /^https?:\/\/127\.0\.0\.1(:[0-9]+)?$/,
+  const allowedPatterns: RegExp[] = [
+    /^https:\/\/(www\.)?xn----ctbjn3arftl7c8b\.xn--p1ai$/,
+    /^https:\/\/(www\.)?цветы-софия\.рф$/,
   ];
+  if (process.env.NODE_ENV !== 'production') {
+    allowedPatterns.push(/^http:\/\/localhost(:[0-9]+)?$/, /^http:\/\/127\.0\.0\.1(:[0-9]+)?$/);
+  }
 
   return allowedPatterns.some((pattern) => pattern.test(clean) || pattern.test(raw));
 }
 
 function setSecureCors(req: VercelRequest, res: VercelResponse) {
-  const origin = req.headers.origin as string;
+  const origin = req.headers.origin as string | undefined;
+  res.setHeader('Vary', 'Origin');
   if (origin && isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  } else {
+  } else if (origin) {
     res.setHeader('Access-Control-Allow-Origin', 'null');
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With'
+    'Content-Type, Authorization, X-Order-Token, Cache-Control, Pragma, X-Requested-With'
   );
   res.setHeader('Access-Control-Max-Age', '86400');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.removeHeader('X-Powered-By');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
 }
 
 function verifyToken(token: string|null|undefined): boolean {

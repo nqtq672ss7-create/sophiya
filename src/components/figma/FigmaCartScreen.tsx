@@ -34,6 +34,7 @@ interface FigmaCartScreenProps {
 interface PlacedOrderDetails {
   orderId: string;
   orderNumber: string;
+  orderAccessToken?: string;
   deliveryType: 'delivery'|'pickup';
   address: string;
   deliveryDay: string;
@@ -117,20 +118,41 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [paymentError, setPaymentError] = useState('');
 
   const deliveryCost = 0;
-  const userDiscount = customer?.discountPercent || 0;
+  const userDiscount = 0;
 
-  const rawSubtotal = items.reduce((sum, item) => sum + item.bouquet.price * item.quantity, 0);
+  const inStockItems = items.filter((item) => item.bouquet.inStock !== false);
+  const hasOutOfStockItems = items.some((item) => item.bouquet.inStock === false);
+
+  const rawSubtotal = inStockItems.reduce((sum, item) => sum + item.bouquet.price * item.quantity, 0);
   const discountAmount = Math.round((rawSubtotal * userDiscount) / 100);
   const finalSubtotal = rawSubtotal - discountAmount;
-  const totalToPay = finalSubtotal + (items.length > 0 ? deliveryCost : 0);
+  const totalToPay = finalSubtotal + (inStockItems.length > 0 ? deliveryCost : 0);
+
+  const getStoredOrderToken = (orderId: string): string => {
+    try {
+      const direct = sessionStorage.getItem(`sophiya_order_tok_${orderId}`);
+      if (direct) return direct;
+      const rawPending = sessionStorage.getItem('sophiya_yookassa_pending_cart');
+      if (rawPending) {
+        const parsed = JSON.parse(rawPending);
+        if (parsed?.orderId === orderId && parsed?.orderAccessToken) {
+          return String(parsed.orderAccessToken);
+        }
+      }
+    } catch {}
+    return '';
+  };
 
   const checkYookassaOrderStatus = useCallback(
     async (orderId: string, attempt = 0) => {
       setIsCheckingPayment(true);
       setPaymentError('');
       try {
+        const storedTok = getStoredOrderToken(orderId);
         const res = await fetch(getApiUrl(`/api/yookassa?orderId=${encodeURIComponent(orderId)}`), {
           cache: 'no-store',
+          credentials: 'same-origin',
+          headers: storedTok ? { 'X-Order-Token': storedTok } : undefined,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -160,6 +182,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
           setPlacedOrder({
             orderId: data.orderId || orderId,
             orderNumber: data.orderNumber || pendingMeta?.orderNumber || '',
+            orderAccessToken: storedTok || pendingMeta?.orderAccessToken || '',
             deliveryType: data.deliveryType === 'pickup' ? 'pickup' : 'delivery',
             address: data.address || pendingMeta?.address || '',
             deliveryDay: dateParts[0] || getTodayIso(),
@@ -184,7 +207,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
         if (data.paymentStatus === 'canceled') {
           setIsCheckingPayment(false);
           setPendingOrderId(null);
-          setPaymentError('Оплата была отменена. Корзина сохранена — вы можете попробовать снова.');
+          setPaymentError('Оплата была отменена. Корзина сохранена, вы можете попробовать снова.');
           if (typeof window !== 'undefined') {
             window.history.replaceState({}, '', window.location.pathname);
           }
@@ -223,7 +246,11 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.length === 0 || isCreatingPayment) return;
+    if (inStockItems.length === 0 || isCreatingPayment) return;
+    if (hasOutOfStockItems) {
+      setPaymentError('Удалите закончившиеся букеты из корзины перед оформлением заказа');
+      return;
+    }
 
     if (!isPdAgreed) {
       setConsentError('Подтвердите согласие на обработку персональных данных и принятие оферты');
@@ -240,6 +267,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
     try {
       const res = await fetch(getApiUrl('/api/yookassa?action=create'), {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentMethod,
@@ -253,7 +281,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
           deliveryDate: formattedDeliveryDate,
           postcardText: addPostcard ? postcardText.trim() : '',
           comment: orderComment.trim(),
-          items: items.map((i) => ({
+          items: inStockItems.map((i) => ({
             id: i.bouquet.id,
             title: i.bouquet.title,
             price: i.bouquet.price,
@@ -266,6 +294,12 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
         throw new Error(data.error || 'Не удалось оформить заказ. Попробуйте снова.');
       }
 
+      if (data.orderId && data.orderAccessToken) {
+        try {
+          sessionStorage.setItem(`sophiya_order_tok_${data.orderId}`, String(data.orderAccessToken));
+        } catch {}
+      }
+
       if (paymentMethod === 'yookassa') {
         if (!data.confirmationUrl) {
           throw new Error('Платёжный шлюз не вернул ссылку на оплату.');
@@ -276,7 +310,8 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
             JSON.stringify({
               orderId: data.orderId,
               orderNumber: data.orderNumber,
-              items: items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
+              orderAccessToken: data.orderAccessToken || '',
+              items: inStockItems.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
               totalAmount: data.totalAmount || totalToPay,
               recipientName: recipientName.trim(),
               recipientPhone: recipientPhone.trim(),
@@ -296,13 +331,14 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
       // Cash on delivery/pickup
       if (customer) {
         addOrderToCustomer({
-          items: items.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
+          items: inStockItems.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
           totalAmount: data.totalAmount || totalToPay,
         });
       }
       setPlacedOrder({
         orderId: data.orderId,
         orderNumber: data.orderNumber,
+        orderAccessToken: data.orderAccessToken || '',
         deliveryType,
         address: deliveryType === 'delivery' ? deliveryAddress.trim() : '',
         deliveryDay: deliveryDay || getTodayIso(),
@@ -332,9 +368,14 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
     setEditNotice('');
 
     try {
+      const accessTok = placedOrder.orderAccessToken || getStoredOrderToken(placedOrder.orderId);
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (accessTok) headers['X-Order-Token'] = accessTok;
+
       const res = await fetch(getApiUrl('/api/yookassa?action=updateOrderDetails'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        headers,
         body: JSON.stringify({
           orderId: placedOrder.orderId,
           deliveryType: placedOrder.deliveryType,
@@ -1010,8 +1051,14 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
               </div>
             )}
 
+            {hasOutOfStockItems && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                В корзине есть закончившийся букет. Удалите его крестиком слева, чтобы оформить заказ.
+              </div>
+            )}
+
             <button
-              disabled={isCreatingPayment}
+              disabled={isCreatingPayment || hasOutOfStockItems || inStockItems.length === 0}
               className="w-full py-4 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white font-semibold text-sm shadow-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {isCreatingPayment ? (

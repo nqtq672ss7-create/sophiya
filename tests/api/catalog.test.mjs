@@ -186,9 +186,8 @@ test('POST action:toggleStock flips stock status in KV', async () => {
   assert.equal(saved[0].inStock, false);
 });
 
-test('legitimate site origins are reflected in CORS headers', async () => {
+test('legitimate HTTPS site origins are reflected in CORS headers and legacy staging is rejected', async () => {
   const validOrigins = [
-    'https://sitesophiya.vercel.app',
     'https://xn----ctbjn3arftl7c8b.xn--p1ai',
     'https://цветы-софия.рф',
   ];
@@ -197,4 +196,8 @@ test('legitimate site origins are reflected in CORS headers', async () => {
     await handler(makeReq({ method: 'OPTIONS', headers: { origin } }), res);
     assert.equal(res.headers['access-control-allow-origin'], origin);
   }
+
+  const blockedRes = makeRes();
+  await handler(makeReq({ method: 'OPTIONS', headers: { origin: 'https://evil.github.io' } }), blockedRes);
+  assert.equal(blockedRes.headers['access-control-allow-origin'], 'null');
 });

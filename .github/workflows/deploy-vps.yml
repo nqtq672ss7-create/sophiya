@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run API security tests
+        run: npm run test:api
+
       - name: Build project
         run: npm run build
 
@@ -39,37 +42,36 @@ jobs:
           YOOKASSA_SECRET_KEY: ${{ secrets.YOOKASSA_SECRET_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "$VPS_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           TARGET_HOST="${VPS_HOST:-194.67.110.156}"
           ssh-keyscan -H "$TARGET_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          rsync -avz --delete --exclude='bouquets-cloud/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" dist/ root@$TARGET_HOST:/var/www/sophiya/
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/yookassa-handler.mjs root@$TARGET_HOST:/opt/sophiya-api/yookassa-handler.mjs
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@$TARGET_HOST "node -e '
+          rsync -avz --delete --exclude='bouquets-cloud/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" dist/ "root@$TARGET_HOST:/var/www/sophiya/"
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/server.mjs server/yookassa-handler.mjs "root@$TARGET_HOST:/opt/sophiya-api/"
+          node -e '
+            process.stdout.write(JSON.stringify({
+              NODE_ENV: "production",
+              YOOKASSA_SHOP_ID: process.env.YOOKASSA_SHOP_ID || "",
+              YOOKASSA_SECRET_KEY: process.env.YOOKASSA_SECRET_KEY || "",
+              YOOKASSA_SEND_RECEIPT: "true"
+            }));
+          ' | ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new "root@$TARGET_HOST" 'node -e "
             const fs = require(\"fs\");
-            const p = \"/opt/sophiya-api/server.mjs\";
-            let s = fs.readFileSync(p, \"utf8\");
-            if (!s.includes(\"yookassa-handler.mjs\")) {
-              s = s.replace(\"import { URL } from \x27node:url\x27;\", \"import { URL } from \x27node:url\x27;\nimport { handleYookassa } from \x27./yookassa-handler.mjs\x27;\");
+            const updates = JSON.parse(fs.readFileSync(0, \"utf8\"));
+            const p = \"/opt/sophiya-api/.env\";
+            let content = fs.existsSync(p) ? fs.readFileSync(p, \"utf8\") : \"\";
+            const setVar = (k, v) => {
+              if (!v) return;
+              const re = new RegExp(\"^\" + k + \"=.*$\", \"m\");
+              content = re.test(content) ? content.replace(re, k + \"=\" + v) : content.trimEnd() + \"\\n\" + k + \"=\" + v + \"\\n\";
+            };
+            setVar(\"NODE_ENV\", updates.NODE_ENV);
+            if (updates.YOOKASSA_SHOP_ID && updates.YOOKASSA_SECRET_KEY) {
+              setVar(\"YOOKASSA_SHOP_ID\", updates.YOOKASSA_SHOP_ID);
+              setVar(\"YOOKASSA_SECRET_KEY\", updates.YOOKASSA_SECRET_KEY);
+              setVar(\"YOOKASSA_SEND_RECEIPT\", updates.YOOKASSA_SEND_RECEIPT);
             }
-            if (!s.includes(\"/api/yookassa\")) {
-              s = s.replace(\"if (pathname === \x27/api/sberbank\x27)\", \"if (pathname === \x27/api/yookassa\x27) return await handleYookassa(req, res, body, parsedUrl);\n    if (pathname === \x27/api/sberbank\x27)\");
-            }
-            fs.writeFileSync(p, s);
-          '"
-          if [ -n "$YOOKASSA_SHOP_ID" ] && [ -n "$YOOKASSA_SECRET_KEY" ]; then
-            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@$TARGET_HOST "YOOKASSA_SHOP_ID='$YOOKASSA_SHOP_ID' YOOKASSA_SECRET_KEY='$YOOKASSA_SECRET_KEY' node -e '
-              const fs = require(\"fs\");
-              const p = \"/opt/sophiya-api/.env\";
-              let e = fs.existsSync(p) ? fs.readFileSync(p, \"utf8\") : \"\";
-              const set = (k, v) => {
-                const r = new RegExp(\"^\" + k + \"=.*$\", \"m\");
-                e = r.test(e) ? e.replace(r, k + \"=\" + v) : e.trimEnd() + \"\\n\" + k + \"=\" + v + \"\\n\";
-              };
-              set(\"YOOKASSA_SHOP_ID\", process.env.YOOKASSA_SHOP_ID);
-              set(\"YOOKASSA_SECRET_KEY\", process.env.YOOKASSA_SECRET_KEY);
-              set(\"YOOKASSA_SEND_RECEIPT\", \"true\");
-              fs.writeFileSync(p, e.trimStart());
-            '"
-          fi
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@$TARGET_HOST "pm2 restart sophiya-api --update-env && sleep 2 && curl -fsS http://127.0.0.1:3001/api/yookassa"
+            fs.writeFileSync(p, content.trimStart(), { mode: 0o600 });
+            fs.chmodSync(p, 0o600);
+          "'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new "root@$TARGET_HOST" "pm2 restart sophiya-api --update-env && sleep 2 && curl -fsS http://127.0.0.1:3001/api/health && curl -fsS http://127.0.0.1:3001/api/yookassa"

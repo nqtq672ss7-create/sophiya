@@ -47,17 +47,25 @@ test('login refuses to sign tokens when AUTH_SECRET is missing', async () => {
   assert.equal(res.body.token, undefined);
 });
 
-test('foreign *.vercel.app origins are not reflected in CORS', async () => {
+test('foreign *.vercel.app, *.github.io, and plain HTTP origins are rejected in CORS', async () => {
   const login = await loginHandlerFor({ ADMIN_PASSWORD: 'x'.repeat(12), AUTH_SECRET: 's'.repeat(40) });
-  const res = makeRes();
-  await login(makeReq({ method: 'OPTIONS', headers: { origin: 'https://evil-app.vercel.app' } }), res);
-  assert.notEqual(res.headers['access-control-allow-origin'], 'https://evil-app.vercel.app');
+  const blockedOrigins = [
+    'https://evil-app.vercel.app',
+    'https://sitesophiya.vercel.app',
+    'https://evil.github.io',
+    'http://xn----ctbjn3arftl7c8b.xn--p1ai',
+    'http://194.67.110.156',
+  ];
+  for (const origin of blockedOrigins) {
+    const res = makeRes();
+    await login(makeReq({ method: 'OPTIONS', headers: { origin } }), res);
+    assert.equal(res.headers['access-control-allow-origin'], 'null');
+  }
 });
 
-test('legitimate site origin is reflected in CORS', async () => {
+test('legitimate HTTPS site origins are reflected in CORS', async () => {
   const login = await loginHandlerFor({ ADMIN_PASSWORD: 'x'.repeat(12), AUTH_SECRET: 's'.repeat(40) });
   const validOrigins = [
-    'https://sitesophiya.vercel.app',
     'https://xn----ctbjn3arftl7c8b.xn--p1ai',
     'https://цветы-софия.рф',
     'https://%D1%86%D0%B2%D0%B5%D1%82%D1%8B-%D1%81%D0%BE%D1%84%D0%B8%D1%8F.%D1%80%D1%84',
@@ -67,6 +75,19 @@ test('legitimate site origin is reflected in CORS', async () => {
     const res = makeRes();
     await login(makeReq({ method: 'OPTIONS', headers: { origin } }), res);
     assert.equal(res.headers['access-control-allow-origin'], origin);
+  }
+});
+
+test('login fails closed (503) when Redis rate-limit store is unreachable (H-07)', async () => {
+  const login = await loginHandlerFor({ ADMIN_PASSWORD: 'correct horse battery', AUTH_SECRET: 's'.repeat(40) });
+  kv.setFailMode(true);
+  try {
+    const res = makeRes();
+    await login(makeReq({ method: 'POST', body: { password: 'correct horse battery' }, ip: '198.51.100.88' }), res);
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.body.token, undefined);
+  } finally {
+    kv.setFailMode(false);
   }
 });
 
