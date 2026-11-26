@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Building2, CheckCircle, Copy, FileText, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle, Copy, ShieldCheck } from 'lucide-react';
 
 interface RequisitesModalProps {
   isOpen: boolean;
@@ -7,7 +7,7 @@ interface RequisitesModalProps {
 }
 
 export const RequisitesModal: React.FC<RequisitesModalProps> = ({ isOpen, onClose }) => {
-  const [copiedField, setCopiedField] = React.useState<string | null>(null);
+  const [copiedField, setCopiedField] = React.useState<string|null>(null);
 
   if (!isOpen) return null;
 
@@ -31,16 +31,17 @@ export const RequisitesModal: React.FC<RequisitesModalProps> = ({ isOpen, onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-none font-sans animate-fadeIn"
+      className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-3 sm:p-4 font-sans animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xl bg-[#FAF7F5] rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-xl bg-[#FAF7F5] rounded-xl shadow-2xl overflow-hidden border border-[#E5DDD9] p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-200/80 hover:bg-zinc-300 flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition-colors"
+          className="absolute top-5 right-5 w-8 h-8 rounded-lg bg-[#EAE2DF] hover:bg-[#DDD2CE] flex items-center justify-center text-[#5C454C] hover:text-[#1C1215] transition-colors"
           aria-label="Закрыть"
         >
           <X className="w-4 h-4" />
@@ -53,24 +54,24 @@ export const RequisitesModal: React.FC<RequisitesModalProps> = ({ isOpen, onClos
           </span>
         </div>
 
-        <h3 className="font-serif text-2xl sm:text-3xl text-zinc-900 font-normal">
+        <h3 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold">
           Реквизиты и оплата
         </h3>
-        <p className="text-xs text-zinc-500 font-light mt-1 mb-6 leading-relaxed">
-          Салон цветов «София» работает официально. Все платежи принимаются на расчётный счёт в ПАО Сбербанк.
+        <p className="text-xs text-[#5C454C] font-light mt-1 mb-6 leading-relaxed">
+          Онлайн-оплата карт и СБП проходит через ЮKassa с отправкой чека по 54-ФЗ. Безналичные платежи от юрлиц поступают на расчётный счёт в ПАО Сбербанк.
         </p>
 
         <div className="space-y-3">
           {requisites.map((item, idx) => (
             <div
               key={idx}
-              className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs flex items-center justify-between gap-3 text-xs"
+              className="p-3.5 rounded-xl bg-white border border-[#EAE2DF] shadow-xs flex items-center justify-between gap-3 text-xs"
             >
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] text-zinc-400 font-light uppercase tracking-wider block">
+                <span className="text-[10px] text-[#7C636B] font-light uppercase tracking-wider block">
                   {item.label}
                 </span>
-                <span className="text-zinc-900 font-medium block truncate mt-0.5">
+                <span className="text-[#1C1215] font-medium block truncate mt-0.5">
                   {item.value}
                 </span>
               </div>
@@ -78,11 +79,11 @@ export const RequisitesModal: React.FC<RequisitesModalProps> = ({ isOpen, onClos
               <button
                 type="button"
                 onClick={() => copyToClipboard(item.copy, item.label)}
-                className="p-2 rounded-xl bg-zinc-100 hover:bg-[#6C1E26] hover:text-white text-zinc-500 transition-colors shrink-0"
+                className="p-2 rounded-xl bg-[#FAF7F5] hover:bg-[#6C1E26] hover:text-white text-[#5C454C] transition-colors shrink-0"
                 title="Скопировать"
               >
                 {copiedField === item.label ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <CheckCircle className="w-4 h-4 text-[#1D6B43]" />
                 ) : (
                   <Copy className="w-4 h-4" />
                 )}
@@ -91,11 +92,11 @@ export const RequisitesModal: React.FC<RequisitesModalProps> = ({ isOpen, onClos
           ))}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-zinc-200 text-center">
+        <div className="mt-6 pt-4 border-t border-[#E5DDD9] text-center">
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 rounded-2xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm"
+            className="w-full py-3 rounded-xl bg-[#6C1E26] hover:bg-[#5A121A] text-white text-xs sm:text-sm font-medium transition-colors shadow-sm"
           >
             Понятно
           </button>

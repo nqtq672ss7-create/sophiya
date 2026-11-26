@@ -1,10 +1,29 @@
 import { Customer, CustomerOrder, calculateLoyaltyTier } from '../types/customer';
 import { getApiUrl } from '../config/api';
 
-const STORAGE_KEY = 'sofiya_customers_db';
-const CURRENT_CUSTOMER_KEY = 'sofiya_current_customer';
+const LEGACY_LOCAL_PII_STORES = [
+  'sofiya_customers_db',
+  'sofiya_customers_backup_latest',
+  'sofiya_current_customer',
+];
 
-// Helper to normalize phone numbers for reliable lookup (e.g., "+7 (917) 256-32-35" -> "79172563235")
+function purgeLegacyLocalPii(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    for (const storeName of LEGACY_LOCAL_PII_STORES) {
+      localStorage.removeItem(storeName);
+    }
+    const toRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('sofiya_customers_backup_')) {
+        toRemove.push(k);
+      }
+    }
+    toRemove.forEach((k) => localStorage.removeItem(k));
+  } catch {}
+}
+
 export function normalizePhone(phone: string): string {
   const digits = phone.replace(/\D/g, '');
   if (digits.length === 11 && digits.startsWith('8')) {
@@ -13,7 +32,6 @@ export function normalizePhone(phone: string): string {
   return digits;
 }
 
-// Format digits into beautiful Russian phone mask: +7 (9XX) XXX-XX-XX
 export function formatRussianPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '');
   if (!digits) return '';
@@ -40,46 +58,28 @@ export function formatRussianPhone(raw: string): string {
   return formatted;
 }
 
+function sanitizeCsvCell(raw: unknown): string {
+  const str = String(raw ?? '').replace(/\r?\n/g, ' ').trim();
+  const isSafeFormattedPhone = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(str);
+  const neutralized = !isSafeFormattedPhone && /^[=+\-@\t\r]/.test(str) ? `'${str}` : str;
+  return `"${neutralized.replace(/"/g, '""')}"`;
+}
+
+let inMemoryCustomers: Customer[] = [];
+
 export class CustomerDatabaseService {
-  // Read local customers, excluding legacy mock data
   static getLocalCustomers(): Customer[] {
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) return [];
-      const parsed: Customer[] = JSON.parse(data);
-      // Clean out any legacy mock accounts
-      const cleaned = parsed.filter(
-        (c) => c.id !== 'cust_01' && c.id !== 'cust_02' && !c.id.startsWith('seed_')
-      );
-      if (cleaned.length !== parsed.length) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
-      }
-      return cleaned;
-    } catch (e) {
-      console.warn('Failed to read local customers database:', e);
-      return [];
-    }
+    purgeLegacyLocalPii();
+    return inMemoryCustomers;
   }
 
-  // Save customers to local storage with redundant safety snapshots
   static saveLocalCustomers(customers: Customer[]): void {
-    try {
-      // Exclude legacy mock accounts
-      const cleaned = customers.filter(
-        (c) => c.id !== 'cust_01' && c.id !== 'cust_02' && !c.id.startsWith('seed_')
-      );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
-
-      // Redundant Snapshot Backup: Daily & Latest
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem(`sofiya_customers_backup_${today}`, JSON.stringify(cleaned));
-      localStorage.setItem('sofiya_customers_backup_latest', JSON.stringify(cleaned));
-    } catch (e) {
-      console.error('Failed to save customers to localStorage:', e);
-    }
+    purgeLegacyLocalPii();
+    inMemoryCustomers = customers.filter(
+      (c) => c.id !== 'cust_01' && c.id !== 'cust_02' && !c.id.startsWith('seed_')
+    );
   }
 
-  // Export customer database to Excel-compatible CSV with UTF-8 BOM
   static exportToCSV(customers: Customer[]): void {
     const BOM = '\uFEFF';
     const headers = [
@@ -96,16 +96,16 @@ export class CustomerDatabaseService {
     ];
 
     const rows = customers.map((c) => [
-      c.id,
-      `"${c.firstName.replace(/"/g, '""')}"`,
-      `"${c.lastName.replace(/"/g, '""')}"`,
-      `"${c.phone}"`,
-      c.birthDate ? `"${c.birthDate}"` : '""',
-      `"${c.tier}"`,
-      c.discountPercent,
-      c.ordersCount,
-      c.totalSpent,
-      `"${c.registeredAt}"`,
+      sanitizeCsvCell(c.id),
+      sanitizeCsvCell(c.firstName),
+      sanitizeCsvCell(c.lastName),
+      sanitizeCsvCell(c.phone),
+      sanitizeCsvCell(c.birthDate || ''),
+      sanitizeCsvCell(c.tier),
+      Number(c.discountPercent) || 0,
+      Number(c.ordersCount) || 0,
+      Number(c.totalSpent) || 0,
+      sanitizeCsvCell(c.registeredAt),
     ]);
 
     const csvContent = BOM + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\r\n');
@@ -121,56 +121,32 @@ export class CustomerDatabaseService {
     URL.revokeObjectURL(url);
   }
 
-  // Fetch all customers from server API with local fallback
   static async fetchAllCustomers(): Promise<Customer[]> {
-    const local = this.getLocalCustomers();
+    purgeLegacyLocalPii();
     try {
       const token = typeof window !== 'undefined' ? sessionStorage.getItem('sophiya_admin_token') : null;
-      const headers: Record<string, string> = { 'Cache-Control': 'no-cache' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const res = await fetch(getApiUrl(`/api/customers?t=${Date.now()}`), {
-        headers,
+      if (!token) return [];
+      const res = await fetch(getApiUrl('/api/customers'), {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const remote: Customer[] = await res.json();
         if (Array.isArray(remote)) {
-          // Merge remote and local without duplicates (remote takes precedence)
-          const mergedMap = new Map<string, Customer>();
-          local.forEach((c) => mergedMap.set(c.id, c));
-          remote.forEach((c) => mergedMap.set(c.id, c));
-          const merged = Array.from(mergedMap.values());
-          this.saveLocalCustomers(merged);
-          return merged;
+          this.saveLocalCustomers(remote);
+          return inMemoryCustomers;
         }
       }
-    } catch {
-      // Serverless API might be building or offline, use local seamlessly
-    }
-    return local;
+    } catch {}
+    return inMemoryCustomers;
   }
 
-  // Find customer by phone
   static async findByPhone(phone: string): Promise<Customer|null> {
     const normalized = normalizePhone(phone);
     if (!normalized) return null;
-
-    // Check local first for immediate response
-    const local = this.getLocalCustomers();
-    const foundLocal = local.find((c) => normalizePhone(c.phone) === normalized);
-    if (foundLocal) return foundLocal;
-
-    // Try fetching from server
-    try {
-      const all = await this.fetchAllCustomers();
-      return all.find((c) => normalizePhone(c.phone) === normalized) || null;
-    } catch {
-      return null;
-    }
+    return inMemoryCustomers.find((c) => normalizePhone(c.phone) === normalized) || null;
   }
 
-  // Register a brand new customer in database
   static async registerCustomer(params: {
     phone: string;
     firstName: string;
@@ -179,23 +155,10 @@ export class CustomerDatabaseService {
   }): Promise<{ success: boolean; customer?: Customer; error?: string }> {
     const normalized = normalizePhone(params.phone);
     if (normalized.length < 11) {
-      return { success: false, error: 'Пожалуйста, укажите корректный 11-значный номер телефона' };
+      return { success: false, error: 'Укажите корректный 11-значный номер телефона' };
     }
-
-    if (!params.firstName.trim()) {
-      return { success: false, error: 'Пожалуйста, введите имя' };
-    }
-    if (!params.lastName.trim()) {
-      return { success: false, error: 'Пожалуйста, введите фамилию' };
-    }
-
-    // Check if phone already registered
-    const existing = await this.findByPhone(params.phone);
-    if (existing) {
-      return {
-        success: false,
-        error: `Клиент с номером ${formatRussianPhone(params.phone)} уже зарегистрирован в клубе. Войдите по номеру телефона.`,
-      };
+    if (!params.firstName.trim() || !params.lastName.trim()) {
+      return { success: false, error: 'Укажите имя и фамилию' };
     }
 
     const newCustomer: Customer = {
@@ -212,33 +175,28 @@ export class CustomerDatabaseService {
       registeredAt: new Date().toISOString().split('T')[0],
     };
 
-    // Save locally
-    const currentList = this.getLocalCustomers();
-    const updatedList = [newCustomer, ...currentList.filter((c) => c.id !== newCustomer.id)];
-    this.saveLocalCustomers(updatedList);
-    this.setCurrentCustomer(newCustomer);
-
-    // Sync to cloud API asynchronously
     try {
-      await fetch(getApiUrl('/api/customers'), {
+      const res = await fetch(getApiUrl('/api/customers'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCustomer),
       });
-    } catch (e) {
-      console.warn('Asynchronous cloud sync failed (will retry):', e);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        return { success: false, error: errData.error || 'Не удалось сохранить клиента' };
+      }
+    } catch {
+      return { success: false, error: 'Сервис временно недоступен' };
     }
 
     return { success: true, customer: newCustomer };
   }
 
-  // Add an order to existing customer and recalculate loyalty tier
   static async recordOrder(
     customerId: string,
     orderData: { items: string[]; totalAmount: number }
   ): Promise<Customer|null> {
-    const local = this.getLocalCustomers();
-    const target = local.find((c) => c.id === customerId);
+    const target = inMemoryCustomers.find((c) => c.id === customerId);
     if (!target) return null;
 
     const discountAmount = Math.round((orderData.totalAmount * target.discountPercent) / 100);
@@ -266,57 +224,21 @@ export class CustomerDatabaseService {
       orders: [newOrder, ...target.orders],
     };
 
-    const updatedList = local.map((c) => (c.id === updated.id ? updated : c));
-    this.saveLocalCustomers(updatedList);
-    this.setCurrentCustomer(updated);
-
-    // Sync to cloud API
-    try {
-      await fetch(getApiUrl('/api/customers'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
-    } catch {}
-
+    this.saveLocalCustomers(inMemoryCustomers.map((c) => (c.id === updated.id ? updated : c)));
     return updated;
   }
 
-  // Session handling for current customer
   static getCurrentCustomer(): Customer|null {
-    try {
-      const data = localStorage.getItem(CURRENT_CUSTOMER_KEY);
-      if (!data) return null;
-      const parsed: Customer = JSON.parse(data);
-      if (parsed.id === 'cust_01' || parsed.id === 'cust_02' || parsed.id.startsWith('seed_')) {
-        localStorage.removeItem(CURRENT_CUSTOMER_KEY);
-        return null;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
+    purgeLegacyLocalPii();
+    return null;
   }
 
-  static setCurrentCustomer(customer: Customer|null): void {
-    try {
-      if (customer) {
-        localStorage.setItem(CURRENT_CUSTOMER_KEY, JSON.stringify(customer));
-      } else {
-        localStorage.removeItem(CURRENT_CUSTOMER_KEY);
-      }
-    } catch {}
+  static setCurrentCustomer(_customer: Customer|null): void {
+    purgeLegacyLocalPii();
   }
 
-  // Right to be forgotten (152-FZ): delete customer data and wipe session
   static forgetCustomer(customerId: string): void {
-    try {
-      const local = this.getLocalCustomers();
-      const filtered = local.filter((c) => c.id !== customerId);
-      this.saveLocalCustomers(filtered);
-      localStorage.removeItem(CURRENT_CUSTOMER_KEY);
-    } catch (e) {
-      console.warn('Failed to wipe customer data locally:', e);
-    }
+    inMemoryCustomers = inMemoryCustomers.filter((c) => c.id !== customerId);
+    purgeLegacyLocalPii();
   }
 }

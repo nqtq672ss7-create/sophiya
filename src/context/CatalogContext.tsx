@@ -142,8 +142,7 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const syncToCloud = async (payload: any): Promise<{ ok: boolean; status?: number; error?: string; data?: any }> => {
     const token =
       typeof window !== 'undefined'
-        ? sessionStorage.getItem('sophiya_admin_token') ||
-          localStorage.getItem('sophiya_admin_token_v1')
+        ? sessionStorage.getItem('sophiya_admin_token')
         : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {

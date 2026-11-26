@@ -42,10 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshCustomers = useCallback(async () => {
     const hasAdminToken =
       typeof window !== 'undefined' &&
-      Boolean(
-        sessionStorage.getItem('sophiya_admin_token') ||
-          localStorage.getItem('sophiya_admin_token_v1')
-      );
+      Boolean(sessionStorage.getItem('sophiya_admin_token'));
     if (!hasAdminToken) return;
 
     try {

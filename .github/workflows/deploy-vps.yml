@@ -48,6 +48,8 @@ jobs:
           ssh-keyscan -H "$TARGET_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           rsync -avz --delete --exclude='bouquets-cloud/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" dist/ "root@$TARGET_HOST:/var/www/sophiya/"
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/server.mjs server/yookassa-handler.mjs server/migrate-catalog-images.mjs "root@$TARGET_HOST:/opt/sophiya-api/"
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/nginx-hardening.conf "root@$TARGET_HOST:/etc/nginx/conf.d/sophiya-hardening.conf"
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/nginx-sophiya.conf "root@$TARGET_HOST:/etc/nginx/sites-available/sophiya"
           node -e '
             process.stdout.write(JSON.stringify({
               NODE_ENV: "production",
@@ -74,4 +76,4 @@ jobs:
             fs.writeFileSync(p, content.trimStart(), { mode: 0o600 });
             fs.chmodSync(p, 0o600);
           "'
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new "root@$TARGET_HOST" "pm2 restart sophiya-api --update-env && sleep 2 && curl -fsS http://127.0.0.1:3001/api/health && curl -fsS http://127.0.0.1:3001/api/yookassa"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new "root@$TARGET_HOST" "nginx -t && systemctl reload nginx && pm2 restart sophiya-api --update-env && sleep 2 && curl -fsS http://127.0.0.1:3001/api/health && curl -fsS http://127.0.0.1:3001/api/yookassa"

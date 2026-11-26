@@ -405,7 +405,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   // 0. Checking YooKassa return status
   if (isCheckingPayment) {
     return (
-      <div className="min-h-[65vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center select-none max-w-md mx-auto">
+      <div className="min-h-[65vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto">
         <Loader2 className="w-10 h-10 text-[#6C1E26] animate-spin mb-4" />
         <h2 className="font-sans font-semibold text-2xl text-[#1C1215] mb-2">Проверяем оплату</h2>
         <p className="text-xs sm:text-sm text-[#5C454C] font-light">
@@ -418,7 +418,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   // 1. Variant 5: Edit Order Screen
   if (isSuccess && placedOrder && isEditingOrder) {
     return (
-      <div className="min-h-[75vh] bg-[#FAF7F5] py-8 px-4 select-none animate-fadeIn">
+      <div className="min-h-[75vh] bg-[#FAF7F5] py-8 px-4 pb-28 sm:pb-12 animate-fadeIn">
         <form
           onSubmit={handleSaveOrderChanges}
           className="max-w-md mx-auto bg-white rounded-xl border border-[#EAE2DF] p-5 sm:p-6 shadow-sm space-y-4"
@@ -587,7 +587,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   // 2. Success Screen (with "Изменить заказ" button)
   if (isSuccess) {
     return (
-      <div className="min-h-[70vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center select-none animate-fadeIn max-w-2xl mx-auto my-8">
+      <div className="min-h-[70vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center animate-fadeIn max-w-2xl mx-auto my-8">
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border-2 border-[#C5A880] flex items-center justify-center mb-6 shadow-xl relative bg-white">
           <div className="absolute inset-0 bg-[#C5A880]/15 rounded-xl" />
           <CheckCircle className="w-12 h-12 text-[#6C1E26]" />
@@ -638,7 +638,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   // 3. Empty Cart State
   if (items.length === 0) {
     return (
-      <div className="min-h-[60vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center select-none my-8">
+      <div className="min-h-[60vh] bg-[#FAF7F5] flex flex-col items-center justify-center p-6 text-center my-8">
         <div className="w-20 h-20 rounded-xl bg-white border border-[#E5DDD9] flex items-center justify-center mb-5 shadow-xs">
           <ShoppingBag className="w-8 h-8 text-[#C5A880]" />
         </div>
@@ -661,7 +661,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
   // 4. Variant 2 Checkout: 2 Columns on Desktop + Sticky Summary
   return (
-    <div className="min-h-screen bg-[#FAF7F5] py-8 sm:py-12 px-4 sm:px-6 select-none animate-fadeIn">
+    <div className="min-h-screen bg-[#FAF7F5] py-8 sm:py-12 pb-28 sm:pb-14 px-4 sm:px-6 animate-fadeIn">
       <div className="max-w-5xl mx-auto">
         <h1 className="font-sans font-semibold text-2xl sm:text-3xl text-[#1C1215] mb-6">
           Ваш заказ

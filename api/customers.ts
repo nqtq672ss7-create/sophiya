@@ -81,34 +81,6 @@ function verifyToken(token: string|null|undefined): boolean {
   }
 }
 
-function escapeMarkdown(value: unknown): string {
-  return String(value ?? '').replace(/([_*`\[\]()~>#+\-=|{}.!\\])/g, '\\$1');
-}
-
-async function notifyTelegram(customer: any) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
-
-  const text =
-    '*НОВЫЙ КЛИЕНТ В САЛОНЕ «СОФИЯ»*\n\n' +
-    `*Клиент:* ${escapeMarkdown(customer.firstName)} ${escapeMarkdown(customer.lastName)}\n` +
-    `*Телефон:* ${escapeMarkdown(customer.phone)}\n` +
-    `*День рождения:* ${escapeMarkdown(customer.birthDate || 'Не указан')}\n` +
-    `*Дата регистрации:* ${escapeMarkdown(customer.registeredAt)}\n` +
-    `*Время \\(МСК\\):* ${escapeMarkdown(new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' }))}`;
-
-  try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'MarkdownV2' }),
-    });
-  } catch (err) {
-    console.error('Failed to dispatch Telegram notice:', err);
-  }
-}
-
 const TIER_NAMES = ['Клиент', 'Серебряный', 'Золотой', 'Платиновый'];
 const REGISTRATIONS_PER_HOUR = 5;
 
@@ -243,7 +215,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           registeredAt: new Date().toISOString().split('T')[0],
         };
         await client.set('salon_customers', [created, ...existing]);
-        notifyTelegram(created).catch(() => {});
         return res.status(200).json({ success: true, customer: created });
       }
 

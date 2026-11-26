@@ -171,15 +171,13 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
     try {
       if (typeof window === 'undefined') return false;
-      const token =
-        sessionStorage.getItem('sophiya_admin_token') ||
-        localStorage.getItem('sophiya_admin_token_v1');
+      localStorage.removeItem('sophiya_admin_token_v1');
+      localStorage.removeItem('sophiya_admin_orders_v1');
+      const token = sessionStorage.getItem('sophiya_admin_token');
       if (!token || isTokenExpired(token)) {
         sessionStorage.removeItem('sophiya_admin_token');
-        localStorage.removeItem('sophiya_admin_token_v1');
         return false;
       }
-      sessionStorage.setItem('sophiya_admin_token', token);
       return true;
     } catch {
       return false;
@@ -200,9 +198,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
       refreshCustomers();
       refreshReviews();
       refreshPending();
-      const token =
-        sessionStorage.getItem('sophiya_admin_token') ||
-        localStorage.getItem('sophiya_admin_token_v1');
+      const token = sessionStorage.getItem('sophiya_admin_token');
       if (token) {
         fetch(getApiUrl('/api/yookassa?action=orders'), {
           headers: { Authorization: `Bearer ${token}` },
@@ -297,9 +293,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
   const markCallbackDone = async (id: string) => {
     setCallbacks((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'done' } : c)));
-    const token =
-      sessionStorage.getItem('sophiya_admin_token') ||
-      localStorage.getItem('sophiya_admin_token_v1');
+    const token = sessionStorage.getItem('sophiya_admin_token');
     if (!token) return;
     try {
       await fetch(getApiUrl('/api/callback'), {
@@ -313,23 +307,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     } catch {}
   };
 
-  // Orders (ignore legacy demo orders if any were cached)
-  const [orders, setOrders] = useState<AdminOrder[]>(() => {
-    const saved = readJsonStorage<AdminOrder[]>('sophiya_admin_orders_v1', []);
-    return saved.filter(
-      (o) =>
-        !(
-          (o.id === 'ord_1' && o.customerName === 'Айрат Мингазов') ||
-          (o.id === 'ord_2' && o.customerName === 'Елена Сафина')
-        )
-    );
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('sophiya_admin_orders_v1', JSON.stringify(orders));
-    } catch {}
-  }, [orders]);
+  // Orders (loaded strictly from authenticated server API, never persisted in localStorage)
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
 
   // Review replies
   const [reviewReplies, setReviewReplies] = useState<Record<string, string>>(() =>
@@ -420,7 +399,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         setIsUnlocked(true);
         setPinInput('');
         sessionStorage.setItem('sophiya_admin_token', data.token);
-        localStorage.setItem('sophiya_admin_token_v1', data.token);
+        localStorage.removeItem('sophiya_admin_token_v1');
         refreshCustomers();
         refreshReviews();
         refreshPending();
@@ -612,9 +591,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   };
 
   const syncOrderUpdate = async (orderId: string, patch: { orderStatus?: AdminOrder['orderStatus']; photoReportUrl?: string }) => {
-    const token =
-      sessionStorage.getItem('sophiya_admin_token') ||
-      localStorage.getItem('sophiya_admin_token_v1');
+    const token = sessionStorage.getItem('sophiya_admin_token');
     if (!token) return;
     try {
       await fetch(getApiUrl('/api/yookassa?action=updateOrderStatus'), {
@@ -1197,18 +1174,10 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                         </button>
                         <a
                           href={`tel:+${cleanPhone}`}
-                          className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center"
+                          className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center gap-1"
                           title="Позвонить"
                         >
-                          <Phone className="w-3.5 h-3.5" />
-                        </a>
-                        <a
-                          href={`https://wa.me/${cleanPhone}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center gap-1"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" /> WA
+                          <Phone className="w-3.5 h-3.5" /> Позвонить
                         </a>
                         {st.next && (
                           <button
@@ -1382,8 +1351,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {[
-                    ['promos', 'Промокоды и акции', `Активно: ${promos.filter((p) => p.active).length}`],
-                    ['loyalty', 'Клубные карты', 'Уровни скидок и кэшбэка'],
+                    ['loyalty', 'Клубные карты', 'Уровни скидок и бонусной программы'],
                     ['logistics', 'Логистика и зоны', 'Центр 0 ₽, Пригород 400 ₽, Промзона 400 ₽'],
                     ['settings', 'Настройки, роли и Push', `Роль: ${role}, Push: ${pushEnabled ? 'Вкл' : 'Выкл'}`],
                   ].map(([id, title, sub]) => (
