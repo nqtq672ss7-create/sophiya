@@ -210,7 +210,7 @@ export class CustomerDatabaseService {
   static async loginWithPassword(
     phone: string,
     password: string
-  ): Promise<{ success: boolean; customer?: Customer; error?: string }> {
+  ): Promise<{ success: boolean; customer?: Customer; error?: string; needsPasswordSetup?: boolean }> {
     const normalized = normalizePhone(phone);
     if (normalized.length < 11) {
       return { success: false, error: 'Укажите полный 11-значный номер телефона' };
@@ -231,7 +231,50 @@ export class CustomerDatabaseService {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.customer) {
-        return { success: false, error: data?.error || 'Неверный номер телефона или пароль' };
+        return {
+          success: false,
+          error: data?.error || 'Неверный номер телефона или пароль',
+          needsPasswordSetup: Boolean(data?.needsPasswordSetup),
+        };
+      }
+      return { success: true, customer: data.customer as Customer };
+    } catch {
+      return { success: false, error: 'Нет связи с сервером. Попробуйте позже.' };
+    }
+  }
+
+  static async claimPassword(payload: {
+    phone: string;
+    firstName: string;
+    password: string;
+    consent: boolean;
+  }): Promise<{ success: boolean; customer?: Customer; error?: string }> {
+    const normalized = normalizePhone(payload.phone);
+    if (normalized.length < 11) {
+      return { success: false, error: 'Укажите полный 11-значный номер телефона' };
+    }
+    if (!payload.firstName.trim()) {
+      return { success: false, error: 'Укажите имя из вашего профиля' };
+    }
+    if (payload.password.length < 6) {
+      return { success: false, error: 'Пароль должен содержать минимум 6 символов' };
+    }
+    if (!payload.consent) {
+      return { success: false, error: 'Подтвердите согласие на обработку персональных данных' };
+    }
+    try {
+      const res = await fetch(getApiUrl('/api/customer-auth'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'claimPassword',
+          ...payload,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.customer) {
+        return { success: false, error: data?.error || 'Не удалось задать пароль' };
       }
       return { success: true, customer: data.customer as Customer };
     } catch {

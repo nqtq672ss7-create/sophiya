@@ -14,9 +14,11 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
     closeAuthModal,
     registerCustomer,
     loginWithPassword,
+    claimCustomerPassword,
   } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'login'|'register'>('login');
+  const [isPasswordSetupMode, setIsPasswordSetupMode] = useState(false);
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +42,7 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
 
   const handleTabSwitch = (tab: 'login'|'register') => {
     setActiveTab(tab);
+    setIsPasswordSetupMode(false);
     setError('');
   };
 
@@ -96,6 +99,38 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
       } else {
         setError(result.error || 'Ошибка при сохранении профиля');
       }
+    } else if (isPasswordSetupMode) {
+      if (!firstName.trim()) {
+        setError('Укажите имя из вашего профиля');
+        return;
+      }
+      if (password.length < 6) {
+        setError('Придумайте пароль от 6 символов');
+        return;
+      }
+      if (!isPdAgreed) {
+        setError('Подтвердите согласие на обработку персональных данных');
+        return;
+      }
+
+      setIsLoading(true);
+      const result = await claimCustomerPassword({
+        phone,
+        firstName,
+        password,
+        consent: true,
+      });
+      setIsLoading(false);
+
+      if (result.success) {
+        setIsPasswordSetupMode(false);
+        setPhone('');
+        setPassword('');
+        setFirstName('');
+        setIsPdAgreed(false);
+      } else {
+        setError(result.error || 'Не удалось задать пароль');
+      }
     } else {
       if (!password) {
         setError('Введите пароль');
@@ -108,6 +143,10 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
       if (result.success) {
         setPhone('');
         setPassword('');
+      } else if (result.needsPasswordSetup) {
+        setIsPasswordSetupMode(true);
+        setPassword('');
+        setError('');
       } else {
         setError(result.error || 'Неверный номер телефона или пароль');
       }
@@ -192,12 +231,39 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
                 autoComplete="tel"
                 value={phone}
                 onChange={handlePhoneChange}
-                placeholder="+7 (917) 000-00-00"
+                placeholder="+7 (___) ___-__-__"
                 className="w-full pl-10 pr-4 py-3 bg-black/40 border border-white/15 focus:border-[#C5A880] rounded-xl text-white font-sans text-sm tracking-wider focus:outline-none transition-colors"
                 autoFocus
               />
             </div>
           </div>
+
+          {activeTab === 'login' && isPasswordSetupMode && (
+            <div className="space-y-3">
+              <div className="p-3 bg-[#C5A880]/10 border border-[#C5A880]/30 rounded-xl text-xs text-[#FAF7F5]/90 leading-relaxed">
+                Для этого номера пароль ещё не задан. Подтвердите ваше имя из профиля и придумайте новый пароль.
+              </div>
+              <div>
+                <label className="block text-[11px] uppercase tracking-wider text-white/70 mb-1.5 font-light">
+                  Имя из профиля <span className="text-[#C5A880]">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    autoComplete="given-name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Как указывали при регистрации"
+                    className="w-full pl-10 pr-4 py-3 bg-black/40 border border-white/15 focus:border-[#C5A880] rounded-xl text-white font-sans text-sm focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {activeTab === 'register' && (
             <>
@@ -289,7 +355,7 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
             </div>
           </div>
 
-          {activeTab === 'register' && (
+          {(activeTab === 'register' || isPasswordSetupMode) && (
             <label className="flex items-start gap-2.5 text-[11px] text-white/75 font-light leading-relaxed cursor-pointer select-none pt-1">
               <input
                 type="checkbox"
@@ -335,11 +401,28 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
                   ? 'Проверка...'
                   : activeTab === 'register'
                   ? 'Зарегистрироваться'
+                  : isPasswordSetupMode
+                  ? 'Задать пароль и войти'
                   : 'Войти в кабинет'}
               </span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
+
+          {activeTab === 'login' && isPasswordSetupMode && (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPasswordSetupMode(false);
+                  setError('');
+                }}
+                className="text-[11px] text-white/60 hover:text-white underline cursor-pointer"
+              >
+                Вернуться ко входу с паролем
+              </button>
+            </div>
+          )}
 
           {activeTab === 'login' && (
             <p className="text-[11px] text-center text-white/50 font-light">
@@ -351,8 +434,8 @@ export const AuthModal: React.FC<AuthModalProps> = () => {
                 className="text-[#C5A880] hover:underline"
               >
                 Напишите флористу в MAX
-              </a>{' '}
-              — поможем восстановить доступ.
+              </a>
+              , поможем восстановить доступ.
             </p>
           )}
 

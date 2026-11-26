@@ -339,6 +339,35 @@ export async function handleCustomerAuth(req, res, body, deps) {
       const existing = ((await kvClient.get(CUSTOMERS_STORE)) || []).filter(Boolean);
       const duplicate = existing.find((c) => normalizePhoneDigits(c.phone) === phoneDigits);
       if (duplicate) {
+        if (!duplicate.passwordHash) {
+          const existingFirst = String(duplicate.firstName || '').trim();
+          if (existingFirst && firstName.toLowerCase() !== existingFirst.toLowerCase()) {
+            return sendJson(res, 403, {
+              error: 'Имя не совпадает с указанным при первой регистрации. Укажите прежнее имя или напишите нам в MAX.',
+            });
+          }
+
+          duplicate.passwordHash = hashPassword(password);
+          if (!existingFirst) duplicate.firstName = firstName;
+          if (!String(duplicate.lastName || '').trim()) duplicate.lastName = lastName;
+          if (birthDate && !duplicate.birthDate) duplicate.birthDate = birthDate;
+          duplicate.updatedAt = new Date().toISOString();
+
+          await kvClient.set(CUSTOMERS_STORE, existing);
+          const token = signCustomerToken(duplicate);
+          setCustomerCookie(res, token);
+
+          let allOrders = [];
+          try {
+            allOrders = typeof readAllOrders === 'function' ? await readAllOrders() : [];
+          } catch {}
+
+          return sendJson(res, 200, {
+            authenticated: true,
+            customer: buildCustomerView(duplicate, allOrders),
+          });
+        }
+
         return sendJson(res, 409, {
           error: 'Клиент с таким номером уже зарегистрирован. Войдите с паролем или напишите в MAX для сброса пароля.',
         });
@@ -419,7 +448,8 @@ export async function handleCustomerAuth(req, res, body, deps) {
 
       if (found && !found.passwordHash) {
         return sendJson(res, 401, {
-          error: 'Для этого номера ещё не задан пароль. Напишите нам в MAX, и мы активируем вход в кабинет.',
+          error: 'Для этого номера ещё не задан пароль. Подтвердите имя и задайте пароль ниже.',
+          needsPasswordSetup: true,
         });
       }
       return sendJson(res, 401, { error: 'Неверный номер телефона или пароль' });
@@ -428,6 +458,80 @@ export async function handleCustomerAuth(req, res, body, deps) {
     try {
       await kvClient.del(rlKey);
     } catch {}
+
+    const token = signCustomerToken(found);
+    setCustomerCookie(res, token);
+
+    let allOrders = [];
+    try {
+      allOrders = typeof readAllOrders === 'function' ? await readAllOrders() : [];
+    } catch {}
+
+    return sendJson(res, 200, {
+      authenticated: true,
+      customer: buildCustomerView(found, allOrders),
+    });
+  }
+
+  if (action === 'claimPassword') {
+    if (body.consent !== true) {
+      return sendJson(res, 400, { error: 'Подтвердите согласие на обработку персональных данных' });
+    }
+
+    const phoneDigits = normalizePhoneDigits(body.phone);
+    const firstName = String(body.firstName || '').trim().slice(0, 50);
+    const password = typeof body.password === 'string' ? body.password : '';
+
+    if (!/^7\d{10}$/.test(phoneDigits)) {
+      return sendJson(res, 400, { error: 'Укажите корректный 11-значный российский номер телефона' });
+    }
+    if (!firstName) {
+      return sendJson(res, 400, { error: 'Укажите имя из вашего профиля' });
+    }
+    if (password.length < 6 || password.length > 128) {
+      return sendJson(res, 400, { error: 'Пароль должен содержать от 6 до 128 символов' });
+    }
+
+    try {
+      const rlKey = `ratelimit_cclaim_${safeIp}_${phoneDigits}`;
+      const attempts = Number(await kvClient.incr(rlKey));
+      if (attempts === 1) await kvClient.expire(rlKey, 3600);
+      if (attempts > 5) {
+        return sendJson(res, 429, { error: 'Слишком много попыток установки пароля. Попробуйте позже.' });
+      }
+    } catch {
+      return sendJson(res, 503, { error: 'Сервис временно недоступен' });
+    }
+
+    let list = [];
+    try {
+      list = ((await kvClient.get(CUSTOMERS_STORE)) || []).filter(Boolean);
+    } catch {
+      return sendJson(res, 503, { error: 'Сервис временно недоступен' });
+    }
+
+    const found = list.find((c) => normalizePhoneDigits(c.phone) === phoneDigits);
+    if (!found) {
+      return sendJson(res, 404, { error: 'Профиль с таким номером не найден. Зарегистрируйтесь как новый клиент.' });
+    }
+    if (found.passwordHash) {
+      return sendJson(res, 409, { error: 'Пароль для этого профиля уже задан. Войдите с паролем.' });
+    }
+
+    const existingFirst = String(found.firstName || '').trim();
+    if (existingFirst && firstName.toLowerCase() !== existingFirst.toLowerCase()) {
+      return sendJson(res, 403, { error: 'Имя не совпадает с указанным при регистрации' });
+    }
+
+    found.passwordHash = hashPassword(password);
+    if (!existingFirst) found.firstName = firstName;
+    found.updatedAt = new Date().toISOString();
+
+    try {
+      await kvClient.set(CUSTOMERS_STORE, list);
+    } catch {
+      return sendJson(res, 503, { error: 'Не удалось сохранить пароль. Попробуйте позже.' });
+    }
 
     const token = signCustomerToken(found);
     setCustomerCookie(res, token);

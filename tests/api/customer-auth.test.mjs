@@ -241,3 +241,135 @@ test('POST deleteAccount (152-FZ) deletes customer and anonymizes order PII', as
   assert.equal(scrubbedOrder.email, '');
   assert.equal('customerId' in scrubbedOrder, false);
 });
+
+test('POST login flags passwordless legacy account and claimPassword activates it with name check', async () => {
+  kv.seedJson('salon_customers', [
+    {
+      id: 'cust_legacy_1',
+      phone: '+7 (999) 652-42-00',
+      firstName: 'Елена',
+      lastName: 'Иванова',
+      totalSpent: 7500,
+      ordersCount: 2,
+      createdAt: '2026-01-10T10:00:00.000Z',
+    },
+  ]);
+
+  // 1. Login returns 401 with needsPasswordSetup: true
+  const loginAttempt = makeRes();
+  await handler(
+    makeReq({
+      method: 'POST',
+      ip: nextIp(),
+      body: { action: 'login', phone: '+7 (999) 652-42-00', password: 'any-password' },
+    }),
+    loginAttempt
+  );
+  assert.equal(loginAttempt.statusCode, 401);
+  assert.equal(loginAttempt.body.needsPasswordSetup, true);
+
+  // 2. claimPassword with wrong firstName -> 403
+  const wrongNameRes = makeRes();
+  await handler(
+    makeReq({
+      method: 'POST',
+      ip: nextIp(),
+      body: {
+        action: 'claimPassword',
+        phone: '+7 (999) 652-42-00',
+        firstName: 'Светлана',
+        password: 'new-password-123',
+        consent: true,
+      },
+    }),
+    wrongNameRes
+  );
+  assert.equal(wrongNameRes.statusCode, 403);
+
+  // 3. claimPassword with matching firstName (case-insensitive) -> 200 & cookie
+  const claimRes = makeRes();
+  await handler(
+    makeReq({
+      method: 'POST',
+      ip: nextIp(),
+      body: {
+        action: 'claimPassword',
+        phone: '89996524200',
+        firstName: ' елена ',
+        password: 'new-password-123',
+        consent: true,
+      },
+    }),
+    claimRes
+  );
+  assert.equal(claimRes.statusCode, 200);
+  assert.equal(claimRes.body.authenticated, true);
+  assert.equal(claimRes.body.customer.id, 'cust_legacy_1');
+  assert.equal(claimRes.body.customer.totalSpent, 7500);
+  assert.ok(extractCookieToken(claimRes.headers['set-cookie']));
+
+  // 4. Subsequent login with the new password works
+  const okLogin = makeRes();
+  await handler(
+    makeReq({
+      method: 'POST',
+      ip: nextIp(),
+      body: { action: 'login', phone: '+7 (999) 652-42-00', password: 'new-password-123' },
+    }),
+    okLogin
+  );
+  assert.equal(okLogin.statusCode, 200);
+  assert.equal(okLogin.body.customer.id, 'cust_legacy_1');
+
+  // 5. Re-claiming an already-protected account -> 409
+  const secondClaim = makeRes();
+  await handler(
+    makeReq({
+      method: 'POST',
+      ip: nextIp(),
+      body: {
+        action: 'claimPassword',
+        phone: '+7 (999) 652-42-00',
+        firstName: 'Елена',
+        password: 'another-password',
+        consent: true,
+      },
+    }),
+    secondClaim
+  );
+  assert.equal(secondClaim.statusCode, 409);
+});
+
+test('POST register activates legacy passwordless account when firstName matches', async () => {
+  kv.seedJson('salon_customers', [
+    {
+      id: 'cust_legacy_2',
+      phone: '+7 (917) 888-99-00',
+      firstName: 'Дарья',
+      lastName: '',
+      totalSpent: 3200,
+      ordersCount: 1,
+    },
+  ]);
+
+  const regRes = makeRes();
+  await handler(
+    makeReq({
+      method: 'POST',
+      ip: nextIp(),
+      body: {
+        action: 'register',
+        phone: '+7 (917) 888-99-00',
+        firstName: 'Дарья',
+        lastName: 'Козлова',
+        password: 'activated-pass',
+        consent: true,
+      },
+    }),
+    regRes
+  );
+  assert.equal(regRes.statusCode, 200);
+  assert.equal(regRes.body.authenticated, true);
+  assert.equal(regRes.body.customer.id, 'cust_legacy_2');
+  assert.equal(regRes.body.customer.lastName, 'Козлова');
+});

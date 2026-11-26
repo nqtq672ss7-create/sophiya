@@ -19,7 +19,13 @@ interface AuthContextType {
     password: string;
     consent: boolean;
   }) => Promise<{ success: boolean; error?: string }>;
-  loginWithPassword: (phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithPassword: (phone: string, password: string) => Promise<{ success: boolean; error?: string; needsPasswordSetup?: boolean }>;
+  claimCustomerPassword: (data: {
+    phone: string;
+    firstName: string;
+    password: string;
+    consent: boolean;
+  }) => Promise<{ success: boolean; error?: string }>;
   refreshCustomerSession: () => Promise<void>;
   logout: () => Promise<void>;
   forgetCustomerData: () => Promise<{ ok: boolean; error?: string }>;
@@ -72,10 +78,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithPassword = async (
     phone: string,
     password: string
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; error?: string; needsPasswordSetup?: boolean }> => {
     const result = await CustomerDatabaseService.loginWithPassword(phone, password);
     if (!result.success || !result.customer) {
-      return { success: false, error: result.error || 'Неверный номер телефона или пароль' };
+      return {
+        success: false,
+        error: result.error || 'Неверный номер телефона или пароль',
+        needsPasswordSetup: result.needsPasswordSetup,
+      };
+    }
+    setCustomer(result.customer);
+    setIsAuthModalOpen(false);
+    return { success: true };
+  };
+
+  const claimCustomerPassword = async (data: {
+    phone: string;
+    firstName: string;
+    password: string;
+    consent: boolean;
+  }): Promise<{ success: boolean; error?: string }> => {
+    const result = await CustomerDatabaseService.claimPassword(data);
+    if (!result.success || !result.customer) {
+      return { success: false, error: result.error || 'Не удалось задать пароль' };
     }
     setCustomer(result.customer);
     setIsAuthModalOpen(false);
@@ -130,6 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         closeProfileModal,
         registerCustomer,
         loginWithPassword,
+        claimCustomerPassword,
         refreshCustomerSession,
         logout,
         forgetCustomerData,
