@@ -503,6 +503,13 @@ function setOrderAccessCookie(res, orderId, token) {
   );
 }
 
+function isVisibleInAdminOrders(order) {
+  if (!order || order.isTest) return false;
+  if (order.paymentStatus === 'paid') return true;
+  if (order.paymentMethod === 'cash' && order.paymentStatus !== 'canceled') return true;
+  return false;
+}
+
 export async function handleYookassa(req, res, body, parsedUrl) {
   const creds = getYookassaCreds();
   const action = parsedUrl.searchParams.get('action') || '';
@@ -511,7 +518,7 @@ export async function handleYookassa(req, res, body, parsedUrl) {
     if (action === 'orders') {
       if (!verifyAdminToken(req)) return sendJson(res, 401, { error: 'Unauthorized' });
       try {
-        const orders = await readAllOrdersStrict();
+        const orders = (await readAllOrdersStrict()).filter(isVisibleInAdminOrders);
         return sendJson(res, 200, { orders });
       } catch {
         return sendJson(res, 503, { error: 'Хранилище заказов временно недоступно' });

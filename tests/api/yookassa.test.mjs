@@ -361,7 +361,7 @@ test('POST webhook enforces YooKassa IP allowlist, amount check, and monotonic p
   assert.equal(kv.readJson('sophiya_order_item:ord_test_1').paymentStatus, 'paid');
 });
 
-test('GET orders and POST updateOrderStatus require valid admin token and preserve legacy orders', async () => {
+test('GET orders returns only live paid and cash orders (hiding pending/canceled/test) and requires admin token', async () => {
   kv.seedJson('sophiya_orders_v1', [
     {
       id: 'ord_adm_1',
@@ -376,6 +376,64 @@ test('GET orders and POST updateOrderStatus require valid admin token and preser
       paymentMethod: 'yookassa',
       paymentStatus: 'paid',
       orderStatus: 'new',
+    },
+    {
+      id: 'ord_adm_cash',
+      orderNumber: 'SF-333445',
+      createdAt: '21.11, 01:26',
+      customerName: 'Ольга',
+      phone: '+7 917 000-00-01',
+      deliveryType: 'delivery',
+      address: 'г. Нижнекамск, пр. Мира, 5',
+      deliveryDate: 'Завтра',
+      items: [{ title: 'Пионы', quantity: 1, price: 4500 }],
+      totalAmount: 4500,
+      paymentMethod: 'cash',
+      paymentStatus: 'pending',
+      orderStatus: 'new',
+    },
+    {
+      id: 'ord_adm_pending_yk',
+      orderNumber: 'SF-333446',
+      createdAt: '21.11, 01:27',
+      customerName: 'Брошенный',
+      phone: '+7 917 000-00-02',
+      deliveryType: 'pickup',
+      deliveryDate: 'Завтра',
+      items: [{ title: 'Тюльпаны', quantity: 1, price: 2000 }],
+      totalAmount: 2000,
+      paymentMethod: 'yookassa',
+      paymentStatus: 'pending',
+      orderStatus: 'new',
+    },
+    {
+      id: 'ord_adm_canceled',
+      orderNumber: 'SF-333447',
+      createdAt: '21.11, 01:28',
+      customerName: 'Отменённый',
+      phone: '+7 917 000-00-03',
+      deliveryType: 'pickup',
+      deliveryDate: 'Завтра',
+      items: [{ title: 'Тюльпаны', quantity: 1, price: 2000 }],
+      totalAmount: 2000,
+      paymentMethod: 'yookassa',
+      paymentStatus: 'canceled',
+      orderStatus: 'new',
+    },
+    {
+      id: 'ord_adm_test',
+      orderNumber: 'SF-333448',
+      createdAt: '21.11, 01:29',
+      customerName: 'Тестовый',
+      phone: '+7 917 000-00-04',
+      deliveryType: 'pickup',
+      deliveryDate: 'Завтра',
+      items: [{ title: 'Розы', quantity: 1, price: 3200 }],
+      totalAmount: 3200,
+      paymentMethod: 'yookassa',
+      paymentStatus: 'paid',
+      orderStatus: 'new',
+      isTest: true,
     },
   ]);
 
@@ -393,7 +451,10 @@ test('GET orders and POST updateOrderStatus require valid admin token and preser
     authRes
   );
   assert.equal(authRes.statusCode, 200);
-  assert.equal(authRes.body.orders.length, 1);
+  assert.deepEqual(
+    authRes.body.orders.map((o) => o.id),
+    ['ord_adm_1', 'ord_adm_cash']
+  );
 
   const updRes = makeRes();
   await handler(

@@ -430,6 +430,13 @@ function setOrderAccessCookie(res: VercelResponse, orderId: string, token: strin
   );
 }
 
+function isVisibleInAdminOrders(order: StoredOrder): boolean {
+  if (!order || order.isTest) return false;
+  if (order.paymentStatus === 'paid') return true;
+  if (order.paymentMethod === 'cash' && order.paymentStatus !== 'canceled') return true;
+  return false;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setSecureCors(req, res);
 
@@ -448,7 +455,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
       try {
-        const orders = await readAllOrdersStrict(client);
+        const orders = (await readAllOrdersStrict(client)).filter(isVisibleInAdminOrders);
         return res.status(200).json({ orders });
       } catch {
         return res.status(503).json({ error: 'Хранилище заказов временно недоступно' });

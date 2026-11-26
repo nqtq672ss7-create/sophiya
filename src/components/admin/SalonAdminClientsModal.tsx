@@ -1140,32 +1140,41 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   const cleanPhone = o.phone.replace(/\D/g, '');
                   return (
                     <div key={o.id} className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-sm font-extrabold">{o.orderNumber}</span>
                           <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${st.badge}`}>
                             {st.label}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
+                              o.paymentStatus === 'paid'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}
+                          >
+                            {o.paymentStatus === 'paid' ? 'Оплачен онлайн' : 'Наличными'}
                           </span>
                         </div>
                         <span
                           className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold ${
                             o.photoReportUrl
                               ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-white/10 text-[#634F55]'
+                              : 'bg-[#F3ECE9] text-[#634F55]'
                           }`}
                         >
                           {o.photoReportUrl ? 'Фотоотчёт ✓' : 'Без фото'}
                         </span>
                       </div>
-                      <div className="text-sm font-semibold">{o.customerName}</div>
-                      <div className="text-xs text-[#A8949A]">
-                        {o.deliveryType === 'delivery' ? 'Доставка' : 'Самовывоз'}, {o.address} ({o.deliveryDate})
+                      <div className="text-sm font-semibold text-[#1C1215]">{o.customerName}</div>
+                      <div className="text-xs text-[#6E5A60]">
+                        {o.deliveryType === 'delivery' ? `Доставка${o.address ? `, ${o.address}` : ''}` : 'Самовывоз'} ({o.deliveryDate})
                       </div>
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-[#352329]">
-                        <span className="text-[#D7C7CD]">
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EFE7E3] gap-3">
+                        <span className="text-[#5C454C]">
                           {o.items.map((it) => `${it.title} × ${it.quantity}`).join(', ')}
                         </span>
-                        <strong className="text-sm text-[#1C1215]">{o.totalAmount.toLocaleString('ru-RU')} ₽</strong>
+                        <strong className="text-sm text-[#1C1215] shrink-0">{o.totalAmount.toLocaleString('ru-RU')} ₽</strong>
                       </div>
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         <button
