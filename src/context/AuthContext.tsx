@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Customer } from '../types/customer';
-import { CustomerDatabaseService, normalizePhone, formatRussianPhone } from '../services/customerDb';
+import { CustomerDatabaseService } from '../services/customerDb';
 
 interface AuthContextType {
   customer: Customer|null;
@@ -32,112 +32,64 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType|undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize clean database without fake seed accounts
-  const [customersDb, setCustomersDb] = useState<Customer[]>(() => {
-    return CustomerDatabaseService.getLocalCustomers();
-  });
-
-  const [customer, setCustomer] = useState<Customer|null>(() => {
-    return CustomerDatabaseService.getCurrentCustomer();
-  });
-
+  const [customersDb, setCustomersDb] = useState<Customer[]>([]);
+  const [customer, setCustomer] = useState<Customer|null>(null);
   const [pendingPhone, setPendingPhone] = useState<string>('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  // Sync with cloud on initial load
+  // Admin-only cloud sync (invoked only from unlocked SalonAdminClientsModal)
   const refreshCustomers = useCallback(async () => {
+    const hasAdminToken =
+      typeof window !== 'undefined' &&
+      Boolean(
+        sessionStorage.getItem('sophiya_admin_token') ||
+          localStorage.getItem('sophiya_admin_token_v1')
+      );
+    if (!hasAdminToken) return;
+
     try {
       const all = await CustomerDatabaseService.fetchAllCustomers();
       setCustomersDb(all);
-      // If current customer is logged in, refresh their data as well
-      if (customer) {
-        const updatedSelf = all.find((c) => c.id === customer.id);
-        if (updatedSelf) {
-          setCustomer(updatedSelf);
-          CustomerDatabaseService.setCurrentCustomer(updatedSelf);
-        }
-      }
     } catch (e) {
       console.warn('Failed to refresh customers from cloud:', e);
     }
-  }, [customer]);
-
-  useEffect(() => {
-    refreshCustomers();
   }, []);
 
-  const openAuthModal = () => setIsAuthModalOpen(true);
+  const openAuthModal = () => setIsAuthModalOpen(false);
   const closeAuthModal = () => setIsAuthModalOpen(false);
-  const openProfileModal = () => setIsProfileModalOpen(true);
+  const openProfileModal = () => setIsProfileModalOpen(false);
   const closeProfileModal = () => setIsProfileModalOpen(false);
 
-  // Direct login by phone
-  const loginWithPhone = async (phone: string): Promise<{ success: boolean; error?: string }> => {
-    const found = await CustomerDatabaseService.findByPhone(phone);
-    if (!found) {
-      return {
-        success: false,
-        error: `Номер ${formatRussianPhone(phone)} ещё не зарегистрирован в клубе привилегий.`,
-      };
-    }
-    setCustomer(found);
-    CustomerDatabaseService.setCurrentCustomer(found);
-    setIsAuthModalOpen(false);
-    setIsProfileModalOpen(true);
-    return { success: true };
+  // Disabled unauthenticated phone login until real SMS OTP provider is connected
+  const loginWithPhone = async (_phone: string): Promise<{ success: boolean; error?: string }> => {
+    return {
+      success: false,
+      error: 'Личный кабинет временно закрыт на обновление. Оформляйте заказы напрямую в корзине без регистрации.',
+    };
   };
 
-  // Direct real registration
-  const registerCustomer = async (data: {
+  const registerCustomer = async (_data: {
     phone: string;
     firstName: string;
     lastName: string;
     birthDate?: string;
   }): Promise<{ success: boolean; error?: string }> => {
-    const result = await CustomerDatabaseService.registerCustomer(data);
-    if (!result.success || !result.customer) {
-      return { success: false, error: result.error || 'Ошибка при сохранении клиента' };
-    }
-
-    setCustomer(result.customer);
-    setCustomersDb(CustomerDatabaseService.getLocalCustomers());
-    setIsAuthModalOpen(false);
-    setIsProfileModalOpen(true);
-    return { success: true };
+    return {
+      success: false,
+      error: 'Регистрация временно приостановлена. Быстрый заказ доступен в корзине.',
+    };
   };
 
-  // Request OTP for verification
-  const requestOtp = async (phone: string): Promise<boolean> => {
-    setPendingPhone(phone);
-    // In production, triggers SMS gateway provider
-    return true;
+  const requestOtp = async (_phone: string): Promise<boolean> => {
+    return false;
   };
 
-  // Verify OTP
   const verifyOtp = async (_code: string): Promise<{ success: boolean; isNewUser: boolean }> => {
-    const normalized = normalizePhone(pendingPhone);
-    const existing = await CustomerDatabaseService.findByPhone(normalized);
-
-    if (existing) {
-      setCustomer(existing);
-      CustomerDatabaseService.setCurrentCustomer(existing);
-      setIsAuthModalOpen(false);
-      return { success: true, isNewUser: false };
-    }
-
-    return { success: true, isNewUser: true };
+    return { success: false, isNewUser: false };
   };
 
-  // Complete registration for multi-step flows
-  const completeRegistration = async (firstName: string, lastName: string, birthDate?: string) => {
-    await registerCustomer({
-      phone: pendingPhone,
-      firstName,
-      lastName,
-      birthDate,
-    });
-  };
+  const completeRegistration = async () => {};
 
   const logout = () => {
     setCustomer(null);
@@ -150,18 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       CustomerDatabaseService.forgetCustomer(customer.id);
       setCustomer(null);
       setIsProfileModalOpen(false);
-      await refreshCustomers();
     }
   };
 
-  const addOrderToCustomer = async ({ items, totalAmount }: { items: string[]; totalAmount: number }) => {
-    if (!customer) return;
-    const updated = await CustomerDatabaseService.recordOrder(customer.id, { items, totalAmount });
-    if (updated) {
-      setCustomer(updated);
-      setCustomersDb(CustomerDatabaseService.getLocalCustomers());
-    }
-  };
+  const addOrderToCustomer = () => {};
 
   return (
     <AuthContext.Provider

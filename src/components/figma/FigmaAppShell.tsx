@@ -47,7 +47,6 @@ export const FigmaAppShell: React.FC = () => {
   const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState<FigmaTab>(() => {
     if (initialPath.startsWith('/cart')) return 'cart';
-    if (initialPath.startsWith('/profile')) return 'profile';
     return 'catalog';
   });
 
@@ -116,10 +115,11 @@ export const FigmaAppShell: React.FC = () => {
   }, [cartItems]);
 
   const cartTotal = useMemo(() => {
-    const raw = cartItems.reduce((sum, item) => sum + item.bouquet.price * item.quantity, 0);
-    const discount = customer?.discountPercent || 0;
-    return raw - Math.round((raw * discount) / 100);
-  }, [cartItems, customer]);
+    return cartItems.reduce(
+      (sum, item) => sum + (item.bouquet.inStock !== false ? item.bouquet.price * item.quantity : 0),
+      0
+    );
+  }, [cartItems]);
 
   const routeBouquets = useMemo(() => {
     return filterBouquetsForRoute(bouquets, currentRoute, filters.category);
@@ -175,12 +175,10 @@ export const FigmaAppShell: React.FC = () => {
       const targetRoute = getRouteByPath(newPath);
       setCurrentRoute(targetRoute);
 
-      if (options?.tab) {
+      if (options?.tab && options.tab !== 'profile') {
         setActiveTab(options.tab);
       } else if (newPath.startsWith('/cart')) {
         setActiveTab('cart');
-      } else if (newPath.startsWith('/profile')) {
-        setActiveTab('profile');
       } else {
         setActiveTab('catalog');
         const cat = targetRoute.categoryFilter || targetRoute.targetCategory;
@@ -191,9 +189,7 @@ export const FigmaAppShell: React.FC = () => {
 
       // Sync SEO metadata in DOM
       if (newPath.startsWith('/cart')) {
-        document.title = 'Корзина — Салон цветов «София» Нижнекамск';
-      } else if (newPath.startsWith('/profile')) {
-        document.title = 'Личный кабинет — Салон цветов «София» Нижнекамск';
+        document.title = 'Корзина: Салон цветов «София» Нижнекамск';
       } else {
         document.title = targetRoute.title;
       }
@@ -219,8 +215,6 @@ export const FigmaAppShell: React.FC = () => {
 
       if (path.startsWith('/cart')) {
         setActiveTab('cart');
-      } else if (path.startsWith('/profile')) {
-        setActiveTab('profile');
       } else {
         setActiveTab('catalog');
         const cat = route.categoryFilter || route.targetCategory;
@@ -230,9 +224,7 @@ export const FigmaAppShell: React.FC = () => {
       }
 
       if (path.startsWith('/cart')) {
-        document.title = 'Корзина — Салон цветов «София» Нижнекамск';
-      } else if (path.startsWith('/profile')) {
-        document.title = 'Личный кабинет — Салон цветов «София» Нижнекамск';
+        document.title = 'Корзина: Салон цветов «София» Нижнекамск';
       } else {
         document.title = route.title;
       }

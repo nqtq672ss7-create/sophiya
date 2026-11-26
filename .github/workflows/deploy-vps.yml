@@ -47,7 +47,7 @@ jobs:
           TARGET_HOST="${VPS_HOST:-194.67.110.156}"
           ssh-keyscan -H "$TARGET_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           rsync -avz --delete --exclude='bouquets-cloud/' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new" dist/ "root@$TARGET_HOST:/var/www/sophiya/"
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/server.mjs server/yookassa-handler.mjs "root@$TARGET_HOST:/opt/sophiya-api/"
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=accept-new server/server.mjs server/yookassa-handler.mjs server/migrate-catalog-images.mjs "root@$TARGET_HOST:/opt/sophiya-api/"
           node -e '
             process.stdout.write(JSON.stringify({
               NODE_ENV: "production",

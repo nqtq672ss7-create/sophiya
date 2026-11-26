@@ -43,6 +43,15 @@ interface AdminOrder {
   photoReportUrl?: string;
 }
 
+interface AdminCallbackLead {
+  id: string;
+  createdAt: string;
+  name: string;
+  phone: string;
+  comment?: string;
+  status: 'new'|'done';
+}
+
 const DEFAULT_ORDERS: AdminOrder[] = [];
 
 const ORDER_STATUS_META: Record<
@@ -188,6 +197,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
   useEffect(() => {
     if (isUnlocked) {
+      refreshCustomers();
       refreshReviews();
       refreshPending();
       const token =
@@ -205,9 +215,21 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
             }
           })
           .catch(() => {});
+
+        fetch(getApiUrl('/api/callback'), {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data && Array.isArray(data.callbacks)) {
+              setCallbacks(data.callbacks);
+            }
+          })
+          .catch(() => {});
       }
     }
-  }, [isUnlocked, refreshReviews, refreshPending]);
+  }, [isUnlocked, refreshCustomers, refreshReviews, refreshPending]);
 
   // Navigation & Filters
   const [activeTab, setActiveTab] = useState<AdminTab>('catalog');
@@ -269,6 +291,26 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     if ((safe === 0 && b.inStock) || (safe > 0 && !b.inStock)) {
       toggleStock(b.id);
     }
+  };
+
+  const [callbacks, setCallbacks] = useState<AdminCallbackLead[]>([]);
+
+  const markCallbackDone = async (id: string) => {
+    setCallbacks((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'done' } : c)));
+    const token =
+      sessionStorage.getItem('sophiya_admin_token') ||
+      localStorage.getItem('sophiya_admin_token_v1');
+    if (!token) return;
+    try {
+      await fetch(getApiUrl('/api/callback'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: 'done', id }),
+      });
+    } catch {}
   };
 
   // Orders (ignore legacy demo orders if any were cached)
@@ -641,7 +683,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
     });
   }, [allCustomers, searchQuery]);
 
-  const newOrdersCount = orders.filter((o) => o.orderStatus === 'new').length;
+  const newCallbacksCount = callbacks.filter((c) => c.status === 'new').length;
+  const newOrdersCount = orders.filter((o) => o.orderStatus === 'new').length + newCallbacksCount;
   const pendingReviewsCount = reviews.filter((r) => !r.isPublished).length;
 
   const todayRevenue = useMemo(
@@ -1045,7 +1088,65 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
 
             {/* ORDERS TAB */}
             {activeTab === 'orders' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-4">
+                {callbacks.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold text-[#6C1E26] uppercase tracking-wider">
+                      Заявки на обратный звонок ({callbacks.length})
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                      {callbacks.slice(0, 20).map((cb) => {
+                        const cbDigits = cb.phone.replace(/\D/g, '');
+                        return (
+                          <div
+                            key={cb.id}
+                            className="rounded-xl p-3.5 bg-white border border-[#E6DCDE] flex items-start justify-between gap-3"
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <strong className="text-sm text-[#1C1215]">{cb.name}</strong>
+                                <span className="text-[11px] text-[#7B676E]">{cb.createdAt}</span>
+                                <span
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${
+                                    cb.status === 'done'
+                                      ? 'bg-[#E9F5EE] text-[#1D6B43]'
+                                      : 'bg-[#922E3D]/15 text-[#922E3D]'
+                                  }`}
+                                >
+                                  {cb.status === 'done' ? 'Обработана' : 'Ждёт звонка'}
+                                </span>
+                              </div>
+                              <div className="text-xs font-semibold text-[#6C1E26]">{cb.phone}</div>
+                              {cb.comment && (
+                                <div className="text-xs text-[#5C454C] leading-snug">{cb.comment}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <a
+                                href={`tel:+${cbDigits}`}
+                                className="h-8 px-2.5 rounded-lg bg-[#F3ECE9] border border-[#DFD2D5] text-xs font-semibold inline-flex items-center justify-center text-[#1C1215]"
+                                title="Позвонить"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                              </a>
+                              {cb.status === 'new' && (
+                                <button
+                                  type="button"
+                                  onClick={() => markCallbackDone(cb.id)}
+                                  className="h-8 px-2.5 rounded-lg bg-[#922E3D] text-white text-xs font-semibold"
+                                >
+                                  Готово
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {filteredOrders.length === 0 ? (
                   <div className="col-span-full text-center py-12 px-4 rounded-xl bg-white border border-[#E6DCDE] space-y-1.5">
                     <ShoppingBag className="w-7 h-7 text-[#922E3D] mx-auto" />
@@ -1128,6 +1229,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   );
                 })
                 )}
+                </div>
               </div>
             )}
 

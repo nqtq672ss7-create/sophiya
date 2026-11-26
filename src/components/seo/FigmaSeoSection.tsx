@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, Plus, Minus, Phone, CheckCircle2 } from 'lucide-react';
+import { Truck, ShieldCheck, Heart, Sparkles, MapPin, Clock, Droplets, Calendar, Flower2, Check, Plus, Minus, Phone, CheckCircle2, Loader2 } from 'lucide-react';
 import { SeoRoute, getRouteByPath } from '../../utils/routes';
 import { SALON_MAX_URL } from '../../config/contacts';
+import { getApiUrl } from '../../config/api';
 
 interface FigmaSeoSectionProps {
   currentRoute?: SeoRoute;
@@ -14,24 +15,19 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
   const [cbPhone, setCbPhone] = useState('');
   const [cbComment, setCbComment] = useState('');
   const [cbAgreed, setCbAgreed] = useState(false);
-  const [cbStatus, setCbStatus] = useState<'idle'|'sent'|'error'>('idle');
+  const [cbStatus, setCbStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle');
   const [cbError, setCbError] = useState('');
 
   useEffect(() => {
+    if (propRoute) return;
     const handleLocationChange = () => {
       setPathname(window.location.pathname);
     };
     window.addEventListener('popstate', handleLocationChange);
-    const interval = setInterval(() => {
-      if (typeof window !== 'undefined' && window.location.pathname !== pathname) {
-        setPathname(window.location.pathname);
-      }
-    }, 400);
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
-      clearInterval(interval);
     };
-  }, [pathname]);
+  }, [propRoute]);
 
   const currentRoute = propRoute || getRouteByPath(pathname);
   const isDeliveryPage = currentRoute?.slug === 'dostavka';
@@ -39,8 +35,9 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
   const isCategorySubpage = currentRoute?.pageType === 'category' && currentRoute.path !== '/';
   const isInfoPage = currentRoute?.pageType === 'info' && !isDeliveryPage;
 
-  const handleCallbackSubmit = (e: React.FormEvent) => {
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (cbStatus === 'sending') return;
     const digits = cbPhone.replace(/\D/g, '');
     if (digits.length < 10) {
       setCbStatus('error');
@@ -53,13 +50,29 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
       return;
     }
     setCbError('');
-    setCbStatus('sent');
+    setCbStatus('sending');
+
     try {
-      const summary = `Заявка на обратный звонок: ${cbName.trim() || 'Клиент'}, тел: ${cbPhone.trim()}${cbComment.trim() ? `, комментарий: ${cbComment.trim()}` : ''}`;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(summary).catch(() => {});
+      const res = await fetch(getApiUrl('/api/callback'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: cbName.trim(),
+          phone: cbPhone.trim(),
+          comment: cbComment.trim(),
+          consent: true,
+          honeypot: '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Не удалось отправить заявку. Позвоните нам: +7 (917) 256-32-35.');
       }
-    } catch {}
+      setCbStatus('sent');
+    } catch (err: any) {
+      setCbStatus('error');
+      setCbError(err?.message || 'Ошибка соединения. Позвоните нам по номеру +7 (917) 256-32-35.');
+    }
   };
 
   const featureHighlights = [
@@ -400,7 +413,7 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
               Подобрать букет или заказать обратный звонок
             </h2>
             <p className="text-xs sm:text-sm text-[#5C454C] leading-relaxed">
-              Оставьте номер телефона и пожелания по поводу или бюджету — флорист салона «София» перезвонит за 5–10 минут и предложит свежие цветы из наличия.
+              Оставьте номер телефона и пожелания по поводу или бюджету: флорист салона «София» перезвонит за 5–10 минут и предложит свежие цветы из наличия.
             </p>
           </div>
 
@@ -409,10 +422,10 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
               <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 space-y-3">
                 <div className="flex items-center gap-2 text-emerald-800 font-semibold text-sm">
                   <CheckCircle2 className="w-5 h-5 shrink-0" />
-                  <span>Заявка сформирована!</span>
+                  <span>Заявка отправлена флористу!</span>
                 </div>
                 <p className="text-xs text-emerald-900/85 leading-relaxed">
-                  Для моментального ответа флориста нажмите «Написать в MAX» (текст заявки скопирован в буфер обмена) или позвоните по номеру{' '}
+                  Мы получили ваш номер и перезвоним в течение 5–10 минут (в часы работы салона 08:00–21:00). Если вопрос срочный, напишите нам в MAX или позвоните по номеру{' '}
                   <a href="tel:+79172563235" className="font-semibold underline">
                     +7 (917) 256-32-35
                   </a>.
@@ -501,9 +514,11 @@ export const FigmaSeoSection: React.FC<FigmaSeoSectionProps> = ({ currentRoute: 
                     </span>
                   </label>
                   <button
-                    className="px-6 py-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer active:scale-95 shrink-0"
+                    disabled={cbStatus === 'sending'}
+                    className="px-6 py-2.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs sm:text-sm font-semibold transition-colors shadow-sm cursor-pointer active:scale-95 shrink-0 inline-flex items-center gap-2 disabled:opacity-60"
                   >
-                    Заказать звонок флориста
+                    {cbStatus === 'sending' && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>{cbStatus === 'sending' ? 'Отправка...' : 'Заказать звонок флориста'}</span>
                   </button>
                 </div>
               </form>

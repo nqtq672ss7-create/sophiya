@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingBag, Phone } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
-import { useAuth } from '../../context/AuthContext';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
 
@@ -26,7 +25,6 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
 }) => {
   const isDeliveryActive = activeTab === 'catalog' && currentPath === '/dostavka/';
   const isCatalogActive = activeTab === 'catalog' && !isDeliveryActive;
-  const { customer } = useAuth();
   const [logoClicks, setLogoClicks] = useState(0);
 
   const handleLogoClick = () => {
@@ -119,26 +117,6 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
               </span>
             )}
             {activeTab === 'cart' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
-            )}
-          </a>
-
-          <a
-            href="/profile/"
-            onClick={(e) => handleLinkClick(e, '/profile/', 'profile')}
-            className={`transition-colors relative py-1 flex items-center gap-1.5 ${
-              activeTab === 'profile'
-                ? 'text-[#922E3D] font-semibold'
-                : 'text-[#5C454C] hover:text-[#922E3D]'
-            }`}
-          >
-            <span>Личный кабинет</span>
-            {customer && customer.discountPercent > 0 && (
-              <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-medium">
-                -{customer.discountPercent}%
-              </span>
-            )}
-            {activeTab === 'profile' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
             )}
           </a>

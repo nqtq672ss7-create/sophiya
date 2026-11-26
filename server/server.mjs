@@ -860,6 +860,112 @@ async function handleReviews(req, res, body, parsedUrl) {
   }
 }
 
+const CALLBACKS_STORE = 'sophiya_callbacks_v1';
+const MAX_CALLBACKS_PER_HOUR = 4;
+const MAX_STORED_CALLBACKS = 200;
+
+async function handleCallback(req, res, body) {
+  if (req.method === 'GET') {
+    if (!verifyToken(bearerToken(req))) {
+      return sendJson(res, 401, { error: 'Unauthorized' });
+    }
+    try {
+      const list = await kvClient.get(CALLBACKS_STORE);
+      return sendJson(res, 200, { callbacks: Array.isArray(list) ? list : [] });
+    } catch {
+      return sendJson(res, 503, { error: 'Сервис заявок временно недоступен' });
+    }
+  }
+
+  if (req.method !== 'POST') {
+    return sendJson(res, 405, { error: 'Method not allowed' });
+  }
+  if (!body || typeof body !== 'object') {
+    return sendJson(res, 400, { error: 'Некорректный формат запроса' });
+  }
+
+  if (body.action === 'done' || body.action === 'delete') {
+    if (!verifyToken(bearerToken(req))) {
+      return sendJson(res, 401, { error: 'Unauthorized' });
+    }
+    const targetId = String(body.id || '').trim();
+    if (!targetId) return sendJson(res, 400, { error: 'Не указан id заявки' });
+    try {
+      const existingRaw = await kvClient.get(CALLBACKS_STORE);
+      const existing = Array.isArray(existingRaw) ? existingRaw : [];
+      const updated =
+        body.action === 'delete'
+          ? existing.filter((item) => item?.id !== targetId)
+          : existing.map((item) => (item?.id === targetId ? { ...item, status: 'done' } : item));
+      await kvClient.set(CALLBACKS_STORE, updated);
+      return sendJson(res, 200, { ok: true, callbacks: updated });
+    } catch {
+      return sendJson(res, 503, { error: 'Не удалось обновить заявку' });
+    }
+  }
+
+  if (body.company_website || body.honeypot || body.hp_token) {
+    return sendJson(res, 400, { error: 'Bad request' });
+  }
+  if (body.consent !== true) {
+    return sendJson(res, 400, { error: 'Подтвердите согласие на обработку персональных данных' });
+  }
+
+  const rawDigits = String(body.phone ?? '').replace(/\D/g, '');
+  const digits =
+    rawDigits.length === 11 && rawDigits.startsWith('8')
+      ? '7' + rawDigits.slice(1)
+      : rawDigits.length === 10
+        ? '7' + rawDigits
+        : rawDigits;
+  if (!/^7\d{10}$/.test(digits)) {
+    return sendJson(res, 400, { error: 'Укажите корректный российский номер телефона (+7...)' });
+  }
+
+  try {
+    const rlStore = 'ratelimit_callback_' + getClientIp(req).replace(/[^a-zA-Z0-9_.:-]/g, '_');
+    const count = await kvClient.incr(rlStore);
+    if (count === 1) await kvClient.expire(rlStore, 3600);
+    if (count > MAX_CALLBACKS_PER_HOUR) {
+      return sendJson(res, 429, {
+        error: 'Слишком много заявок с одного адреса. Позвоните нам напрямую: +7 (917) 256-32-35.',
+      });
+    }
+  } catch {
+    return sendJson(res, 503, { error: 'Сервис заявок временно недоступен' });
+  }
+
+  const name = String(body.name || '').trim().slice(0, 80) || 'Клиент';
+  const comment = String(body.comment || '').trim().slice(0, 500);
+  const formattedPhone = `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9, 11)}`;
+  const createdAt = new Date().toLocaleString('ru-RU', {
+    timeZone: 'Europe/Moscow',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const lead = {
+    id: `cb_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`,
+    createdAt,
+    name,
+    phone: formattedPhone,
+    ...(comment ? { comment } : {}),
+    status: 'new',
+  };
+
+  try {
+    const existingRaw = await kvClient.get(CALLBACKS_STORE);
+    const existing = Array.isArray(existingRaw) ? existingRaw : [];
+    const updated = [lead, ...existing].slice(0, MAX_STORED_CALLBACKS);
+    await kvClient.set(CALLBACKS_STORE, updated);
+    return sendJson(res, 200, { ok: true, id: lead.id });
+  } catch {
+    return sendJson(res, 503, { error: 'Не удалось сохранить заявку. Попробуйте снова.' });
+  }
+}
+
 async function handleSberbank(req, res) {
   if (req.method === 'GET') {
     return sendJson(res, 200, {
@@ -942,6 +1048,7 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/catalog') return await handleCatalog(req, res, body);
     if (pathname === '/api/customers') return await handleCustomers(req, res, body);
     if (pathname === '/api/reviews') return await handleReviews(req, res, body, parsedUrl);
+    if (pathname === '/api/callback') return await handleCallback(req, res, body);
     if (pathname === '/api/yookassa') return await handleYookassa(req, res, body, parsedUrl);
     if (pathname === '/api/sberbank') return await handleSberbank(req, res, body);
     if (pathname === '/api/health') return sendJson(res, 200, { ok: true });

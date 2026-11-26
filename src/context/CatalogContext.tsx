@@ -21,8 +21,8 @@ interface CatalogContextType {
 const CatalogContext = createContext<CatalogContextType|undefined>(undefined);
 
 // Bumped storage key so that old 5-bouquet demo caches on phones are instantly purged
-const STORAGE_KEY = 'sophiya_catalog_bouquets_v6_live';
-const LEGACY_KEYS = [
+const CATALOG_STORE_ID = 'sophiya_catalog_bouquets_v6_live';
+const LEGACY_STORE_IDS = [
   'sophiya_catalog_bouquets_v5_live',
   'sophiya_catalog_bouquets_v4_clean',
   'sophiya_catalog_bouquets_v3',
@@ -38,7 +38,8 @@ function isStaleDemoCache(items: Bouquet[]): boolean {
 
 const IDB_NAME = 'sophiya_catalog_db';
 const IDB_STORE = 'catalog';
-const IDB_KEY = 'live_v1';
+const IDB_RECORD_ID = 'live_v1';
+const CATALOG_REFRESH_COOLDOWN_MS = 5 * 60 * 1000;
 
 function openCatalogDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -64,7 +65,7 @@ async function idbGetCatalog(): Promise<Bouquet[]|null> {
     return await new Promise((resolve) => {
       const tx = db.transaction(IDB_STORE, 'readonly');
       const store = tx.objectStore(IDB_STORE);
-      const req = store.get(IDB_KEY);
+      const req = store.get(IDB_RECORD_ID);
       req.onsuccess = () => {
         const val = req.result;
         resolve(Array.isArray(val) && val.length > 0 ? val : null);
@@ -81,7 +82,7 @@ async function idbSetCatalog(items: Bouquet[]): Promise<void> {
     const db = await openCatalogDb();
     await new Promise<void>((resolve) => {
       const tx = db.transaction(IDB_STORE, 'readwrite');
-      tx.objectStore(IDB_STORE).put(items, IDB_KEY);
+      tx.objectStore(IDB_STORE).put(items, IDB_RECORD_ID);
       tx.oncomplete = () => resolve();
       tx.onerror = () => resolve();
     });
@@ -93,13 +94,15 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date|null>(null);
   const hasRemoteSyncRef = React.useRef<boolean>(false);
+  const inFlightRef = React.useRef<boolean>(false);
+  const lastFetchMsRef = React.useRef<number>(0);
 
   // Initial state: localStorage -> SSR-injected __INITIAL_CATALOG__ -> static BOUQUETS_CATALOG fallback
   const [bouquets, setBouquets] = useState<Bouquet[]>(() => {
     try {
       if (typeof window !== 'undefined') {
-        LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
-        const saved = localStorage.getItem(STORAGE_KEY);
+        LEGACY_STORE_IDS.forEach((k) => localStorage.removeItem(k));
+        const saved = localStorage.getItem(CATALOG_STORE_ID);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0 && !isStaleDemoCache(parsed)) {
@@ -121,17 +124,15 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     void idbSetCatalog(items);
     try {
       if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        localStorage.setItem(CATALOG_STORE_ID, JSON.stringify(items));
       }
     } catch (e) {
-      // On mobile Safari 5MB quota may be exceeded when catalog grows; clear legacy keys and retry once
       try {
-        LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        LEGACY_STORE_IDS.forEach((k) => localStorage.removeItem(k));
+        localStorage.setItem(CATALOG_STORE_ID, JSON.stringify(items));
       } catch {
-        // Remove stale localStorage snapshot so __INITIAL_CATALOG__ / IndexedDB takes precedence on next load
         try {
-          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(CATALOG_STORE_ID);
         } catch {}
         console.warn('localStorage quota exceeded, persisted catalog in IndexedDB:', e);
       }
@@ -226,12 +227,16 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Fetch the definitive catalog from cloud
   const refreshCatalog = useCallback(async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    lastFetchMsRef.current = Date.now();
     setIsSyncing(true);
     try {
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timer = controller ? setTimeout(() => controller.abort(), 10000) : null;
 
-      const res = await fetch(getApiUrl(`/api/catalog?t=${Date.now()}`), {
+      const res = await fetch(getApiUrl('/api/catalog'), {
+        cache: 'no-cache',
         signal: controller?.signal,
       });
       if (timer) clearTimeout(timer);
@@ -239,7 +244,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (res.ok) {
         const remote = await res.json();
         if (Array.isArray(remote) && remote.length > 0) {
-          // Cloud is the single absolute truth for all devices
           hasRemoteSyncRef.current = true;
           setBouquets(remote);
           saveToStorage(remote);
@@ -249,12 +253,13 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch (err) {
       console.warn('Failed to fetch remote catalog:', err);
     } finally {
+      inFlightRef.current = false;
       setIsSyncing(false);
       setIsLoading(false);
     }
   }, []);
 
-  // Fetch on mount AND whenever the user switches back to this tab/window
+  // Fetch once on mount and throttled (>= 5 min) on tab visibility resume
   useEffect(() => {
     let active = true;
     idbGetCatalog().then((cached) => {
@@ -264,12 +269,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
     refreshCatalog();
 
-    const onFocus = () => {
-      refreshCatalog();
-    };
-    window.addEventListener('focus', onFocus);
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (
+        document.visibilityState === 'visible' &&
+        Date.now() - lastFetchMsRef.current >= CATALOG_REFRESH_COOLDOWN_MS
+      ) {
         refreshCatalog();
       }
     };
@@ -277,7 +281,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     return () => {
       active = false;
-      window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [refreshCatalog]);
