@@ -22,6 +22,13 @@ import { CartItem } from '../../types/figma-app';
 import { getApiUrl } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import { formatBouquetAlt } from '../../utils/routes';
+import {
+  ADDRESS_SUGGESTIONS,
+  DeliveryZone,
+  SUBURB_FEE_RUB,
+  buildYandexMapSearchUrl,
+  detectDeliveryZone,
+} from '../../utils/deliveryZones';
 
 interface FigmaCartScreenProps {
   items: CartItem[];
@@ -80,7 +87,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const { customer, refreshCustomerSession } = useAuth();
 
   const defaultCustomerName = customer ? `${customer.firstName} ${customer.lastName}`.trim() : '';
-  const defaultCustomerPhone = customer ? customer.phone : '+7 (917) ';
+  const defaultCustomerPhone = customer ? customer.phone : '+7 ';
 
   const [deliveryType, setDeliveryType] = useState<'delivery'|'pickup'>('delivery');
   const [paymentMethod, setPaymentMethod] = useState<'yookassa'|'cash'>('yookassa');
@@ -89,6 +96,10 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [recipientName, setRecipientName] = useState(defaultCustomerName);
   const [recipientPhone, setRecipientPhone] = useState(defaultCustomerPhone);
   const [deliveryAddress, setDeliveryAddress] = useState('г. Нижнекамск, ');
+  const [manualZone, setManualZone] = useState<DeliveryZone|null>(null);
+  const [isAddressFocused, setIsAddressFocused] = useState(false);
+  const [showDeliveryMap, setShowDeliveryMap] = useState(false);
+  const [debouncedMapQuery, setDebouncedMapQuery] = useState('г. Нижнекамск');
   const [deliveryDay, setDeliveryDay] = useState(getTodayIso);
   const [deliverySlot, setDeliverySlot] = useState(TIME_SLOTS[0]);
 
@@ -111,10 +122,17 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
       setCustomerName((prev) => (prev ? prev : fullName));
     }
     if (customer.phone) {
-      setRecipientPhone((prev) => (!prev || prev.trim() === '+7 (917)' ? customer.phone : prev));
-      setCustomerPhone((prev) => (!prev || prev.trim() === '+7 (917)' ? customer.phone : prev));
+      setRecipientPhone((prev) => (!prev || prev.trim() === '+7' ? customer.phone : prev));
+      setCustomerPhone((prev) => (!prev || prev.trim() === '+7' ? customer.phone : prev));
     }
   }, [customer]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedMapQuery(deliveryAddress);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [deliveryAddress]);
 
   // Checkout & Return status
   const [isSuccess, setIsSuccess] = useState(false);
@@ -130,8 +148,16 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [pendingOrderId, setPendingOrderId] = useState<string|null>(null);
   const [paymentError, setPaymentError] = useState('');
 
-  const deliveryCost = 0;
+  const deliveryZone: DeliveryZone =
+    deliveryType === 'pickup' ? 'city' : detectDeliveryZone(deliveryAddress, manualZone);
+  const deliveryCost = deliveryType === 'delivery' && deliveryZone === 'suburb' ? SUBURB_FEE_RUB : 0;
   const userDiscount = customer?.discountPercent || 0;
+
+  const filteredSuggestions = ADDRESS_SUGGESTIONS.filter((s) => {
+    const q = deliveryAddress.trim().toLowerCase();
+    if (!q || q === 'г. нижнекамск,' || q === 'г. нижнекамск') return true;
+    return s.label.toLowerCase().includes(q) || s.note.toLowerCase().includes(q);
+  }).slice(0, 7);
 
   const inStockItems = items.filter((item) => item.bouquet.inStock !== false);
   const hasOutOfStockItems = items.some((item) => item.bouquet.inStock === false);
@@ -289,6 +315,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
           recipientPhone: recipientPhone.trim(),
           email: customerEmail.trim(),
           deliveryType,
+          deliveryZone,
           address: deliveryType === 'delivery' ? deliveryAddress.trim() : '',
           deliveryDate: formattedDeliveryDate,
           postcardText: addPostcard ? postcardText.trim() : '',
@@ -765,7 +792,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                     deliveryType === 'delivery' ? 'bg-white text-[#6C1E26] shadow-xs' : 'text-white/90'
                   }`}
                 >
-                  Доставка (0 ₽)
+                  Доставка ({deliveryCost > 0 ? `${deliveryCost} ₽` : '0 ₽'})
                 </button>
                 <button
                   type="button"
@@ -806,22 +833,127 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                     required
                     value={recipientPhone}
                     onChange={(e) => setRecipientPhone(e.target.value)}
-                    placeholder="+7 (917) 000-00-00"
+                    placeholder="+7 (___) ___-__-__"
                     className="w-full text-xs sm:text-sm text-[#1C1215] bg-transparent focus:outline-none"
                   />
                 </div>
 
                 {deliveryType === 'delivery' && (
-                  <div className="h-11 px-3.5 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] focus-within:border-[#6C1E26] flex items-center gap-3">
-                    <MapPin className="w-4 h-4 text-[#6C1E26] shrink-0" />
-                    <input
-                      type="text"
-                      required
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      placeholder="Улица, дом, номер квартиры, подъезд"
-                      className="w-full text-xs sm:text-sm text-[#1C1215] bg-transparent focus:outline-none"
-                    />
+                  <div className="space-y-2.5">
+                    <div className="relative">
+                      <div
+                        className={`h-11 px-3.5 rounded-xl bg-[#FAF7F5] border flex items-center gap-3 transition-colors ${
+                          isAddressFocused || showDeliveryMap ? 'border-[#6C1E26]' : 'border-[#EAE2DF]'
+                        }`}
+                      >
+                        <MapPin className="w-4 h-4 text-[#6C1E26] shrink-0" />
+                        <input
+                          type="text"
+                          required
+                          value={deliveryAddress}
+                          onFocus={() => {
+                            setIsAddressFocused(true);
+                            setShowDeliveryMap(true);
+                          }}
+                          onBlur={() => {
+                            setTimeout(() => setIsAddressFocused(false), 180);
+                          }}
+                          onChange={(e) => {
+                            setDeliveryAddress(e.target.value);
+                            setManualZone(null);
+                          }}
+                          placeholder="Улица, дом, квартира или пригород"
+                          className="w-full text-xs sm:text-sm text-[#1C1215] bg-transparent focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowDeliveryMap((v) => !v)}
+                          className="text-[11px] font-medium text-[#6C1E26] shrink-0 hover:underline"
+                        >
+                          {showDeliveryMap ? 'Скрыть карту' : 'Карта'}
+                        </button>
+                      </div>
+
+                      {isAddressFocused && filteredSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-12 z-20 bg-white border border-[#EAE2DF] rounded-xl shadow-lg max-h-52 overflow-y-auto divide-y divide-[#F3ECE9]">
+                          {filteredSuggestions.map((s) => (
+                            <button
+                              key={s.label}
+                              type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setDeliveryAddress(s.value);
+                                setManualZone(s.zone);
+                                setIsAddressFocused(false);
+                                setShowDeliveryMap(true);
+                              }}
+                              className="w-full px-3.5 py-2.5 text-left hover:bg-[#FAF7F5] flex items-center justify-between gap-2 text-xs transition-colors"
+                            >
+                              <span className="text-[#1C1215] font-medium truncate">{s.label}</span>
+                              <span
+                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-md shrink-0 ${
+                                  s.zone === 'suburb'
+                                    ? 'bg-amber-100 text-amber-800'
+                                    : 'bg-emerald-100 text-emerald-800'
+                                }`}
+                              >
+                                {s.note}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {showDeliveryMap && (
+                      <div className="rounded-xl border border-[#EAE2DF] bg-[#FAF7F5] p-2.5 space-y-2 animate-fadeIn">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] font-medium text-[#5C454C]">
+                            Зона доставки на карте Нижнекамска:
+                          </span>
+                          <div className="inline-flex rounded-lg bg-white border border-[#EAE2DF] p-0.5 gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => setManualZone('city')}
+                              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                                deliveryZone === 'city'
+                                  ? 'bg-[#6C1E26] text-white'
+                                  : 'text-[#5C454C] hover:text-[#1C1215]'
+                              }`}
+                            >
+                              По городу (0 ₽)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setManualZone('suburb')}
+                              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                                deliveryZone === 'suburb'
+                                  ? 'bg-[#6C1E26] text-white'
+                                  : 'text-[#5C454C] hover:text-[#1C1215]'
+                              }`}
+                            >
+                              За пределы города (400 ₽)
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="w-full h-44 rounded-lg overflow-hidden border border-[#EAE2DF] bg-white">
+                          <iframe
+                            src={buildYandexMapSearchUrl(debouncedMapQuery)}
+                            title="Карта доставки Нижнекамска"
+                            className="w-full h-full border-0"
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                          />
+                        </div>
+
+                        <p className="text-[11px] text-[#6E5A60] leading-snug">
+                          {deliveryZone === 'suburb'
+                            ? 'Выбран адрес за пределами города (пригород / промзона): стоимость доставки +400 ₽.'
+                            : 'Доставка в черте Нижнекамска бесплатно (0 ₽). Для посёлков и промзоны автоматически добавляется 400 ₽.'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -903,7 +1035,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                         required
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
-                        placeholder="Ваш телефон +7 (917) 000-00-00"
+                        placeholder="Ваш телефон +7 (___) ___-__-__"
                         className="w-full text-xs sm:text-sm text-[#1C1215] bg-transparent focus:outline-none"
                       />
                     </div>
@@ -1004,7 +1136,13 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
               )}
               <div className="flex justify-between text-xs text-[#6E5A60]">
                 <span>Доставка</span>
-                <span className="text-[#6C1E26] font-medium">Бесплатно (0 ₽)</span>
+                <span className="text-[#6C1E26] font-medium">
+                  {deliveryType === 'pickup'
+                    ? 'Самовывоз (0 ₽)'
+                    : deliveryCost > 0
+                    ? `За пределы города (${deliveryCost} ₽)`
+                    : 'Бесплатно (0 ₽)'}
+                </span>
               </div>
               <div className="flex justify-between items-baseline pt-2">
                 <span className="text-base font-semibold text-[#1C1215]">Итого</span>

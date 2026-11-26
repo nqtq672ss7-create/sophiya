@@ -586,3 +586,49 @@ test('Logged-in customer gets server-verified loyalty discount while spoofed pho
   assert.equal(authRes.statusCode, 200);
   assert.equal(authRes.body.totalAmount, 9500);
 });
+
+test('POST create adds 400 RUB suburb delivery fee server-side for out-of-city addresses even if client sends city', async () => {
+  kv.seedJson('catalog_bouquets', [{ id: 'b-1', title: 'Розы', price: 3000, inStock: true }]);
+
+  let capturedPayload = null;
+  globalThis.fetch = async (url, init) => {
+    if (String(url).startsWith('https://api.yookassa.ru/v3/payments')) {
+      capturedPayload = JSON.parse(init.body);
+      return new Response(
+        JSON.stringify({
+          id: 'yk_suburb_1',
+          status: 'pending',
+          confirmation: { confirmation_url: 'https://yoomoney.ru/checkout/payments/v2/contract?orderId=yk_suburb_1' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    return originalFetch(url, init);
+  };
+
+  const res = makeRes();
+  await handler(
+    makeReqWithQuery({
+      method: 'POST',
+      ip: freshIp(),
+      query: { action: 'create' },
+      body: {
+        paymentMethod: 'yookassa',
+        customerName: 'Ирина',
+        phone: '+7 917 444-55-66',
+        deliveryType: 'delivery',
+        deliveryZone: 'city',
+        address: 'пос. Красный Ключ, ул. Советская, 12',
+        items: [{ id: 'b-1', quantity: 1 }],
+      },
+    }),
+    res
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.totalAmount, 3400);
+  assert.equal(capturedPayload.amount.value, '3400.00');
+  assert.equal(capturedPayload.receipt.items.length, 2);
+  assert.equal(capturedPayload.receipt.items[1].amount.value, '400.00');
+  assert.equal(capturedPayload.receipt.items[1].payment_subject, 'service');
+});

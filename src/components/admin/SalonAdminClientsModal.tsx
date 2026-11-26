@@ -1363,7 +1363,7 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {[
                     ['loyalty', 'Клубные карты', 'Уровни скидок и бонусной программы'],
-                    ['logistics', 'Логистика и зоны', 'Нижнекамск, пригород и промзона: 0 ₽ (бесплатно)'],
+                    ['logistics', 'Логистика и зоны', 'Нижнекамск 0 ₽, пригород и промзона 400 ₽'],
                     ['settings', 'Настройки, роли и Push', `Роль: ${role}, Push: ${pushEnabled ? 'Вкл' : 'Выкл'}`],
                   ].map(([id, title, sub]) => (
                     <button
@@ -2257,8 +2257,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
               {moreSubSection === 'logistics' && (
                 <div className="text-xs space-y-2 text-[#5C454C] leading-relaxed">
                   <div>• Зона 1 (Центр и мкр.): <strong>0 ₽ (бесплатно)</strong>, 30–60 мин</div>
-                  <div>• Зона 2 (Пригородные посёлки): <strong>0 ₽ (бесплатно)</strong>, 45–75 мин</div>
-                  <div>• Зона 3 (Предприятия и промзона): <strong>0 ₽ (бесплатно)</strong>, к точному часу</div>
+                  <div>• Зона 2 (Пригородные посёлки): <strong>400 ₽</strong>, 45–75 мин</div>
+                  <div>• Зона 3 (Предприятия и промзона): <strong>400 ₽</strong>, к точному часу</div>
                 </div>
               )}
 

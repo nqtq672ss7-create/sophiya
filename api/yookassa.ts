@@ -362,10 +362,51 @@ async function readAllOrdersStrict(client: any): Promise<StoredOrder[]> {
   return out;
 }
 
-function buildReceiptItems(items: StoredOrderItem[], discountPercent = 0) {
+const SUBURB_FEE_RUB = 400;
+const SUBURB_ADDRESS_PATTERNS: RegExp[] = [
+  /красн[а-яё]*\s+ключ/i,
+  /афанасов/i,
+  /дмитриевк/i,
+  /ильинк/i,
+  /прости/i,
+  /балчикл/i,
+  /камск[а-яё]*\s+полян/i,
+  /сухарев/i,
+  /ереклин/i,
+  /шингальч/i,
+  /смысловк/i,
+  /борок/i,
+  /(?:^|[\s,])бси(?:$|[\s.,])/i,
+  /тан[еэ]ко/i,
+  /нкнх/i,
+  /нижнекамскнефтехим/i,
+  /таиф/i,
+  /промзон/i,
+  /(?:^|[\s,])снт(?:$|[\s.,])/i,
+  /(?:^|[\s,])днт(?:$|[\s.,])/i,
+  /(?:^|[\s,])пос\.?(?:$|[\s.,])/i,
+  /(?:^|[\s,])пгт\.?(?:$|[\s.,])/i,
+  /(?:^|[\s,])с\.\s*[а-яё]/i,
+  /(?:^|[\s,])д\.\s*[а-яё]/i,
+  /за\s*город/i,
+];
+
+function computeDeliveryFee(
+  deliveryType: 'delivery' | 'pickup',
+  address: string,
+  requestedZone: unknown
+): number {
+  if (deliveryType === 'pickup') return 0;
+  const clean = String(address || '').trim();
+  if (SUBURB_ADDRESS_PATTERNS.some((re) => re.test(clean))) return SUBURB_FEE_RUB;
+  if (requestedZone === 'suburb') return SUBURB_FEE_RUB;
+  return 0;
+}
+
+function buildReceiptItems(items: StoredOrderItem[], discountPercent = 0, deliveryFee = 0) {
   const pct = Number.isFinite(discountPercent) && discountPercent > 0 && discountPercent <= 25 ? discountPercent : 0;
   const factor = pct > 0 ? (100 - pct) / 100 : 1;
-  return items.map((item) => {
+  const rows = items.map((item) => {
     const unitPrice = Math.max(1, Math.round(item.price * factor));
     return {
       description: String(item.title || 'Букет цветов').slice(0, 128),
@@ -379,6 +420,20 @@ function buildReceiptItems(items: StoredOrderItem[], discountPercent = 0) {
       payment_subject: 'commodity',
     };
   });
+  if (deliveryFee > 0) {
+    rows.push({
+      description: 'Доставка (за пределы Нижнекамска)',
+      quantity: '1.00',
+      amount: {
+        value: formatRub(deliveryFee),
+        currency: 'RUB',
+      },
+      vat_code: 1,
+      payment_mode: 'full_payment',
+      payment_subject: 'service',
+    });
+  }
+  return rows;
 }
 
 async function fetchYookassaPayment(paymentId: string, authHeader: string) {
@@ -785,12 +840,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const rawTotal = verifiedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const receiptItems = buildReceiptItems(verifiedItems, discountPercent);
+  const deliveryFee = computeDeliveryFee(deliveryType, address, body.deliveryZone);
+  const receiptItems = buildReceiptItems(verifiedItems, discountPercent, deliveryFee);
   const totalAmount = receiptItems.reduce(
     (sum, item) => sum + Math.round(Number(item.amount.value)) * parseInt(item.quantity, 10),
     0
   );
-  const discountAmount = Math.max(0, rawTotal - totalAmount);
+  const discountAmount = Math.max(0, rawTotal + deliveryFee - totalAmount);
 
   if (totalAmount <= 0) {
     return res.status(400).json({ error: 'Сумма заказа должна быть больше 0 ₽' });

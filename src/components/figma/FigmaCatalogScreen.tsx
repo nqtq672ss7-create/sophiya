@@ -315,7 +315,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#922E3D]/10 text-[#922E3D]">45–75 мин</span>
                 </div>
                 <div className="text-xl font-bold text-[#1C1215]">
-                  0 ₽ <span className="text-xs font-normal text-emerald-700">(бесплатно)</span>
+                  400 ₽ <span className="text-xs font-normal text-[#7C636B]">(фиксированно)</span>
                 </div>
                 <p className="text-xs text-[#5C454C] leading-relaxed">
                   Красный Ключ, Большое и Нижнее Афанасово, Дмитриевка, Ильинка. Бережное вручение получателю лично в руки.
@@ -328,7 +328,7 @@ export const FigmaCatalogScreen: React.FC<FigmaCatalogScreenProps> = ({
                   <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
                 </div>
                 <div className="text-xl font-bold text-[#1C1215]">
-                  0 ₽ <span className="text-xs font-normal text-emerald-700">(бесплатно)</span>
+                  400 ₽ <span className="text-xs font-normal text-[#7C636B]">(фиксированно)</span>
                 </div>
                 <p className="text-xs text-[#5C454C] leading-relaxed">
                   БСИ, проходные ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК: доставим к окончанию смены или к мероприятию.

@@ -297,8 +297,8 @@ const ROUTES = [
     introText: [
       'Салон цветов «София» доставляет букеты по Нижнекамску ежедневно с 08:00 до 21:00. Мы бережно перевозим букеты в специальных аквабоксах на воде, поэтому лепестки не теряют свежесть в дороге. В холодный сезон используем защитную термоупаковку.',
       'Зона 1 (Центральный район и микрорайоны): проспекты Шинников, Мира, Строителей, Сююмбике, Химиков, улицы Баки Урманче, Чулман, Табеева. Доставка за 30–60 минут. Стоимость: 0 ₽ (бесплатно).',
-      'Зона 2 (Пригородные посёлки): Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка. Доставка за 45–75 минут, стоимость: 0 ₽ (бесплатно).',
-      'Зона 3 (Предприятия и промзона): БСИ, площадки ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК. Доставка к проходным и офисам к назначенному времени, стоимость: 0 ₽ (бесплатно).',
+      'Зона 2 (Пригородные посёлки): Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка. Доставка за 45–75 минут, стоимость: 400 ₽.',
+      'Зона 3 (Предприятия и промзона): БСИ, площадки ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК. Доставка к проходным и офисам к назначенному времени, стоимость: 400 ₽.',
       'Перед отправкой флорист отправляет детальное фото букета в MAX на номер заказчика. Самовывоз из салона по адресу пр. Шинников, 13В — бесплатно в часы работы салона (08:00–21:00).'
     ],
     pageType: 'info'
@@ -724,7 +724,7 @@ function generateSeoSectionHtml(route) {
                 <span class="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 2: Пригород</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">45–75 мин</span>
               </div>
-              <h3 class="text-lg font-bold text-[#1C1215]">0 ₽ <span class="text-xs font-normal text-[#7C636B]">(бесплатно)</span></h3>
+              <h3 class="text-lg font-bold text-[#1C1215]">400 ₽ <span class="text-xs font-normal text-[#7C636B]">(фиксированно)</span></h3>
               <p class="text-xs text-[#5C454C] leading-relaxed">
                 Посёлок Красный Ключ, Большое Афанасово, Нижнее Афанасово, Дмитриевка, Ильинка. Вручение букета лично в руки.
               </p>
@@ -735,7 +735,7 @@ function generateSeoSectionHtml(route) {
                 <span class="text-xs font-bold text-[#922E3D] uppercase tracking-wider">Зона 3: Промзона</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">К точному часу</span>
               </div>
-              <h3 class="text-lg font-bold text-[#1C1215]">0 ₽ <span class="text-xs font-normal text-[#7C636B]">(бесплатно)</span></h3>
+              <h3 class="text-lg font-bold text-[#1C1215]">400 ₽ <span class="text-xs font-normal text-[#7C636B]">(фиксированно)</span></h3>
               <p class="text-xs text-[#5C454C] leading-relaxed">
                 БСИ, проходные заводов ПАО «Нижнекамскнефтехим», ТАНЕКО, ТАИФ-НК точно к окончанию смены или мероприятию.
               </p>
@@ -811,14 +811,14 @@ function generateSeoSectionHtml(route) {
                     <div class="text-xs font-bold text-[#1C1215]">Пригородные посёлки</div>
                     <div class="text-[11px] text-[#7C636B] leading-tight">Красный Ключ, Большое и Нижнее Афанасово</div>
                   </div>
-                  <span class="text-xs font-bold text-[#922E3D] shrink-0">0 ₽</span>
+                  <span class="text-xs font-bold text-[#922E3D] shrink-0">400 ₽</span>
                 </div>
                 <div class="p-3 rounded-lg bg-[#FAF7F5] border border-[#E5DDD9] flex items-start justify-between gap-3">
                   <div class="space-y-0.5">
                     <div class="text-xs font-bold text-[#1C1215]">Промзона и предприятия</div>
                     <div class="text-[11px] text-[#7C636B] leading-tight">БСИ, ТАНЕКО, НКНХ, ТАИФ-НК к точному часу</div>
                   </div>
-                  <span class="text-xs font-bold text-[#922E3D] shrink-0">0 ₽</span>
+                  <span class="text-xs font-bold text-[#922E3D] shrink-0">400 ₽</span>
                 </div>
               </div>
             </div>
