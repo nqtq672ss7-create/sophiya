@@ -141,6 +141,135 @@ export class CustomerDatabaseService {
     return inMemoryCustomers;
   }
 
+  static async fetchCustomerSession(): Promise<Customer|null> {
+    purgeLegacyLocalPii();
+    try {
+      const res = await fetch(getApiUrl('/api/customer-auth'), {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      if (!res.ok) return null;
+      const data = await res.json().catch(() => null);
+      if (data?.authenticated && data?.customer) {
+        return data.customer as Customer;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async registerWithPassword(params: {
+    phone: string;
+    firstName: string;
+    lastName: string;
+    birthDate?: string;
+    password: string;
+    consent: boolean;
+  }): Promise<{ success: boolean; customer?: Customer; error?: string }> {
+    const normalized = normalizePhone(params.phone);
+    if (normalized.length < 11) {
+      return { success: false, error: 'Укажите корректный 11-значный номер телефона' };
+    }
+    if (!params.firstName.trim() || !params.lastName.trim()) {
+      return { success: false, error: 'Укажите имя и фамилию' };
+    }
+    if (!params.password || params.password.length < 6) {
+      return { success: false, error: 'Пароль должен содержать минимум 6 символов' };
+    }
+    if (!params.consent) {
+      return { success: false, error: 'Подтвердите согласие на обработку персональных данных' };
+    }
+
+    try {
+      const res = await fetch(getApiUrl('/api/customer-auth'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'register',
+          phone: params.phone,
+          firstName: params.firstName.trim(),
+          lastName: params.lastName.trim(),
+          birthDate: params.birthDate || '',
+          password: params.password,
+          consent: true,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.customer) {
+        return { success: false, error: data?.error || 'Не удалось завершить регистрацию' };
+      }
+      return { success: true, customer: data.customer as Customer };
+    } catch {
+      return { success: false, error: 'Нет связи с сервером. Попробуйте позже.' };
+    }
+  }
+
+  static async loginWithPassword(
+    phone: string,
+    password: string
+  ): Promise<{ success: boolean; customer?: Customer; error?: string }> {
+    const normalized = normalizePhone(phone);
+    if (normalized.length < 11) {
+      return { success: false, error: 'Укажите полный 11-значный номер телефона' };
+    }
+    if (!password) {
+      return { success: false, error: 'Введите пароль' };
+    }
+    try {
+      const res = await fetch(getApiUrl('/api/customer-auth'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          phone,
+          password,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.customer) {
+        return { success: false, error: data?.error || 'Неверный номер телефона или пароль' };
+      }
+      return { success: true, customer: data.customer as Customer };
+    } catch {
+      return { success: false, error: 'Нет связи с сервером. Попробуйте позже.' };
+    }
+  }
+
+  static async logoutSession(): Promise<void> {
+    purgeLegacyLocalPii();
+    try {
+      await fetch(getApiUrl('/api/customer-auth'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout' }),
+      });
+    } catch {}
+  }
+
+  static async deleteAccountServer(): Promise<{ ok: boolean; error?: string }> {
+    try {
+      const res = await fetch(getApiUrl('/api/customer-auth'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteAccount' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return { ok: false, error: data?.error || 'Не удалось удалить профиль' };
+      }
+      purgeLegacyLocalPii();
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'Нет связи с сервером. Попробуйте позже.' };
+    }
+  }
+
   static async findByPhone(phone: string): Promise<Customer|null> {
     const normalized = normalizePhone(phone);
     if (!normalized) return null;

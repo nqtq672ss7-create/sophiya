@@ -1,32 +1,30 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Customer } from '../types/customer';
 import { CustomerDatabaseService } from '../services/customerDb';
 
 interface AuthContextType {
   customer: Customer|null;
+  isAuthLoading: boolean;
   isAuthModalOpen: boolean;
   isProfileModalOpen: boolean;
   openAuthModal: () => void;
   closeAuthModal: () => void;
   openProfileModal: () => void;
   closeProfileModal: () => void;
-  requestOtp: (phone: string) => Promise<boolean>;
-  verifyOtp: (code: string) => Promise<{ success: boolean; isNewUser: boolean }>;
   registerCustomer: (data: {
     phone: string;
     firstName: string;
     lastName: string;
     birthDate?: string;
+    password: string;
+    consent: boolean;
   }) => Promise<{ success: boolean; error?: string }>;
-  loginWithPhone: (phone: string) => Promise<{ success: boolean; error?: string }>;
-  completeRegistration: (firstName: string, lastName: string, birthDate?: string) => void;
-  logout: () => void;
-  forgetCustomerData: () => Promise<void>;
-  addOrderToCustomer: (orderSummary: { items: string[]; totalAmount: number }) => void;
+  loginWithPassword: (phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  refreshCustomerSession: () => Promise<void>;
+  logout: () => Promise<void>;
+  forgetCustomerData: () => Promise<{ ok: boolean; error?: string }>;
   allCustomers: Customer[];
   refreshCustomers: () => Promise<void>;
-  pendingPhone: string;
-  setPendingPhone: (phone: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType|undefined>(undefined);
@@ -34,9 +32,22 @@ const AuthContext = createContext<AuthContextType|undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [customersDb, setCustomersDb] = useState<Customer[]>([]);
   const [customer, setCustomer] = useState<Customer|null>(null);
-  const [pendingPhone, setPendingPhone] = useState<string>('');
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const refreshCustomerSession = useCallback(async () => {
+    try {
+      const sessionCustomer = await CustomerDatabaseService.fetchCustomerSession();
+      setCustomer(sessionCustomer);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshCustomerSession();
+  }, [refreshCustomerSession]);
 
   // Admin-only cloud sync (invoked only from unlocked SalonAdminClientsModal)
   const refreshCustomers = useCallback(async () => {
@@ -53,79 +64,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const openAuthModal = () => setIsAuthModalOpen(false);
+  const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
-  const openProfileModal = () => setIsProfileModalOpen(false);
+  const openProfileModal = () => setIsProfileModalOpen(true);
   const closeProfileModal = () => setIsProfileModalOpen(false);
 
-  // Disabled unauthenticated phone login until real SMS OTP provider is connected
-  const loginWithPhone = async (_phone: string): Promise<{ success: boolean; error?: string }> => {
-    return {
-      success: false,
-      error: 'Личный кабинет временно закрыт на обновление. Оформляйте заказы напрямую в корзине без регистрации.',
-    };
+  const loginWithPassword = async (
+    phone: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const result = await CustomerDatabaseService.loginWithPassword(phone, password);
+    if (!result.success || !result.customer) {
+      return { success: false, error: result.error || 'Неверный номер телефона или пароль' };
+    }
+    setCustomer(result.customer);
+    setIsAuthModalOpen(false);
+    return { success: true };
   };
 
-  const registerCustomer = async (_data: {
+  const registerCustomer = async (data: {
     phone: string;
     firstName: string;
     lastName: string;
     birthDate?: string;
+    password: string;
+    consent: boolean;
   }): Promise<{ success: boolean; error?: string }> => {
-    return {
-      success: false,
-      error: 'Регистрация временно приостановлена. Быстрый заказ доступен в корзине.',
-    };
+    const result = await CustomerDatabaseService.registerWithPassword(data);
+    if (!result.success || !result.customer) {
+      return { success: false, error: result.error || 'Не удалось завершить регистрацию' };
+    }
+    setCustomer(result.customer);
+    setIsAuthModalOpen(false);
+    return { success: true };
   };
 
-  const requestOtp = async (_phone: string): Promise<boolean> => {
-    return false;
-  };
-
-  const verifyOtp = async (_code: string): Promise<{ success: boolean; isNewUser: boolean }> => {
-    return { success: false, isNewUser: false };
-  };
-
-  const completeRegistration = async () => {};
-
-  const logout = () => {
+  const logout = async () => {
     setCustomer(null);
-    CustomerDatabaseService.setCurrentCustomer(null);
     setIsProfileModalOpen(false);
+    await CustomerDatabaseService.logoutSession();
   };
 
-  const forgetCustomerData = async () => {
-    if (customer) {
-      CustomerDatabaseService.forgetCustomer(customer.id);
+  const forgetCustomerData = async (): Promise<{ ok: boolean; error?: string }> => {
+    const res = await CustomerDatabaseService.deleteAccountServer();
+    if (res.ok) {
+      if (customer) {
+        CustomerDatabaseService.forgetCustomer(customer.id);
+      }
       setCustomer(null);
       setIsProfileModalOpen(false);
     }
+    return res;
   };
-
-  const addOrderToCustomer = () => {};
 
   return (
     <AuthContext.Provider
       value={{
         customer,
+        isAuthLoading,
         isAuthModalOpen,
         isProfileModalOpen,
         openAuthModal,
         closeAuthModal,
         openProfileModal,
         closeProfileModal,
-        requestOtp,
-        verifyOtp,
         registerCustomer,
-        loginWithPhone,
-        completeRegistration,
+        loginWithPassword,
+        refreshCustomerSession,
         logout,
         forgetCustomerData,
-        addOrderToCustomer,
         allCustomers: customersDb,
         refreshCustomers,
-        pendingPhone,
-        setPendingPhone,
       }}
     >
       {children}

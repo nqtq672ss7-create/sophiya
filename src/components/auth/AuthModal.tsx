@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
-import { X, ArrowRight, User, Phone, Calendar, CheckCircle2, Lock } from 'lucide-react';
+import { X, ArrowRight, User, Phone, Calendar, CheckCircle2, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatRussianPhone, normalizePhone } from '../../services/customerDb';
+import { SALON_MAX_URL } from '../../config/contacts';
 
 interface AuthModalProps {
   onOpenLegal?: (tab: 'privacy'|'offer'|'refund'|'cookie') => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
+export const AuthModal: React.FC<AuthModalProps> = () => {
   const {
     isAuthModalOpen,
     closeAuthModal,
     registerCustomer,
-    loginWithPhone,
+    loginWithPassword,
   } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'register'|'login'>('register');
+  const [activeTab, setActiveTab] = useState<'login'|'register'>('login');
 
-  // Form Fields
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -30,21 +32,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
 
   if (!isAuthModalOpen) return null;
 
-  // Handle phone input with auto-formatting
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    const formatted = formatRussianPhone(raw);
+    const formatted = formatRussianPhone(e.target.value);
     setPhone(formatted);
     if (error) setError('');
   };
 
-  // Switch tabs
-  const handleTabSwitch = (tab: 'register'|'login') => {
+  const handleTabSwitch = (tab: 'login'|'register') => {
     setActiveTab(tab);
     setError('');
   };
 
-  // Submit Handler: 1-Click Instant Registration or Login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -55,33 +53,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
       return;
     }
 
-    if (!isPdAgreed) {
-      setError('Пожалуйста, подтвердите согласие на обработку персональных данных');
-      return;
-    }
-
-    setIsLoading(true);
-
     if (activeTab === 'register') {
       if (!firstName.trim()) {
-        setIsLoading(false);
         setError('Пожалуйста, укажите ваше имя');
         return;
       }
       if (!lastName.trim()) {
-        setIsLoading(false);
         setError('Пожалуйста, укажите вашу фамилию');
         return;
       }
+      if (password.length < 6) {
+        setError('Придумайте пароль от 6 символов');
+        return;
+      }
+      if (!isPdAgreed) {
+        setError('Подтвердите согласие на обработку персональных данных');
+        return;
+      }
 
-      // Execute instant registration
+      setIsLoading(true);
       const result = await registerCustomer({
         phone,
         firstName,
         lastName,
         birthDate: birthDate || undefined,
+        password,
+        consent: true,
       });
-
       setIsLoading(false);
 
       if (result.success) {
@@ -89,32 +87,36 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
         setTimeout(() => {
           setIsSuccess(false);
           setPhone('');
+          setPassword('');
           setFirstName('');
           setLastName('');
           setBirthDate('');
-        }, 1200);
+          setIsPdAgreed(false);
+        }, 600);
       } else {
         setError(result.error || 'Ошибка при сохранении профиля');
       }
     } else {
-      // Execute instant login by phone
-      const result = await loginWithPhone(phone);
+      if (!password) {
+        setError('Введите пароль');
+        return;
+      }
+      setIsLoading(true);
+      const result = await loginWithPassword(phone, password);
       setIsLoading(false);
 
       if (result.success) {
         setPhone('');
+        setPassword('');
       } else {
-        // If not found, suggest registration and switch tab
-        setError(result.error || 'Номер не найден в базе салона');
-        setActiveTab('register');
+        setError(result.error || 'Неверный номер телефона или пароль');
       }
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-fadeIn">
-      <div className="relative w-full max-w-lg bg-[#1A0B10] border border-[#6C1E26]/40 rounded-xl p-7 sm:p-9 shadow-2xl text-[#FAF7F5] overflow-hidden">
-        {/* Close Button */}
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-[#1A0B10] border border-[#6C1E26]/40 rounded-xl p-6 sm:p-8 shadow-2xl text-[#FAF7F5]">
         <button
           onClick={closeAuthModal}
           className="absolute top-5 right-5 w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
@@ -123,7 +125,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
           <X className="w-4 h-4" />
         </button>
 
-        {/* Header */}
         <div className="text-center mb-6">
           <span className="text-[10px] uppercase tracking-[0.3em] text-[#C5A880] font-sans block mb-1.5 font-light">
             Салон цветов «София»
@@ -133,13 +134,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
           </h3>
           <p className="text-xs text-white/60 font-light mt-1.5 max-w-sm mx-auto">
             {activeTab === 'register'
-              ? 'Укажите ваши контактные данные для связи и истории заказов'
-              : 'Введите номер телефона для входа в ваш профиль'}
+              ? 'Создайте профиль, чтобы копить скидку до 10% и видеть историю заказов'
+              : 'Введите номер телефона и пароль от вашего профиля'}
           </p>
         </div>
 
-        {/* Tab Switcher */}
         <div className="grid grid-cols-2 p-1 bg-black/40 border border-white/10 rounded-xl mb-6 text-xs">
+          <button
+            type="button"
+            onClick={() => handleTabSwitch('login')}
+            className={`py-2.5 rounded-lg font-medium transition-colors ${
+              activeTab === 'login'
+                ? 'bg-[#6C1E26] text-white shadow'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            Вход
+          </button>
           <button
             type="button"
             onClick={() => handleTabSwitch('register')}
@@ -150,17 +161,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             }`}
           >
             Регистрация
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabSwitch('login')}
-            className={`py-2.5 rounded-lg font-medium transition-colors ${
-              activeTab === 'login'
-                ? 'bg-[#6C1E26] text-white shadow'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Вход по номеру
           </button>
         </div>
 
@@ -177,9 +177,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Phone Input with Russian Mask */}
           <div>
             <label className="block text-[11px] uppercase tracking-wider text-white/70 mb-1.5 font-light">
               Номер телефона <span className="text-[#C5A880]">*</span>
@@ -191,6 +189,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
               <input
                 type="tel"
                 required
+                autoComplete="tel"
                 value={phone}
                 onChange={handlePhoneChange}
                 placeholder="+7 (917) 000-00-00"
@@ -200,7 +199,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             </div>
           </div>
 
-          {/* Registration Fields */}
           {activeTab === 'register' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -215,6 +213,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
                     <input
                       type="text"
                       required
+                      autoComplete="given-name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Анастасия"
@@ -230,6 +229,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
                   <input
                     type="text"
                     required
+                    autoComplete="family-name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Васильева"
@@ -238,11 +238,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
                 </div>
               </div>
 
-              {/* Birth Date Field */}
               <div>
                 <label className="block text-[11px] uppercase tracking-wider text-white/70 mb-1.5 font-light flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Дата рождения</span>
+                  <span>Дата рождения (для бонусов)</span>
                 </label>
                 <input
                   type="date"
@@ -254,42 +253,78 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             </>
           )}
 
-          {/* Explicit 152-FZ Consent Checkbox */}
-          <label className="flex items-start gap-2.5 text-[11px] text-white/75 font-light leading-relaxed cursor-pointer select-none pt-1">
-            <input
-              type="checkbox"
-              checked={isPdAgreed}
-              onChange={(e) => {
-                setIsPdAgreed(e.target.checked);
-                if (error) setError('');
-              }}
-              required
-              className="mt-0.5 w-4 h-4 rounded border-white/30 bg-black/40 text-[#922E3D] focus:ring-[#C5A880] shrink-0 cursor-pointer"
-            />
-            <span>
-              Я даю согласие на обработку персональных данных в соответствии с{' '}
-              <a
-                href="/privacy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#C5A880] hover:underline font-medium"
+          <div>
+            <label className="block text-[11px] uppercase tracking-wider text-white/70 mb-1.5 font-light">
+              Пароль <span className="text-[#C5A880]">*</span>{' '}
+              {activeTab === 'register' && (
+                <span className="normal-case text-white/45">(минимум 6 символов)</span>
+              )}
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40">
+                <Lock className="w-4 h-4" />
+              </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={activeTab === 'register' ? 6 : 1}
+                maxLength={128}
+                autoComplete={activeTab === 'register' ? 'new-password' : 'current-password'}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                placeholder={activeTab === 'register' ? 'Придумайте пароль' : 'Введите пароль'}
+                className="w-full pl-10 pr-11 py-3 bg-black/40 border border-white/15 focus:border-[#C5A880] rounded-xl text-white font-sans text-sm focus:outline-none transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((p) => !p)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/50 hover:text-white"
+                aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
               >
-                Политикой конфиденциальности (152-ФЗ)
-              </a>{' '}
-              и принимаю условия{' '}
-              <a
-                href="/offer/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#C5A880] hover:underline font-medium"
-              >
-                Публичной оферты
-              </a>
-              .
-            </span>
-          </label>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
 
-          {/* Submit Action */}
+          {activeTab === 'register' && (
+            <label className="flex items-start gap-2.5 text-[11px] text-white/75 font-light leading-relaxed cursor-pointer select-none pt-1">
+              <input
+                type="checkbox"
+                checked={isPdAgreed}
+                onChange={(e) => {
+                  setIsPdAgreed(e.target.checked);
+                  if (error) setError('');
+                }}
+                required
+                className="mt-0.5 w-4 h-4 rounded border-white/30 bg-black/40 text-[#922E3D] focus:ring-[#C5A880] shrink-0 cursor-pointer"
+              />
+              <span>
+                Я даю согласие на обработку персональных данных в соответствии с{' '}
+                <a
+                  href="/privacy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#C5A880] hover:underline font-medium"
+                >
+                  Политикой конфиденциальности (152-ФЗ)
+                </a>{' '}
+                и принимаю условия{' '}
+                <a
+                  href="/offer/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#C5A880] hover:underline font-medium"
+                >
+                  Публичной оферты
+                </a>
+                .
+              </span>
+            </label>
+          )}
+
           <div className="pt-2">
             <button
               disabled={isLoading}
@@ -297,7 +332,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             >
               <span>
                 {isLoading
-                  ? 'Сохранение...'
+                  ? 'Проверка...'
                   : activeTab === 'register'
                   ? 'Зарегистрироваться'
                   : 'Войти в кабинет'}
@@ -306,7 +341,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onOpenLegal }) => {
             </button>
           </div>
 
-          {/* Direct link for salon owner so she is never confused */}
+          {activeTab === 'login' && (
+            <p className="text-[11px] text-center text-white/50 font-light">
+              Забыли пароль?{' '}
+              <a
+                href={SALON_MAX_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#C5A880] hover:underline"
+              >
+                Напишите флористу в MAX
+              </a>{' '}
+              — поможем восстановить доступ.
+            </p>
+          )}
+
           <div className="pt-3 mt-3 border-t border-white/10 text-center">
             <button
               type="button"

@@ -42,6 +42,7 @@ export const FigmaFooter: React.FC<FigmaFooterProps> = ({
     { label: 'Частые вопросы (FAQ)', path: '/faq/' },
     { label: 'Контакты и схема проезда', path: '/kontakty/' },
     { label: 'Корзина заказов', path: '/cart/', tab: 'cart' as FigmaTab },
+    { label: 'Личный кабинет и бонусы', path: '/profile/', tab: 'profile' as FigmaTab },
   ];
 
   const deliveryDistricts = [

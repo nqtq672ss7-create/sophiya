@@ -47,6 +47,7 @@ export const FigmaAppShell: React.FC = () => {
   const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState<FigmaTab>(() => {
     if (initialPath.startsWith('/cart')) return 'cart';
+    if (initialPath.startsWith('/profile')) return 'profile';
     return 'catalog';
   });
 
@@ -115,11 +116,17 @@ export const FigmaAppShell: React.FC = () => {
   }, [cartItems]);
 
   const cartTotal = useMemo(() => {
+    const discount = customer?.discountPercent || 0;
+    const factor = discount > 0 ? (100 - discount) / 100 : 1;
     return cartItems.reduce(
-      (sum, item) => sum + (item.bouquet.inStock !== false ? item.bouquet.price * item.quantity : 0),
+      (sum, item) =>
+        sum +
+        (item.bouquet.inStock !== false
+          ? Math.max(1, Math.round(item.bouquet.price * factor)) * item.quantity
+          : 0),
       0
     );
-  }, [cartItems]);
+  }, [cartItems, customer]);
 
   const routeBouquets = useMemo(() => {
     return filterBouquetsForRoute(bouquets, currentRoute, filters.category);
@@ -175,10 +182,12 @@ export const FigmaAppShell: React.FC = () => {
       const targetRoute = getRouteByPath(newPath);
       setCurrentRoute(targetRoute);
 
-      if (options?.tab && options.tab !== 'profile') {
+      if (options?.tab) {
         setActiveTab(options.tab);
       } else if (newPath.startsWith('/cart')) {
         setActiveTab('cart');
+      } else if (newPath.startsWith('/profile')) {
+        setActiveTab('profile');
       } else {
         setActiveTab('catalog');
         const cat = targetRoute.categoryFilter || targetRoute.targetCategory;
@@ -190,6 +199,8 @@ export const FigmaAppShell: React.FC = () => {
       // Sync SEO metadata in DOM
       if (newPath.startsWith('/cart')) {
         document.title = 'Корзина: Салон цветов «София» Нижнекамск';
+      } else if (newPath.startsWith('/profile')) {
+        document.title = 'Личный кабинет: Салон цветов «София» Нижнекамск';
       } else {
         document.title = targetRoute.title;
       }
@@ -215,6 +226,8 @@ export const FigmaAppShell: React.FC = () => {
 
       if (path.startsWith('/cart')) {
         setActiveTab('cart');
+      } else if (path.startsWith('/profile')) {
+        setActiveTab('profile');
       } else {
         setActiveTab('catalog');
         const cat = route.categoryFilter || route.targetCategory;
@@ -225,6 +238,8 @@ export const FigmaAppShell: React.FC = () => {
 
       if (path.startsWith('/cart')) {
         document.title = 'Корзина: Салон цветов «София» Нижнекамск';
+      } else if (path.startsWith('/profile')) {
+        document.title = 'Личный кабинет: Салон цветов «София» Нижнекамск';
       } else {
         document.title = route.title;
       }
@@ -305,7 +320,7 @@ export const FigmaAppShell: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#6C1E26] selection:text-white">
+    <div className="min-h-screen overflow-x-clip bg-[#FAF7F5] flex flex-col text-[#1C1215] selection:bg-[#6C1E26] selection:text-white">
       {/* 1. Header: Minimalist Luxury Navigation with Official Logo (Desktop only) */}
       <div className="hidden md:block">
         <FigmaDesktopHeader

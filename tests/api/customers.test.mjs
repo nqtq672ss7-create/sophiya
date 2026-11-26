@@ -99,15 +99,34 @@ test('oversized fields are rejected or truncated, extra fields never stored', as
   }
 });
 
-test('admin can update an existing customer', async () => {
+test('admin can update an existing customer and set password without leaking passwordHash', async () => {
   const res = await post(
-    { ...base, totalSpent: 12000, ordersCount: 2, discountPercent: 5, tier: 'Серебряный', orders: [] },
+    {
+      ...base,
+      totalSpent: 12000,
+      ordersCount: 2,
+      discountPercent: 5,
+      tier: 'Серебряный',
+      orders: [],
+      newPassword: 'tempPassword99',
+    },
     { token: adminToken() }
   );
   assert.equal(res.statusCode, 200);
+  assert.equal('passwordHash' in res.body.customer, false);
+  assert.equal(res.body.customer.hasPassword, true);
   const saved = kv.readJson('salon_customers').find((c) => c.id === base.id);
   assert.equal(saved.totalSpent, 12000);
   assert.equal(saved.tier, 'Серебряный');
+  assert.ok(saved.passwordHash.startsWith('scrypt:'));
+
+  const getRes = makeRes();
+  await handler(
+    makeReq({ method: 'GET', headers: { authorization: 'Bearer ' + adminToken() } }),
+    getRes
+  );
+  assert.equal(getRes.statusCode, 200);
+  assert.equal('passwordHash' in getRes.body[0], false);
 });
 
 test('registration is rate-limited per IP', async () => {

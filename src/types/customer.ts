@@ -41,12 +41,15 @@ export const LOYALTY_TIERS: LoyaltyTier[] = [
 
 export interface CustomerOrder {
   id: string;
+  orderNumber?: string;
   date: string;
   items: string[];
   totalAmount: number;
   discountApplied: number;
   finalAmount: number;
   status: 'Доставлен' | 'В пути' | 'Собирается';
+  paymentStatus?: string;
+  paymentMethod?: string;
 }
 
 export interface Customer {
@@ -55,6 +58,7 @@ export interface Customer {
   firstName: string;
   lastName: string;
   birthDate?: string;
+  hasPassword?: boolean;
   totalSpent: number;
   ordersCount: number;
   discountPercent: number;

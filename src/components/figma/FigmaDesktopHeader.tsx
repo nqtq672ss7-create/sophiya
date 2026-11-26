@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Phone } from 'lucide-react';
+import { ShoppingBag, Phone, User } from 'lucide-react';
 import { FigmaTab } from './FigmaBottomNav';
 import { MaxIcon } from '../common/MaxIcon';
 import { SALON_MAX_URL } from '../../config/contacts';
+import { useAuth } from '../../context/AuthContext';
 
 interface FigmaDesktopHeaderProps {
   activeTab: FigmaTab;
@@ -23,6 +24,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
   onNavigate,
   currentPath,
 }) => {
+  const { customer } = useAuth();
   const isDeliveryActive = activeTab === 'catalog' && currentPath === '/dostavka/';
   const isCatalogActive = activeTab === 'catalog' && !isDeliveryActive;
   const [logoClicks, setLogoClicks] = useState(0);
@@ -65,7 +67,7 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
             src="/logo.png"
             alt="Салон цветов София"
             decoding="async"
-            className="h-14 sm:h-18 lg:h-20 w-auto object-contain group-hover:opacity-90 transition-opacity"
+            className="h-14 sm:h-[72px] lg:h-20 w-auto object-contain group-hover:opacity-90 transition-opacity"
           />
         </div>
 
@@ -117,6 +119,22 @@ export const FigmaDesktopHeader: React.FC<FigmaDesktopHeaderProps> = ({
               </span>
             )}
             {activeTab === 'cart' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
+            )}
+          </a>
+
+          <a
+            href="/profile/"
+            onClick={(e) => handleLinkClick(e, '/profile/', 'profile')}
+            className={`transition-colors relative py-1 flex items-center gap-1.5 ${
+              activeTab === 'profile'
+                ? 'text-[#922E3D] font-semibold'
+                : 'text-[#5C454C] hover:text-[#922E3D]'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>{customer ? customer.firstName : 'Кабинет'}</span>
+            {activeTab === 'profile' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#922E3D] rounded-sm" />
             )}
           </a>

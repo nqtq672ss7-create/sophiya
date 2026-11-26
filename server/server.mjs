@@ -4,7 +4,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { URL } from 'node:url';
-import { handleYookassa } from './yookassa-handler.mjs';
+import {
+  handleYookassa,
+  readAllOrdersStrict,
+  anonymizeCustomerOrders,
+} from './yookassa-handler.mjs';
+import {
+  handleCustomerAuth,
+  stripCustomerSecrets,
+  hashPassword,
+} from './customer-auth-handler.mjs';
 
 // Load .env manually if present
 const envPath = path.resolve(process.cwd(), '.env');
@@ -598,7 +607,11 @@ async function handleCustomers(req, res, body) {
     }
     try {
       const list = await kvClient.get('salon_customers');
-      return sendJson(res, 200, Array.isArray(list) ? list : []);
+      return sendJson(
+        res,
+        200,
+        Array.isArray(list) ? list.filter(Boolean).map(stripCustomerSecrets) : []
+      );
     } catch {
       return sendJson(res, 200, []);
     }
@@ -679,12 +692,19 @@ async function handleCustomers(req, res, body) {
         return sendJson(res, 400, { error: 'Некорректные данные лояльности' });
       }
       const orders = Array.isArray(body.orders) ? body.orders.slice(0, 500) : [];
+      const newPasswordRaw = typeof body.newPassword === 'string' ? body.newPassword : '';
+      if (newPasswordRaw && (newPasswordRaw.length < 6 || newPasswordRaw.length > 128)) {
+        return sendJson(res, 400, { error: 'Пароль клиента должен быть от 6 до 128 символов' });
+      }
+      const existingPasswordHash = byId?.passwordHash || byPhone?.passwordHash;
+      const passwordHash = newPasswordRaw ? hashPassword(newPasswordRaw) : existingPasswordHash;
       const record = {
         id,
         phone,
         firstName,
         lastName,
         birthDate: birthDate || undefined,
+        ...(passwordHash ? { passwordHash } : {}),
         totalSpent,
         ordersCount,
         discountPercent,
@@ -696,7 +716,7 @@ async function handleCustomers(req, res, body) {
           new Date().toISOString().split('T')[0],
       };
       await kvClient.set('salon_customers', [record, ...existing.filter((c) => c.id !== id)]);
-      return sendJson(res, 200, { success: true, customer: record });
+      return sendJson(res, 200, { success: true, customer: stripCustomerSecrets(record) });
     } catch {
       return sendJson(res, 500, { error: 'Не удалось сохранить клиента' });
     }
@@ -1047,6 +1067,14 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/login') return await handleLogin(req, res, body);
     if (pathname === '/api/catalog') return await handleCatalog(req, res, body);
     if (pathname === '/api/customers') return await handleCustomers(req, res, body);
+    if (pathname === '/api/customer-auth') {
+      return await handleCustomerAuth(req, res, body, {
+        kvClient,
+        getClientIp,
+        readAllOrders: readAllOrdersStrict,
+        anonymizeCustomerOrders,
+      });
+    }
     if (pathname === '/api/reviews') return await handleReviews(req, res, body, parsedUrl);
     if (pathname === '/api/callback') return await handleCallback(req, res, body);
     if (pathname === '/api/yookassa') return await handleYookassa(req, res, body, parsedUrl);

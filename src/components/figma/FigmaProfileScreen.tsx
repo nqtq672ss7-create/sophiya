@@ -7,8 +7,10 @@ import {
   Sparkles,
   ShoppingBag,
   ArrowRight,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { calculateLoyaltyTier } from '../../types/customer';
 import { SALON_MAX_URL } from '../../config/contacts';
 import { MaxIcon } from '../common/MaxIcon';
 
@@ -22,46 +24,57 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
   onOpenAuth,
   onGoToCatalog,
 }) => {
-  const { customer, logout } = useAuth();
+  const { customer, isAuthLoading, logout, forgetCustomerData } = useAuth();
   const [showHistory, setShowHistory] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6 text-sm text-[#7C636B]">
+        Проверяем профиль...
+      </div>
+    );
+  }
 
   // 1. Not Logged In State
   if (!customer) {
     return (
-      <div className="min-h-[68vh] flex flex-col items-center justify-center p-6 text-center select-none max-w-lg mx-auto my-8">
+      <div className="min-h-[68vh] flex flex-col items-center justify-center p-6 text-center max-w-lg mx-auto my-8">
         <div className="w-16 h-16 rounded-xl bg-[#922E3D]/10 border border-[#922E3D]/20 flex items-center justify-center mb-5 text-[#922E3D]">
           <User className="w-8 h-8" />
         </div>
 
-        <h2 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold mb-2.5">
+        <h1 className="font-sans text-2xl sm:text-3xl text-[#1C1215] font-semibold mb-2.5">
           Личный кабинет
-        </h2>
+        </h1>
         <p className="text-xs sm:text-sm text-[#5C454C] font-light max-w-md mb-7 leading-relaxed">
-          Войдите по номеру телефона, чтобы отслеживать статус сборки букетов, историю доставок и копить персональные скидки до 10% в салоне «София».
+          Войдите или зарегистрируйтесь по номеру телефона, чтобы отслеживать статус сборки букетов, историю доставок и копить персональные скидки до 10% в салоне «София».
         </p>
 
         <button
           onClick={onOpenAuth}
           className="px-7 py-3.5 rounded-xl bg-[#922E3D] hover:bg-[#611720] text-white text-xs sm:text-sm font-medium transition-colors shadow-md active:scale-95 cursor-pointer"
         >
-          Войти по номеру телефона
+          Войти или зарегистрироваться
         </button>
       </div>
     );
   }
 
-  // Calculate next tier target
-  let nextTierAmount = 15000;
-  let nextTierPercent = 5;
-  if (customer.totalSpent >= 30000) {
-    nextTierAmount = 50000;
-    nextTierPercent = 10;
-  } else if (customer.totalSpent >= 15000) {
-    nextTierAmount = 30000;
-    nextTierPercent = 7;
-  }
-  const remainingToNext = Math.max(0, nextTierAmount - customer.totalSpent);
-  const progressPercent = Math.min(100, Math.round((customer.totalSpent / nextTierAmount) * 100));
+  const { tier, nextTier, amountToNextTier } = calculateLoyaltyTier(customer.totalSpent || 0);
+  const nextTierPercent = nextTier ? nextTier.discountPercent : tier.discountPercent;
+  const remainingToNext = amountToNextTier;
+  const progressPercent = nextTier
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          Math.round(((customer.totalSpent - tier.minSpend) / (nextTier.minSpend - tier.minSpend)) * 100)
+        )
+      )
+    : 100;
 
   const initials =
     `${customer.firstName?.[0] || ''}${customer.lastName?.[0] || ''}`.toUpperCase() ||
@@ -319,6 +332,9 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
                           <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md">
                             Доставлен
                           </span>
+                          {ord.orderNumber && (
+                            <span className="text-[11px] font-semibold text-[#922E3D]">{ord.orderNumber}</span>
+                          )}
                           <span className="text-xs text-[#7C636B]">{ord.date}</span>
                         </div>
                         <h4 className="text-xs sm:text-sm font-semibold text-[#1C1215] mt-1">
@@ -353,6 +369,53 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
                 </span>
               </div>
             )
+          )}
+        </div>
+
+        {/* 152-FZ Right to be Forgotten */}
+        <div className="pt-4 border-t border-[#E5DDD9] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-xs text-[#7C636B]">
+            Вы можете в любой момент удалить свой профиль и обезличить персональные данные (152-ФЗ).
+          </div>
+          {!confirmDelete ? (
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError('');
+                setConfirmDelete(true);
+              }}
+              className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Удалить профиль</span>
+            </button>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              {deleteError && <span className="text-xs text-rose-700">{deleteError}</span>}
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={async () => {
+                  setIsDeleting(true);
+                  setDeleteError('');
+                  const res = await forgetCustomerData();
+                  setIsDeleting(false);
+                  if (!res.ok) {
+                    setDeleteError(res.error || 'Ошибка удаления');
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold cursor-pointer disabled:opacity-50"
+              >
+                {isDeleting ? 'Удаление...' : 'Подтвердить удаление'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="px-3.5 py-2 rounded-xl bg-white border border-[#E5DDD9] text-xs text-[#5C454C] cursor-pointer"
+              >
+                Отмена
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -366,6 +366,8 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
   const [draftReply, setDraftReply] = useState('');
   const [draftReviewDate, setDraftReviewDate] = useState('');
   const [clientHistoryModal, setClientHistoryModal] = useState<string|null>(null);
+  const [draftClientPass, setDraftClientPass] = useState('');
+  const [isSavingClientPass, setIsSavingClientPass] = useState(false);
   const [moreSubSection, setMoreSubSection] = useState<'promos'|'loyalty'|'logistics'|'settings'|null>(null);
   const [dangerModal, setDangerModal] = useState<'clear'|'reset'|null>(null);
   const [dangerConfirmInput, setDangerConfirmInput] = useState('');
@@ -1992,7 +1994,12 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
         {clientHistoryModal && (
           <div
             className="fixed inset-0 z-50 bg-black/70 flex items-end lg:items-center justify-center lg:p-4"
-            onClick={(e) => e.target === e.currentTarget && setClientHistoryModal(null)}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setClientHistoryModal(null);
+                setDraftClientPass('');
+              }
+            }}
           >
             {(() => {
               const client = allCustomers.find((c) => c.id === clientHistoryModal);
@@ -2007,18 +2014,77 @@ export const SalonAdminClientsModal: React.FC<SalonAdminClientsModalProps> = ({
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-base font-bold">{fullName}</h3>
-                      <div className="text-xs text-[#F5B8C2]">
+                      <div className="text-xs text-[#922E3D] font-medium">
                         {tier.name}, скидка {tier.discountPercent}%
                       </div>
                     </div>
-                    <button onClick={() => setClientHistoryModal(null)}>
+                    <button
+                      onClick={() => {
+                        setClientHistoryModal(null);
+                        setDraftClientPass('');
+                      }}
+                    >
                       <X className="w-5 h-5 text-[#634F55]" />
                     </button>
                   </div>
-                  <div className="text-xs text-[#A8949A]">
+                  <div className="text-xs text-[#634F55]">
                     Всего заказов: {client.ordersCount || 0}, На сумму:{' '}
                     {(client.totalSpent || 0).toLocaleString('ru-RU')} ₽
                   </div>
+
+                  {/* Admin password reset for client */}
+                  <div className="p-3 rounded-xl bg-[#F7F3F1] border border-[#E6DCDE] space-y-2">
+                    <div className="text-xs font-semibold text-[#1C1215]">
+                      {client.hasPassword ? 'Сменить пароль кабинета' : 'Задать пароль кабинета'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={draftClientPass}
+                        onChange={(e) => setDraftClientPass(e.target.value)}
+                        placeholder="Новый пароль (от 6 символов)"
+                        className="flex-1 min-w-0 h-9 px-2.5 rounded-lg bg-white border border-[#DFD2D5] text-xs text-[#1C1215]"
+                      />
+                      <button
+                        type="button"
+                        disabled={isSavingClientPass || draftClientPass.length < 6}
+                        onClick={async () => {
+                          const token = sessionStorage.getItem('sophiya_admin_token');
+                          if (!token) return;
+                          setIsSavingClientPass(true);
+                          try {
+                            const res = await fetch(getApiUrl('/api/customers'), {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                              },
+                              body: JSON.stringify({
+                                ...client,
+                                newPassword: draftClientPass,
+                              }),
+                            });
+                            const data = await res.json().catch(() => ({}));
+                            if (!res.ok) {
+                              showToast('err', data.error || 'Не удалось обновить пароль');
+                            } else {
+                              setDraftClientPass('');
+                              refreshCustomers();
+                              showToast('ok', 'Пароль клиента обновлён');
+                            }
+                          } catch {
+                            showToast('err', 'Ошибка сети при смене пароля');
+                          } finally {
+                            setIsSavingClientPass(false);
+                          }
+                        }}
+                        className="h-9 px-3 rounded-lg bg-[#922E3D] text-white text-xs font-semibold disabled:opacity-50 shrink-0"
+                      >
+                        {isSavingClientPass ? '...' : 'Сохранить'}
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {clientOrders.length === 0 ? (
                       <div className="text-xs text-[#7B676E] py-4 text-center">

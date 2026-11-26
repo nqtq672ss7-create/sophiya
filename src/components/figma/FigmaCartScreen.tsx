@@ -77,7 +77,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   onExploreCatalog,
   onClearCart,
 }) => {
-  const { customer, addOrderToCustomer } = useAuth();
+  const { customer, refreshCustomerSession } = useAuth();
 
   const defaultCustomerName = customer ? `${customer.firstName} ${customer.lastName}`.trim() : '';
   const defaultCustomerPhone = customer ? customer.phone : '+7 (917) ';
@@ -103,6 +103,19 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [customerEmail, setCustomerEmail] = useState('');
   const [orderComment, setOrderComment] = useState('');
 
+  useEffect(() => {
+    if (!customer) return;
+    const fullName = `${customer.firstName} ${customer.lastName}`.trim();
+    if (fullName) {
+      setRecipientName((prev) => (prev ? prev : fullName));
+      setCustomerName((prev) => (prev ? prev : fullName));
+    }
+    if (customer.phone) {
+      setRecipientPhone((prev) => (!prev || prev.trim() === '+7 (917)' ? customer.phone : prev));
+      setCustomerPhone((prev) => (!prev || prev.trim() === '+7 (917)' ? customer.phone : prev));
+    }
+  }, [customer]);
+
   // Checkout & Return status
   const [isSuccess, setIsSuccess] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<PlacedOrderDetails|null>(null);
@@ -118,14 +131,18 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
   const [paymentError, setPaymentError] = useState('');
 
   const deliveryCost = 0;
-  const userDiscount = 0;
+  const userDiscount = customer?.discountPercent || 0;
 
   const inStockItems = items.filter((item) => item.bouquet.inStock !== false);
   const hasOutOfStockItems = items.some((item) => item.bouquet.inStock === false);
 
   const rawSubtotal = inStockItems.reduce((sum, item) => sum + item.bouquet.price * item.quantity, 0);
-  const discountAmount = Math.round((rawSubtotal * userDiscount) / 100);
-  const finalSubtotal = rawSubtotal - discountAmount;
+  const discountFactor = userDiscount > 0 ? (100 - userDiscount) / 100 : 1;
+  const finalSubtotal = inStockItems.reduce(
+    (sum, item) => sum + Math.max(1, Math.round(item.bouquet.price * discountFactor)) * item.quantity,
+    0
+  );
+  const discountAmount = Math.max(0, rawSubtotal - finalSubtotal);
   const totalToPay = finalSubtotal + (inStockItems.length > 0 ? deliveryCost : 0);
 
   const getStoredOrderToken = (orderId: string): string => {
@@ -168,15 +185,10 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
             const rawPending = sessionStorage.getItem('sophiya_yookassa_pending_cart');
             if (rawPending) {
               pendingMeta = JSON.parse(rawPending);
-              if (customer && Array.isArray(pendingMeta.items)) {
-                addOrderToCustomer({
-                  items: pendingMeta.items,
-                  totalAmount: Number(pendingMeta.totalAmount) || Number(data.totalAmount) || 0,
-                });
-              }
               sessionStorage.removeItem('sophiya_yookassa_pending_cart');
             }
           } catch {}
+          void refreshCustomerSession();
 
           const dateParts = String(data.deliveryDate || '').split(', ');
           setPlacedOrder({
@@ -230,7 +242,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
         setPaymentError(err?.message || 'Не удалось проверить статус оплаты');
       }
     },
-    [customer, addOrderToCustomer, onClearCart]
+    [refreshCustomerSession, onClearCart]
   );
 
   useEffect(() => {
@@ -329,12 +341,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
       }
 
       // Cash on delivery/pickup
-      if (customer) {
-        addOrderToCustomer({
-          items: inStockItems.map((i) => `${i.bouquet.title} (${i.quantity} шт)`),
-          totalAmount: data.totalAmount || totalToPay,
-        });
-      }
+      void refreshCustomerSession();
       setPlacedOrder({
         orderId: data.orderId,
         orderNumber: data.orderNumber,
@@ -517,12 +524,12 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                 type="date"
                 value={placedOrder.deliveryDay}
                 onChange={(e) => setPlacedOrder({ ...placedOrder, deliveryDay: e.target.value })}
-                className="h-11 px-3 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:outline-none"
+                className="w-full min-w-0 h-11 px-3 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:outline-none"
               />
               <select
                 value={placedOrder.deliverySlot}
                 onChange={(e) => setPlacedOrder({ ...placedOrder, deliverySlot: e.target.value })}
-                className="h-11 px-2.5 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:outline-none"
+                className="w-full min-w-0 h-11 px-2.5 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:outline-none"
               >
                 {TIME_SLOTS.map((slot) => (
                   <option key={slot} value={slot}>
@@ -669,7 +676,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
 
         <form onSubmit={handleCheckout} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Items + Delivery & Recipient Form */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className="lg:col-span-7 min-w-0 space-y-4">
             {/* Cart items list */}
             <div className="space-y-3">
               {items.map((item) => (
@@ -689,7 +696,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                   <img
                     src={item.bouquet.image || '/bouquet-1.jpg'}
                     alt={formatBouquetAlt(item.bouquet.title)}
-                    className={`w-18 h-18 sm:w-20 sm:h-20 rounded-xl object-cover shrink-0 bg-[#FAF7F5] ${
+                    className={`w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl object-cover shrink-0 bg-[#FAF7F5] ${
                       !item.bouquet.inStock ? 'grayscale opacity-70' : ''
                     }`}
                   />
@@ -847,12 +854,12 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
                     type="date"
                     value={deliveryDay}
                     onChange={(e) => setDeliveryDay(e.target.value)}
-                    className="h-11 px-3 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:border-[#6C1E26] focus:outline-none"
+                    className="w-full min-w-0 h-11 px-3 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:border-[#6C1E26] focus:outline-none"
                   />
                   <select
                     value={deliverySlot}
                     onChange={(e) => setDeliverySlot(e.target.value)}
-                    className="h-11 px-2.5 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:border-[#6C1E26] focus:outline-none"
+                    className="w-full min-w-0 h-11 px-2.5 rounded-xl bg-[#FAF7F5] border border-[#EAE2DF] text-xs text-[#1C1215] focus:border-[#6C1E26] focus:outline-none"
                   >
                     {TIME_SLOTS.map((slot) => (
                       <option key={slot} value={slot}>
@@ -929,7 +936,7 @@ export const FigmaCartScreen: React.FC<FigmaCartScreenProps> = ({
           </div>
 
           {/* Right Column: Sticky Payment & Summary */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 bg-white rounded-xl p-5 sm:p-6 border border-[#EAE2DF] shadow-sm space-y-4">
+          <div className="lg:col-span-5 min-w-0 lg:sticky lg:top-24 bg-white rounded-xl p-5 sm:p-6 border border-[#EAE2DF] shadow-sm space-y-4">
             <div className="space-y-2">
               <div className="text-xs sm:text-sm font-semibold text-[#1C1215]">Способ оплаты</div>
 

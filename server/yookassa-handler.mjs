@@ -1,6 +1,7 @@
 import net from 'node:net';
 import https from 'node:https';
 import crypto from 'node:crypto';
+import { extractCustomerSession, buildCustomerView } from './customer-auth-handler.mjs';
 
 const ORDERS_LEGACY_STORE = 'sophiya_orders_v1';
 const ORDER_ITEM_PREFIX = 'sophiya_order_item:';
@@ -415,7 +416,7 @@ async function saveSingleOrderStrict(order, isNew = false) {
   }
 }
 
-async function readAllOrdersStrict() {
+export async function readAllOrdersStrict() {
   await ensureLegacyOrdersMigrated();
   const rawIds = await sendRespCommand(['LRANGE', ORDER_IDS_LIST, '0', '299']);
   if (!Array.isArray(rawIds) || rawIds.length === 0) return [];
@@ -440,6 +441,36 @@ async function readAllOrdersStrict() {
   return out;
 }
 
+export async function anonymizeCustomerOrders(customerId, phoneDigits) {
+  await ensureLegacyOrdersMigrated();
+  const rawIds = await sendRespCommand(['LRANGE', ORDER_IDS_LIST, '0', '499']);
+  if (!Array.isArray(rawIds) || rawIds.length === 0) return;
+  for (const id of rawIds) {
+    if (!id) continue;
+    const key = `${ORDER_ITEM_PREFIX}${id}`;
+    const existing = await kvGetStrict(key);
+    if (!existing) continue;
+    const matches =
+      (customerId && existing.customerId === customerId) ||
+      (phoneDigits && normalizePhoneDigits(existing.phone) === phoneDigits);
+    if (matches) {
+      const scrubbed = {
+        ...existing,
+        customerName: 'Удалено (152-ФЗ)',
+        recipientName: 'Удалено (152-ФЗ)',
+        phone: '',
+        recipientPhone: '',
+        address: '',
+        email: '',
+        postcardText: '',
+        comment: '',
+      };
+      delete scrubbed.customerId;
+      await kvSetStrict(key, scrubbed);
+    }
+  }
+}
+
 async function fetchCatalogItemsStrict() {
   const primary = await kvGetStrict(CATALOG_STORE);
   if (Array.isArray(primary) && primary.length > 0) return primary;
@@ -447,9 +478,11 @@ async function fetchCatalogItemsStrict() {
   return Array.isArray(alt) ? alt : [];
 }
 
-function buildReceiptItems(items) {
+function buildReceiptItems(items, discountPercent = 0) {
+  const pct = Number.isFinite(discountPercent) && discountPercent > 0 && discountPercent <= 25 ? discountPercent : 0;
+  const factor = pct > 0 ? (100 - pct) / 100 : 1;
   return items.map((item) => {
-    const unitPrice = Math.max(1, Math.round(item.price));
+    const unitPrice = Math.max(1, Math.round(item.price * factor));
     return {
       description: String(item.title || 'Букет цветов').slice(0, 128),
       quantity: `${item.quantity}.00`,
@@ -779,11 +812,31 @@ export async function handleYookassa(req, res, body, parsedUrl) {
     });
   }
 
-  const receiptItems = buildReceiptItems(verifiedItems);
+  let customerId = '';
+  let discountPercent = 0;
+  const customerSession = extractCustomerSession(req);
+  if (customerSession?.cid) {
+    try {
+      const customers = await kvGetStrict('salon_customers');
+      if (Array.isArray(customers)) {
+        const matched = customers.find((c) => c && c.id === customerSession.cid);
+        if (matched) {
+          customerId = matched.id;
+          const ordersSnapshot = await readAllOrdersStrict();
+          const enriched = buildCustomerView(matched, ordersSnapshot);
+          discountPercent = Math.min(25, Math.max(0, Number(enriched.discountPercent) || 0));
+        }
+      }
+    } catch {}
+  }
+
+  const rawTotal = verifiedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const receiptItems = buildReceiptItems(verifiedItems, discountPercent);
   const totalAmount = receiptItems.reduce(
     (sum, item) => sum + Math.round(Number(item.amount.value)) * parseInt(item.quantity, 10),
     0
   );
+  const discountAmount = Math.max(0, rawTotal - totalAmount);
   if (totalAmount <= 0) return sendJson(res, 400, { error: 'Сумма заказа должна быть больше 0 ₽' });
 
   const orderId = `ord_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
@@ -806,6 +859,8 @@ export async function handleYookassa(req, res, body, parsedUrl) {
       createdAt,
       createdAtMs,
       orderTokenHash,
+      ...(customerId ? { customerId } : {}),
+      ...(discountPercent > 0 ? { discountPercent, discountAmount } : {}),
       customerName,
       phone,
       recipientName,
@@ -876,6 +931,8 @@ export async function handleYookassa(req, res, body, parsedUrl) {
       createdAt,
       createdAtMs,
       orderTokenHash,
+      ...(customerId ? { customerId } : {}),
+      ...(discountPercent > 0 ? { discountPercent, discountAmount } : {}),
       customerName,
       phone,
       recipientName,

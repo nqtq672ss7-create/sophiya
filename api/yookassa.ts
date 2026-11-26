@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, kv } from '@vercel/kv';
 import crypto from 'crypto';
 import net from 'net';
+import { extractCustomerSession, buildCustomerView } from '../server/customer-auth-handler.mjs';
 
 const SECRET_SALT = process.env.AUTH_SECRET || '';
 const SECRET_OK = SECRET_SALT.length >= 32;
@@ -41,6 +42,9 @@ export interface StoredOrder {
   createdAt: string;
   createdAtMs?: number;
   orderTokenHash?: string;
+  customerId?: string;
+  discountPercent?: number;
+  discountAmount?: number;
   customerName: string;
   phone: string;
   recipientName?: string;
@@ -358,9 +362,11 @@ async function readAllOrdersStrict(client: any): Promise<StoredOrder[]> {
   return out;
 }
 
-function buildReceiptItems(items: StoredOrderItem[]) {
+function buildReceiptItems(items: StoredOrderItem[], discountPercent = 0) {
+  const pct = Number.isFinite(discountPercent) && discountPercent > 0 && discountPercent <= 25 ? discountPercent : 0;
+  const factor = pct > 0 ? (100 - pct) / 100 : 1;
   return items.map((item) => {
-    const unitPrice = Math.max(1, Math.round(item.price));
+    const unitPrice = Math.max(1, Math.round(item.price * factor));
     return {
       description: String(item.title || 'Букет цветов').slice(0, 128),
       quantity: `${item.quantity}.00`,
@@ -753,11 +759,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const receiptItems = buildReceiptItems(verifiedItems);
+  let customerId = '';
+  let discountPercent = 0;
+  const customerSession = extractCustomerSession(req);
+  if (customerSession?.cid) {
+    try {
+      const customers = await client.get<any[]>('salon_customers');
+      if (Array.isArray(customers)) {
+        const matched = customers.find((c) => c && c.id === customerSession.cid);
+        if (matched) {
+          customerId = matched.id;
+          const ordersSnapshot = await readAllOrdersStrict(client);
+          const enriched = buildCustomerView(matched, ordersSnapshot);
+          discountPercent = Math.min(25, Math.max(0, Number(enriched.discountPercent) || 0));
+        }
+      }
+    } catch {}
+  }
+
+  const rawTotal = verifiedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const receiptItems = buildReceiptItems(verifiedItems, discountPercent);
   const totalAmount = receiptItems.reduce(
     (sum, item) => sum + Math.round(Number(item.amount.value)) * parseInt(item.quantity, 10),
     0
   );
+  const discountAmount = Math.max(0, rawTotal - totalAmount);
 
   if (totalAmount <= 0) {
     return res.status(400).json({ error: 'Сумма заказа должна быть больше 0 ₽' });
@@ -783,6 +809,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       createdAt,
       createdAtMs,
       orderTokenHash,
+      ...(customerId ? { customerId } : {}),
+      ...(discountPercent > 0 ? { discountPercent, discountAmount } : {}),
       customerName,
       phone,
       recipientName,
@@ -873,6 +901,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       createdAt,
       createdAtMs,
       orderTokenHash,
+      ...(customerId ? { customerId } : {}),
+      ...(discountPercent > 0 ? { discountPercent, discountAmount } : {}),
       customerName,
       phone,
       recipientName,

@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, kv } from '@vercel/kv';
 import crypto from 'crypto';
+import { stripCustomerSecrets, hashPassword } from '../server/customer-auth-handler.mjs';
 
 // Signing key comes only from the environment. No fallback: if it is missing or
 // short, token signing and verification fail closed.
@@ -137,7 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const list = await client.get<any[]>('salon_customers');
       if (Array.isArray(list)) {
-        return res.status(200).json(list);
+        return res.status(200).json(list.filter(Boolean).map(stripCustomerSecrets));
       }
       return res.status(200).json([]);
     } catch (e) {
@@ -227,12 +228,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Некорректные данные лояльности' });
       }
       const orders = Array.isArray(input.orders) ? input.orders.slice(0, 500) : [];
+      const newPasswordRaw = typeof input.newPassword === 'string' ? input.newPassword : '';
+      if (newPasswordRaw && (newPasswordRaw.length < 6 || newPasswordRaw.length > 128)) {
+        return res.status(400).json({ error: 'Пароль клиента должен быть от 6 до 128 символов' });
+      }
+      const existingPasswordHash = byId?.passwordHash || byPhone?.passwordHash;
+      const passwordHash = newPasswordRaw ? hashPassword(newPasswordRaw) : existingPasswordHash;
       const record = {
         id,
         phone,
         firstName,
         lastName,
         birthDate: birthDate || undefined,
+        ...(passwordHash ? { passwordHash } : {}),
         totalSpent,
         ordersCount,
         discountPercent,
@@ -241,7 +249,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         registeredAt: cleanText(input.registeredAt, 10) || byId?.registeredAt || new Date().toISOString().split('T')[0],
       };
       await client.set('salon_customers', [record, ...existing.filter((c) => c.id !== id)]);
-      return res.status(200).json({ success: true, customer: record });
+      return res.status(200).json({ success: true, customer: stripCustomerSecrets(record) });
     } catch (err) {
       console.error('Error saving customer to KV:', err);
       return res.status(500).json({ error: 'Не удалось сохранить клиента' });

@@ -455,3 +455,73 @@ test('Cash order creation is rate-limited per IP (H-05) and Redis outage returns
   );
   assert.equal(outageRes.statusCode, 503);
 });
+
+test('Logged-in customer gets server-verified loyalty discount while spoofed phone gets 0%', async () => {
+  kv.seedJson('catalog_bouquets', [{ id: 'b-1', title: 'Розы', price: 10000, inStock: true }]);
+  kv.seedJson('salon_customers', [
+    {
+      id: 'cust_vip_1',
+      phone: '+7 (917) 777-88-99',
+      firstName: 'Анна',
+      lastName: 'Смирнова',
+      totalSpent: 15000,
+      ordersCount: 2,
+      discountPercent: 5,
+      tier: 'Серебряный',
+      orders: [],
+      registeredAt: '2026-11-01',
+    },
+  ]);
+
+  // 1. Unauthenticated order typing VIP phone gets 0% discount
+  const unauthRes = makeRes();
+  await handler(
+    makeReqWithQuery({
+      method: 'POST',
+      ip: freshIp(),
+      query: { action: 'create' },
+      body: {
+        paymentMethod: 'cash',
+        customerName: 'Хакер',
+        phone: '+7 (917) 777-88-99',
+        deliveryType: 'pickup',
+        items: [{ id: 'b-1', quantity: 1 }],
+      },
+    }),
+    unauthRes
+  );
+  assert.equal(unauthRes.statusCode, 200);
+  assert.equal(unauthRes.body.totalAmount, 10000);
+
+  // 2. Authenticated customer with signed sophiya_ctok cookie gets 5% discount
+  const payloadB64 = Buffer.from(
+    JSON.stringify({
+      role: 'customer',
+      cid: 'cust_vip_1',
+      phoneDigits: '79177778899',
+      exp: Date.now() + 60_000,
+    })
+  ).toString('base64url');
+  const sig = crypto.createHmac('sha256', SECRET).update(payloadB64).digest('base64url');
+  const ctok = `${payloadB64}.${sig}`;
+
+  const authRes = makeRes();
+  await handler(
+    makeReqWithQuery({
+      method: 'POST',
+      ip: freshIp(),
+      query: { action: 'create' },
+      headers: { cookie: `sophiya_ctok=${encodeURIComponent(ctok)}` },
+      body: {
+        paymentMethod: 'cash',
+        customerName: 'Анна',
+        phone: '+7 (917) 777-88-99',
+        deliveryType: 'pickup',
+        items: [{ id: 'b-1', quantity: 1 }],
+      },
+    }),
+    authRes
+  );
+  assert.equal(authRes.statusCode, 200);
+  assert.equal(authRes.body.totalAmount, 9500);
+});
