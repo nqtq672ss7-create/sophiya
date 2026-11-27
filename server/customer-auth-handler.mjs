@@ -159,6 +159,7 @@ export function buildCustomerView(customer, allOrders) {
   const matchingOrders = (Array.isArray(allOrders) ? allOrders : []).filter(
     (o) =>
       o &&
+      (o.paymentStatus === 'paid' || o.paymentMethod === 'cash') &&
       (o.customerId === customer.id ||
         (phoneDigits.length === 11 && normalizePhoneDigits(o.phone) === phoneDigits))
   );

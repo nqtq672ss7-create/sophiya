@@ -251,9 +251,10 @@ export const FigmaProfileScreen: React.FC<FigmaProfileScreenProps> = ({
                           <span className="text-[11px] text-amber-800 font-semibold bg-amber-50 px-2.5 py-0.5 rounded-md inline-flex items-center gap-1 border border-amber-200/60">
                             <CheckCircle className="w-3 h-3" />
                             <span>
+                              {ord.orderNumber ? `${ord.orderNumber}: ` : ''}
                               {ord.status === 'В пути'
-                                ? 'В пути — курьер выехал'
-                                : 'Подтверждён — собирается флористом'}
+                                ? 'В пути, курьер выехал'
+                                : 'Подтверждён, собирается флористом'}
                             </span>
                           </span>
                           <h4 className="text-sm sm:text-base font-semibold text-[#1C1215] mt-1.5">

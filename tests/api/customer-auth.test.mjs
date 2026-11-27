@@ -119,8 +119,8 @@ test('POST login validates password, rate-limits brute force, and enriches live 
   );
   const custId = regRes.body.customer.id;
 
-  // Seed paid order belonging to this customer (12 000 RUB -> Серебряный 5%)
-  kv.store.set('sophiya_order_ids', ['ord_lk_1']);
+  // Seed paid order + canceled/pending attempts belonging to this customer (12 000 RUB -> Серебряный 5%)
+  kv.store.set('sophiya_order_ids', ['ord_lk_1', 'ord_lk_canceled', 'ord_lk_pending']);
   kv.seedJson('sophiya_order_item:ord_lk_1', {
     id: 'ord_lk_1',
     orderNumber: 'SF-555111',
@@ -133,6 +133,32 @@ test('POST login validates password, rate-limits brute force, and enriches live 
     paymentMethod: 'yookassa',
     paymentStatus: 'paid',
     orderStatus: 'delivered',
+  });
+  kv.seedJson('sophiya_order_item:ord_lk_canceled', {
+    id: 'ord_lk_canceled',
+    orderNumber: 'SF-555112',
+    customerId: custId,
+    createdAt: '26.11, 13:58',
+    customerName: 'Ольга Сидорова',
+    phone: '+7 (917) 333-44-55',
+    items: [{ title: 'Пионы Blanche', quantity: 1, price: 12000 }],
+    totalAmount: 12000,
+    paymentMethod: 'yookassa',
+    paymentStatus: 'canceled',
+    orderStatus: 'new',
+  });
+  kv.seedJson('sophiya_order_item:ord_lk_pending', {
+    id: 'ord_lk_pending',
+    orderNumber: 'SF-555113',
+    customerId: custId,
+    createdAt: '26.11, 13:59',
+    customerName: 'Ольга Сидорова',
+    phone: '+7 (917) 333-44-55',
+    items: [{ title: 'Пионы Blanche', quantity: 1, price: 12000 }],
+    totalAmount: 12000,
+    paymentMethod: 'yookassa',
+    paymentStatus: 'pending',
+    orderStatus: 'new',
   });
 
   // Wrong password 5 times -> 6th attempt gets 429
